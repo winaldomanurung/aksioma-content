@@ -52,6 +52,14 @@ body {
   text-rendering: geometricPrecision;
 }
 
+.carousel-stage[data-platform="tiktok"] {
+  --tiktok-safe-top: 150px;
+  --tiktok-safe-right: 178px;
+  --tiktok-safe-bottom: 270px;
+  --tiktok-safe-left: 92px;
+  --tiktok-safe-buffer: 20px;
+}
+
 .carousel-stage[data-platform="tiktok"] .carousel-slide {
   height: 1920px;
 }
@@ -67,7 +75,11 @@ body {
 
 .carousel-stage[data-platform="tiktok"] .slide-frame {
   grid-template-rows: minmax(0, 1fr) 82px;
-  padding: 108px 178px 230px 92px;
+  padding:
+    calc(var(--tiktok-safe-top) + var(--tiktok-safe-buffer))
+    calc(var(--tiktok-safe-right) + var(--tiktok-safe-buffer))
+    calc(var(--tiktok-safe-bottom) + var(--tiktok-safe-buffer))
+    calc(var(--tiktok-safe-left) + var(--tiktok-safe-buffer));
 }
 
 .slide-content {
@@ -699,7 +711,7 @@ body {
 .carousel-stage[data-platform="tiktok"] .hero-copy {
   max-width: 760px;
   align-self: start;
-  margin-top: 72px;
+  margin-top: 22px;
   margin-bottom: 0;
 }
 
@@ -713,8 +725,8 @@ body {
 
 .carousel-stage[data-platform="tiktok"] .cta-copy {
   max-width: 760px;
-  margin-top: 84px;
-  margin-bottom: 48px;
+  margin-top: 30px;
+  margin-bottom: 36px;
 }
 
 /* TikTok preview-only safe-area guide. */
@@ -733,10 +745,10 @@ body {
 .tiktok-safe-overlay::before {
   content: "";
   position: absolute;
-  left: 92px;
-  right: 178px;
-  top: 150px;
-  bottom: 270px;
+  left: var(--tiktok-safe-left);
+  right: var(--tiktok-safe-right);
+  top: var(--tiktok-safe-top);
+  bottom: var(--tiktok-safe-bottom);
   border: 3px dashed rgba(34, 197, 94, 0.9);
   border-radius: 24px;
   box-shadow: 0 0 0 9999px rgba(239, 68, 68, 0.12);
@@ -745,8 +757,8 @@ body {
 .tiktok-safe-overlay::after {
   content: "TIKTOK SAFE CONTENT AREA";
   position: absolute;
-  left: 112px;
-  top: 168px;
+  left: calc(var(--tiktok-safe-left) + 20px);
+  top: calc(var(--tiktok-safe-top) + 18px);
   border-radius: 999px;
   background: rgba(22, 163, 74, 0.92);
   padding: 8px 14px;
@@ -817,4 +829,39 @@ body {
 
 .carousel-stage[data-platform="tiktok"] .carousel-slide[data-slide-type="freeform"] .slide-content {
   padding-top: 18px;
+}
+
+
+/* ---------- TikTok safe-content enforcement ---------- */
+
+/*
+  Informative content must remain inside the safe rectangle.
+  Decorative layers (background words, circles, gradients, accent lines) may
+  bleed outside it. The 20px buffer prevents text from sitting directly on
+  the guide edge.
+*/
+.carousel-stage[data-platform="tiktok"] .corner-label {
+  top: calc(var(--tiktok-safe-top) + var(--tiktok-safe-buffer)) !important;
+  right: calc(var(--tiktok-safe-right) + var(--tiktok-safe-buffer)) !important;
+  max-width: 260px;
+  text-align: right;
+}
+
+.carousel-stage[data-platform="tiktok"] .slide-content > :first-child {
+  flex-shrink: 0;
+}
+
+.carousel-stage[data-platform="tiktok"] .slide-footer {
+  min-width: 0;
+}
+
+.carousel-stage[data-platform="tiktok"] .statement-layout,
+.carousel-stage[data-platform="tiktok"] .bullet-wrap,
+.carousel-stage[data-platform="tiktok"] .compare-grid,
+.carousel-stage[data-platform="tiktok"] .cause-effect-wrap,
+.carousel-stage[data-platform="tiktok"] .framework-list,
+.carousel-stage[data-platform="tiktok"] .summary-wrap,
+.carousel-stage[data-platform="tiktok"] .hero-copy,
+.carousel-stage[data-platform="tiktok"] .cta-copy {
+  max-width: 100%;
 }
