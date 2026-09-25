@@ -7,6 +7,7 @@ export { default as CTASlide } from "./CTASlide";
 export { default as FrameworkSlide } from "./FrameworkSlide";
 export { default as HeroSlide } from "./HeroSlide";
 export { default as PlatformSwitcher } from "./PlatformSwitcher";
+export { default as PostMetaPanel } from "./PostMetaPanel";
 export { default as SlideFooter } from "./SlideFooter";
 export { default as SlideShell } from "./SlideShell";
 export { default as StatementSlide } from "./StatementSlide";

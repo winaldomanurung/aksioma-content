@@ -132,3 +132,41 @@ npm run carousel:export:tiktok -- /carousel/demo
 npm run carousel:export:instagram -- /carousel/demo
 npm run carousel:export:all -- /carousel/demo
 ```
+
+
+## Publishing brief sebelum slide 01
+
+Setiap carousel sebaiknya memiliki satu object metadata publikasi pada `page.jsx`. Metadata ini ditampilkan melalui `PostMetaPanel` sebelum preview slide pertama dan **tidak ikut diekspor ke JPEG**.
+
+Contoh:
+
+```jsx
+const postMeta = {
+  title: "Judul internal konten",
+  objective: "Save + share",
+  contentPillar: "Critical Thinking",
+  hook: "Hook utama yang menjadi alasan orang berhenti scroll.",
+  instagramCaption: "Caption Instagram...",
+  tiktokCaption: "Caption TikTok...",
+  cta: "Ajakan tindakan utama.",
+  hashtags: ["Aksioma", "CriticalThinking"],
+  keywords: ["critical thinking", "logic"],
+  notes: "Catatan posting atau eksperimen yang ingin diuji.",
+};
+
+<PostMetaPanel {...postMeta} />
+```
+
+Field yang disarankan:
+- **title** — nama kerja konten agar mudah dicari di repo;
+- **objective** — tujuan post, misalnya save, share, comment, follower, atau conversion;
+- **contentPillar** — kategori/pilar konten;
+- **hook** — angle utama;
+- **instagramCaption** — copy publikasi Instagram;
+- **tiktokCaption** — copy publikasi TikTok;
+- **cta** — tindakan yang diharapkan;
+- **hashtags** — hashtag publikasi;
+- **keywords** — kata kunci topik untuk membantu konsistensi copy dan discovery;
+- **notes** — catatan eksperimen, timing, atau hal yang perlu diperiksa sebelum posting.
+
+Dengan pola ini, satu `page.jsx` menjadi paket lengkap: **publishing brief + source carousel + output Instagram/TikTok**.

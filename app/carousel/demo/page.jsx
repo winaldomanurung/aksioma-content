@@ -6,12 +6,40 @@ import {
   FrameworkSlide,
   HeroSlide,
   PlatformSwitcher,
+  PostMetaPanel,
   StatementSlide,
   SummarySlide,
 } from "@/components/carousel";
 
 export const metadata = {
   title: "Demo Carousel | Aksioma Content Studio",
+};
+
+const postMeta = {
+  title: "Critical Thinking — Jangan Buru-buru Yakin",
+  objective: "Save + share",
+  contentPillar: "Critical Thinking",
+  hook: "Pendapat yang terdengar yakin belum tentu benar.",
+  instagramCaption:
+    "Kita sering merasa sebuah pendapat benar hanya karena penjelasannya terdengar masuk akal. Padahal rasa yakin bukan bukti.\n\nCarousel ini membedah cara sederhana untuk memisahkan fakta, interpretasi, asumsi, dan kesimpulan agar kita tidak terlalu cepat percaya pada pikiran sendiri.",
+  tiktokCaption:
+    "Merasa yakin ≠ sudah benar. Coba 5 pertanyaan ini sebelum menerima sebuah klaim.",
+  cta: "Simpan framework-nya dan pakai saat membaca berita, rapat, mengambil keputusan, atau berdebat.",
+  hashtags: [
+    "CriticalThinking",
+    "BerpikirKritis",
+    "SelfDevelopment",
+    "Aksioma",
+  ],
+  keywords: [
+    "critical thinking",
+    "logic",
+    "bias",
+    "decision making",
+    "argument",
+  ],
+  notes:
+    "Prioritaskan cover dengan hook kuat. Untuk TikTok, cek mode safe area sebelum posting. Hindari caption yang hanya mengulang seluruh isi carousel.",
 };
 
 export default async function DemoCarouselPage({ searchParams }) {
@@ -25,6 +53,8 @@ export default async function DemoCarouselPage({ searchParams }) {
       data-platform={platform}
       data-safe-area={safeArea ? "true" : "false"}
     >
+      <PostMetaPanel {...postMeta} />
+
       <PlatformSwitcher
         route="/carousel/demo"
         platform={platform}
