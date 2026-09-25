@@ -6,11 +6,7 @@ export default function BrandLogo({ variant = "dark", className = "" }) {
       src={isLight ? "/brand/aksioma-light.png" : "/brand/aksioma-dark.png"}
       alt="Aksioma."
       draggable="false"
-      className={[
-        "slide-footer-logo select-none",
-        isLight ? "slide-footer-logo-light" : "",
-        className,
-      ].join(" ")}
+      className={["slide-footer-logo select-none", className].join(" ")}
     />
   );
 }
