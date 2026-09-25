@@ -12,15 +12,15 @@ const platformArg = args.find((arg) => arg.startsWith("--platform="));
 const route = routeArg.startsWith("/") ? routeArg : "/" + routeArg;
 const baseUrl = (baseUrlArg ? baseUrlArg.split("=")[1] : "http://127.0.0.1:3000").replace(/\/$/, "");
 const quality = Number(qualityArg ? qualityArg.split("=")[1] : 95);
-const platform = platformArg ? platformArg.split("=")[1] : "instagram";
+const requestedPlatform = platformArg ? platformArg.split("=")[1] : "instagram";
 
 const platforms = {
   instagram: { width: 1080, height: 1350 },
   tiktok: { width: 1080, height: 1920 },
 };
 
-if (!platforms[platform]) {
-  throw new Error("--platform harus instagram atau tiktok.");
+if (!["instagram", "tiktok", "all"].includes(requestedPlatform)) {
+  throw new Error("--platform harus instagram, tiktok, atau all.");
 }
 
 if (!Number.isInteger(quality) || quality < 1 || quality > 100) {
@@ -29,71 +29,127 @@ if (!Number.isInteger(quality) || quality < 1 || quality > 100) {
 
 const cleanRoute = route.split("?")[0];
 const slug = cleanRoute.split("/").filter(Boolean).pop() || "carousel";
-const outputDir = path.join(process.cwd(), "output", slug, platform);
-const expected = platforms[platform];
-
-await fs.mkdir(outputDir, { recursive: true });
+const targets = requestedPlatform === "all"
+  ? ["instagram", "tiktok"]
+  : [requestedPlatform];
 
 const browser = await chromium.launch();
-const page = await browser.newPage({
-  viewport: {
-    width: Math.max(1280, expected.width + 200),
-    height: Math.max(1500, expected.height + 200),
-  },
-  deviceScaleFactor: 1,
-});
 
-try {
-  const separator = cleanRoute.includes("?") ? "&" : "?";
-  const url = baseUrl + cleanRoute + separator + "platform=" + platform;
+async function exportPlatform(platform) {
+  const expected = platforms[platform];
+  const outputDir = path.join(process.cwd(), "output", slug, platform);
 
-  console.log("Opening " + url);
-  console.log("Platform: " + platform + " (" + expected.width + "x" + expected.height + ")");
+  await fs.mkdir(outputDir, { recursive: true });
 
-  await page.goto(url, { waitUntil: "networkidle" });
-  await page.evaluate(async () => {
-    await document.fonts.ready;
+  const page = await browser.newPage({
+    viewport: {
+      width: Math.max(1280, expected.width + 200),
+      height: Math.max(1500, expected.height + 200),
+    },
+    deviceScaleFactor: 1,
   });
 
-  const slides = page.locator("[data-carousel-slide]");
-  const count = await slides.count();
+  try {
+    const url = new URL(cleanRoute, baseUrl);
+    url.searchParams.set("platform", platform);
+    url.searchParams.delete("safe");
 
-  if (count === 0) {
-    throw new Error("Tidak menemukan [data-carousel-slide]. Pastikan halaman memakai CarouselCanvas.");
-  }
+    console.log("\nOpening " + url.toString());
+    console.log("Requested platform: " + platform);
 
-  for (let index = 0; index < count; index += 1) {
-    const slide = slides.nth(index);
-    const box = await slide.boundingBox();
+    await page.goto(url.toString(), { waitUntil: "networkidle" });
+    await page.evaluate(async () => {
+      await document.fonts.ready;
+    });
 
-    if (!box) {
-      throw new Error("Slide " + (index + 1) + " tidak memiliki bounding box.");
+    const stage = page.locator(".carousel-stage").first();
+
+    if ((await stage.count()) === 0) {
+      throw new Error("Tidak menemukan .carousel-stage.");
     }
 
-    const width = Math.round(box.width);
-    const height = Math.round(box.height);
+    // Force the export mode directly on the rendered DOM as a second layer of
+    // protection. This makes export deterministic even if route/query parsing changes.
+    await stage.evaluate((element, value) => {
+      element.dataset.platform = value;
+      element.dataset.safeArea = "false";
+    }, platform);
 
-    if (width !== expected.width || height !== expected.height) {
+    await page.evaluate(() => new Promise((resolve) => {
+      requestAnimationFrame(() => requestAnimationFrame(resolve));
+    }));
+
+    const renderedPlatform = await stage.getAttribute("data-platform");
+
+    if (renderedPlatform !== platform) {
       throw new Error(
-        "Slide " + (index + 1) + " berukuran " + width + "x" + height +
-        "; expected " + expected.width + "x" + expected.height + " untuk " + platform + "."
+        "Platform render mismatch: requested " + platform +
+        ", tetapi DOM membaca " + renderedPlatform + "."
       );
     }
 
-    const filename = String(index + 1).padStart(2, "0") + ".jpg";
-    const destination = path.join(outputDir, filename);
+    const slides = page.locator("[data-carousel-slide]");
+    const count = await slides.count();
 
-    await slide.screenshot({
-      path: destination,
-      type: "jpeg",
-      quality,
-      animations: "disabled",
-    });
+    if (count === 0) {
+      throw new Error(
+        "Tidak menemukan [data-carousel-slide]. Pastikan halaman memakai CarouselCanvas."
+      );
+    }
 
-    console.log("✓ " + filename);
+    const firstBox = await slides.first().boundingBox();
+
+    if (!firstBox) {
+      throw new Error("Tidak bisa membaca ukuran slide pertama.");
+    }
+
+    console.log(
+      "Rendered canvas: " +
+      Math.round(firstBox.width) + "x" + Math.round(firstBox.height)
+    );
+
+    for (let index = 0; index < count; index += 1) {
+      const slide = slides.nth(index);
+      const box = await slide.boundingBox();
+
+      if (!box) {
+        throw new Error("Slide " + (index + 1) + " tidak memiliki bounding box.");
+      }
+
+      const width = Math.round(box.width);
+      const height = Math.round(box.height);
+
+      if (width !== expected.width || height !== expected.height) {
+        throw new Error(
+          "Slide " + (index + 1) + " berukuran " + width + "x" + height +
+          "; expected " + expected.width + "x" + expected.height +
+          " untuk " + platform + "."
+        );
+      }
+
+      const filename = String(index + 1).padStart(2, "0") + ".jpg";
+      const destination = path.join(outputDir, filename);
+
+      await slide.screenshot({
+        path: destination,
+        type: "jpeg",
+        quality,
+        animations: "disabled",
+      });
+
+      console.log("✓ " + platform + "/" + filename + " (" + width + "x" + height + ")");
+    }
+
+    console.log("Done: " + count + " slide → " + outputDir);
+  } finally {
+    await page.close();
   }
+}
 
-  console.log("\nDone. " + count + " slide tersimpan di " + outputDir);
+try {
+  for (const platform of targets) {
+    await exportPlatform(platform);
+  }
 } finally {
   await browser.close();
 }

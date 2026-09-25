@@ -8,6 +8,9 @@
     "start": "next start",
     "lint": "eslint",
     "carousel:export": "node scripts/export-carousel.mjs",
+    "carousel:export:instagram": "node scripts/export-carousel.mjs --platform=instagram",
+    "carousel:export:tiktok": "node scripts/export-carousel.mjs --platform=tiktok",
+    "carousel:export:all": "node scripts/export-carousel.mjs --platform=all",
     "setup:browser": "playwright install chromium"
   },
   "dependencies": {
