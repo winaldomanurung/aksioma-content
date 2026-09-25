@@ -4,7 +4,9 @@ import process from "node:process";
 import { chromium } from "playwright";
 
 const args = process.argv.slice(2);
-const routeArg = args.find((arg) => !arg.startsWith("--")) || "/carousel/demo";
+const positionalArgs = args.filter((arg) => !arg.startsWith("--"));
+const routeArg = positionalArgs[0] || "/carousel/demo";
+const positionalPlatformArg = positionalArgs[1];
 const baseUrlArg = args.find((arg) => arg.startsWith("--base-url="));
 const qualityArg = args.find((arg) => arg.startsWith("--quality="));
 const platformArg = args.find((arg) => arg.startsWith("--platform="));
@@ -12,7 +14,13 @@ const platformArg = args.find((arg) => arg.startsWith("--platform="));
 const route = routeArg.startsWith("/") ? routeArg : "/" + routeArg;
 const baseUrl = (baseUrlArg ? baseUrlArg.split("=")[1] : "http://127.0.0.1:3000").replace(/\/$/, "");
 const quality = Number(qualityArg ? qualityArg.split("=")[1] : 95);
-const requestedPlatform = platformArg ? platformArg.split("=")[1] : "instagram";
+
+// npm/PowerShell can consume --platform=... as an npm config option instead
+// of forwarding it to the script. Support all common paths deliberately.
+const cliPlatform = platformArg ? platformArg.split("=")[1] : null;
+const npmPlatform = process.env.npm_config_platform || process.env.NPM_CONFIG_PLATFORM || null;
+const rawPlatform = cliPlatform || positionalPlatformArg || npmPlatform || "instagram";
+const requestedPlatform = String(rawPlatform).toLowerCase();
 
 const platforms = {
   instagram: { width: 1080, height: 1350 },
@@ -20,7 +28,9 @@ const platforms = {
 };
 
 if (!["instagram", "tiktok", "all"].includes(requestedPlatform)) {
-  throw new Error("--platform harus instagram, tiktok, atau all.");
+  throw new Error(
+    'Platform "' + rawPlatform + '" tidak dikenali. Gunakan instagram, tiktok, atau all.'
+  );
 }
 
 if (!Number.isInteger(quality) || quality < 1 || quality > 100) {
@@ -32,6 +42,9 @@ const slug = cleanRoute.split("/").filter(Boolean).pop() || "carousel";
 const targets = requestedPlatform === "all"
   ? ["instagram", "tiktok"]
   : [requestedPlatform];
+
+console.log("CLI args:", args.join(" ") || "(none)");
+console.log("Resolved platform:", requestedPlatform);
 
 const browser = await chromium.launch();
 

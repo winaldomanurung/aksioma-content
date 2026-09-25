@@ -105,3 +105,30 @@ Font mengikuti Aksioma Trader:
 - Lexend untuk heading/display.
 
 Branding dan footer memakai komponen bersama agar alignment konsisten.
+
+
+## Catatan PowerShell / npm
+
+Pada sebagian setup Windows, npm dapat menyerap `--platform=...` sebagai npm config sehingga flag tidak terlihat pada baris `node ...`. Exporter sudah menangani kasus ini melalui `npm_config_platform`.
+
+Command berikut tetap didukung:
+
+```powershell
+npm run carousel:export -- /carousel/demo --platform=TikTok
+```
+
+Platform bersifat case-insensitive, jadi `TikTok`, `tiktok`, dan `TIKTOK` sama.
+
+Jika ingin menghindari parsing flag npm sepenuhnya, gunakan bentuk positional:
+
+```powershell
+npm run carousel:export -- /carousel/demo tiktok
+```
+
+Atau shortcut yang paling sederhana:
+
+```powershell
+npm run carousel:export:tiktok -- /carousel/demo
+npm run carousel:export:instagram -- /carousel/demo
+npm run carousel:export:all -- /carousel/demo
+```
