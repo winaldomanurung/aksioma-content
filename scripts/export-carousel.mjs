@@ -24,7 +24,7 @@ const requestedPlatform = String(rawPlatform).toLowerCase();
 
 const platforms = {
   instagram: { width: 1080, height: 1350 },
-  tiktok: { width: 1080, height: 1920 },
+  tiktok: { width: 1080, height: 1350 },
 };
 
 if (!["instagram", "tiktok", "all"].includes(requestedPlatform)) {

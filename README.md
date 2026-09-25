@@ -5,7 +5,7 @@ Aksioma Content Studio membuat carousel dari satu source JSX lalu mengekspornya 
 ## Ukuran output
 
 - Instagram: **1080 × 1350 px (4:5)**
-- TikTok: **1080 × 1920 px (9:16)**
+- TikTok Photo Carousel: **1080 × 1350 px (4:5)**
 
 Exporter sekarang memaksa mode platform langsung pada DOM sebelum screenshot dan memvalidasi ukuran setiap slide. Jika TikTok tidak benar-benar 1080×1920, export akan berhenti dengan error.
 
@@ -235,7 +235,7 @@ Untuk menghindari hasil yang terlalu template, gunakan `FreeformSlide` dengan pr
 - Stack
 - Divider
 
-`TwoColumn`, `ThreeColumn`, dan `ContentGrid` otomatis menjadi satu kolom pada TikTok agar layout tetap aman di 9:16.
+`TwoColumn`, `ThreeColumn`, dan `ContentGrid` otomatis menjadi satu kolom pada TikTok agar layout tetap aman pada TikTok photo carousel 4:5.
 
 ### Prinsip pemilihan layout
 
@@ -255,3 +255,19 @@ mixed editorial layout   -> FreeformSlide
 ```
 
 Demo slide 08 sengaja menggunakan `FreeformSlide` sebagai contoh composition custom.
+
+
+## TikTok Photo Carousel: keputusan format
+
+Berdasarkan referensi post yang sudah terbukti tampil aman pada workflow TikTok pengguna, mode `tiktok` memakai **1080×1350 (4:5)**, bukan 1080×1920.
+
+Ini sengaja dibedakan dari format full-screen video 9:16. Untuk project ini, `--platform=tiktok` berarti **TikTok Photo Carousel**.
+
+Safe-area preview memakai margin konservatif pada canvas 4:5:
+- left: 70px
+- right: 70px
+- top: 48px
+- bottom: 70px
+- plus internal buffer 20px
+
+Background/dekorasi boleh full bleed. Teks, card, logo, footer, page number, dan informasi utama harus tetap berada di dalam content frame.

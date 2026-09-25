@@ -53,15 +53,15 @@ body {
 }
 
 .carousel-stage[data-platform="tiktok"] {
-  --tiktok-safe-top: 150px;
-  --tiktok-safe-right: 178px;
-  --tiktok-safe-bottom: 270px;
-  --tiktok-safe-left: 92px;
+  --tiktok-safe-top: 48px;
+  --tiktok-safe-right: 70px;
+  --tiktok-safe-bottom: 70px;
+  --tiktok-safe-left: 70px;
   --tiktok-safe-buffer: 20px;
 }
 
 .carousel-stage[data-platform="tiktok"] .carousel-slide {
-  height: 1920px;
+  height: 1350px;
 }
 
 .slide-frame {
@@ -864,4 +864,186 @@ body {
 .carousel-stage[data-platform="tiktok"] .hero-copy,
 .carousel-stage[data-platform="tiktok"] .cta-copy {
   max-width: 100%;
+}
+
+
+/* ---------- TikTok photo carousel 4:5 ---------- */
+/*
+  Organic photo carousel mode is intentionally 1080x1350, matching the
+  reference posts that render safely in the user's TikTok workflow.
+  TikTok-specific behavior is limited to conservative content margins.
+*/
+.carousel-stage[data-platform="tiktok"] .slide-frame {
+  grid-template-rows: minmax(0, 1fr) 82px;
+  padding:
+    calc(var(--tiktok-safe-top) + var(--tiktok-safe-buffer))
+    calc(var(--tiktok-safe-right) + var(--tiktok-safe-buffer))
+    calc(var(--tiktok-safe-bottom) + var(--tiktok-safe-buffer))
+    calc(var(--tiktok-safe-left) + var(--tiktok-safe-buffer));
+}
+
+.carousel-stage[data-platform="tiktok"] .background-word {
+  font-size: 168px;
+}
+
+.carousel-stage[data-platform="tiktok"] .statement-layout {
+  grid-template-columns: minmax(0, 1fr) 210px;
+  grid-template-rows: 1fr;
+  gap: 34px;
+}
+
+.carousel-stage[data-platform="tiktok"] .statement-copy {
+  max-width: 720px;
+  align-self: center;
+}
+
+.carousel-stage[data-platform="tiktok"] .statement-visual {
+  min-height: 360px;
+  align-self: center;
+  justify-content: center;
+}
+
+.carousel-stage[data-platform="tiktok"] .statement-orbit {
+  height: 190px;
+  width: 190px;
+}
+
+.carousel-stage[data-platform="tiktok"] .statement-mark {
+  margin-left: 0;
+  font-size: 88px;
+}
+
+.carousel-stage[data-platform="tiktok"] .bullet-wrap {
+  display: block;
+  min-height: 0;
+  margin-top: calc(48px * var(--density-gap, 1));
+}
+
+.carousel-stage[data-platform="tiktok"] .bullet-grid {
+  margin-top: calc(40px * var(--density-gap, 1));
+  gap: calc(18px * var(--density-gap, 1));
+}
+
+.carousel-stage[data-platform="tiktok"] .bullet-card {
+  padding: 22px;
+}
+
+.carousel-stage[data-platform="tiktok"] .bullet-card:nth-child(2) { margin-left: 28px; }
+.carousel-stage[data-platform="tiktok"] .bullet-card:nth-child(3) { margin-left: 56px; }
+
+.carousel-stage[data-platform="tiktok"] .compare-title {
+  margin-top: 46px;
+  max-width: 820px;
+}
+
+.carousel-stage[data-platform="tiktok"] .compare-grid {
+  margin-top: 38px;
+  grid-template-columns: 0.92fr 1.08fr;
+  gap: 22px;
+}
+
+.carousel-stage[data-platform="tiktok"] .compare-card {
+  min-height: 520px;
+  padding: 32px;
+}
+
+.carousel-stage[data-platform="tiktok"] .compare-card--muted {
+  transform: translateY(20px);
+}
+
+.carousel-stage[data-platform="tiktok"] .cause-effect-wrap {
+  margin: auto 0;
+  grid-template-columns: 1fr 82px 1fr;
+  grid-template-rows: 1fr;
+}
+
+.carousel-stage[data-platform="tiktok"] .cause-effect-rail::before {
+  inset-block: 0;
+  inset-inline: auto;
+  left: 50%;
+}
+
+.carousel-stage[data-platform="tiktok"] .cause-effect-card {
+  padding: 32px;
+}
+
+.carousel-stage[data-platform="tiktok"] .framework-title {
+  margin-top: 38px;
+  max-width: 800px;
+}
+
+.carousel-stage[data-platform="tiktok"] .framework-list {
+  margin-top: 32px;
+}
+
+.carousel-stage[data-platform="tiktok"] .framework-items {
+  gap: 16px;
+}
+
+.carousel-stage[data-platform="tiktok"] .framework-card {
+  padding: 18px 26px;
+}
+
+.carousel-stage[data-platform="tiktok"] .summary-wrap {
+  display: block;
+  min-height: 0;
+  margin: auto 0;
+}
+
+.carousel-stage[data-platform="tiktok"] .summary-grid {
+  margin-top: 44px;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+.carousel-stage[data-platform="tiktok"] .summary-card {
+  min-height: 160px;
+  padding: 26px;
+}
+
+.carousel-stage[data-platform="tiktok"] .summary-card:nth-child(2),
+.carousel-stage[data-platform="tiktok"] .summary-card:nth-child(4) {
+  transform: translateY(18px);
+  margin-left: 0;
+}
+
+.carousel-stage[data-platform="tiktok"] .hero-copy {
+  max-width: 820px;
+  align-self: auto;
+  margin: auto 0;
+}
+
+.carousel-stage[data-platform="tiktok"] .hero-title {
+  font-size: calc(82px * var(--density-scale, 1));
+}
+
+.carousel-stage[data-platform="tiktok"] .hero-subtitle {
+  margin-top: 34px;
+}
+
+.carousel-stage[data-platform="tiktok"] .cta-copy {
+  max-width: 820px;
+  margin: auto 0;
+}
+
+.carousel-stage[data-platform="tiktok"] .primitive-two-column {
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+}
+
+.carousel-stage[data-platform="tiktok"] .primitive-three-column {
+  grid-template-columns: repeat(3, 1fr);
+  gap: 18px;
+}
+
+.carousel-stage[data-platform="tiktok"] .primitive-content-grid[data-columns="2"] {
+  grid-template-columns: repeat(2, 1fr);
+}
+
+.carousel-stage[data-platform="tiktok"] .primitive-content-grid[data-columns="3"] {
+  grid-template-columns: repeat(3, 1fr);
+}
+
+.carousel-stage[data-platform="tiktok"] .carousel-slide[data-slide-type="freeform"] .slide-content {
+  padding-top: 24px;
 }

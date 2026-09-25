@@ -24,9 +24,9 @@ EXPECTED AI OUTPUT
 
 PLATFORMS
 - Instagram: 1080×1350 (4:5)
-- TikTok: 1080×1920 (9:16)
+- TikTok Photo Carousel: 1080×1350 (4:5)
 - The SAME JSX content renders both platforms.
-- TikTok layout/safe area are handled by the design system.
+- TikTok photo-carousel safe margins are handled by the design system.
 - Avoid critical text in custom absolute-positioned elements near canvas edges.
 - Decorative full-bleed elements are fine; important information should stay
   inside normal slide content flow.
@@ -151,9 +151,9 @@ Stack({ gap?, children, className? })
 Divider({ dark?, className? })
 
 LAYOUT NOTE
-TwoColumn, ThreeColumn and multi-column ContentGrid automatically collapse to
-one column in TikTok mode. Prefer these over hand-written fixed grids when
-content is important.
+TwoColumn, ThreeColumn and ContentGrid remain available in TikTok photo mode
+because the canvas is also 4:5. Keep critical content inside normal layout flow
+and avoid placing important text against the outer edges.
 
 INFORMATION -> VISUAL MAPPING
 - Opening promise / tension             -> HeroSlide

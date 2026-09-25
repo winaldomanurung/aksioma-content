@@ -12,7 +12,7 @@ export default function PlatformSwitcher({
       active: platform === "instagram",
     },
     {
-      label: "TikTok 9:16",
+      label: "TikTok Photo 4:5",
       href: route + "?platform=tiktok",
       active: platform === "tiktok" && !safeArea,
     },
@@ -54,7 +54,7 @@ export default function PlatformSwitcher({
       </div>
 
       <p className="mt-5 text-sm leading-6 text-zinc-500">
-        Instagram: 1080×1350. TikTok: 1080×1920. Safe-area overlay hanya untuk preview dan tidak ikut pada export normal.
+        Instagram: 1080×1350. TikTok Photo: 1080×1350 dengan safe margins khusus TikTok. Overlay hanya untuk preview dan tidak ikut export.
       </p>
     </div>
   );
