@@ -11,8 +11,8 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-sans: var(--font-inter);
+  --font-display: var(--font-lexend);
 }
 
 * { box-sizing: border-box; }
@@ -23,7 +23,11 @@ body {
   margin: 0;
   background: var(--background);
   color: var(--foreground);
-  font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
+  font-family: var(--font-inter), Arial, Helvetica, sans-serif;
+}
+
+.font-display {
+  font-family: var(--font-lexend), var(--font-inter), Arial, Helvetica, sans-serif;
 }
 
 ::selection { background: #ef4444; color: white; }
@@ -46,6 +50,39 @@ body {
   isolation: isolate;
   -webkit-font-smoothing: antialiased;
   text-rendering: geometricPrecision;
+}
+
+.slide-frame {
+  position: relative;
+  z-index: 10;
+  display: grid;
+  height: 100%;
+  grid-template-rows: minmax(0, 1fr) 82px;
+  padding: 76px 78px 62px;
+}
+
+.slide-content {
+  min-height: 0;
+  overflow: hidden;
+}
+
+.slide-footer {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  border-top-width: 1px;
+  padding-top: 22px;
+}
+
+.slide-footer-logo {
+  display: block;
+  width: 138px;
+  height: auto;
+  object-fit: contain;
+}
+
+.slide-footer-logo-light {
+  filter: invert(1) brightness(0.88);
 }
 
 @media (max-width: 1160px) {
