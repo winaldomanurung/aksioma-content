@@ -1,0 +1,10 @@
+export { default as BulletSlide } from "./BulletSlide";
+export { default as CarouselCanvas } from "./CarouselCanvas";
+export { default as CauseEffectSlide } from "./CauseEffectSlide";
+export { default as CompareSlide } from "./CompareSlide";
+export { default as CTASlide } from "./CTASlide";
+export { default as FrameworkSlide } from "./FrameworkSlide";
+export { default as HeroSlide } from "./HeroSlide";
+export { default as SlideShell } from "./SlideShell";
+export { default as StatementSlide } from "./StatementSlide";
+export { default as SummarySlide } from "./SummarySlide";

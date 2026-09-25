@@ -6,7 +6,9 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "carousel:export": "node scripts/export-carousel.mjs",
+    "setup:browser": "playwright install chromium"
   },
   "dependencies": {
     "next": "16.3.6",
@@ -17,6 +19,7 @@
     "@tailwindcss/postcss": "^4",
     "eslint": "^9",
     "eslint-config-next": "16.3.6",
+    "playwright": "^1.55.0",
     "tailwindcss": "^4"
   }
 }

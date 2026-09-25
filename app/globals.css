@@ -1,8 +1,11 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #e9e6df;
+  --foreground: #18181b;
+  --aksioma-red: #ef4444;
+  --aksioma-ink: #171717;
+  --aksioma-paper: #f5f1e8;
 }
 
 @theme inline {
@@ -12,15 +15,48 @@
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+* { box-sizing: border-box; }
+
+html { background: var(--background); }
+
+body {
+  margin: 0;
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
+}
+
+::selection { background: #ef4444; color: white; }
+
+.carousel-stage {
+  display: flex;
+  min-height: 100vh;
+  flex-direction: column;
+  align-items: center;
+  gap: 48px;
+  padding: 64px 24px 120px;
+}
+
+.carousel-slide {
+  position: relative;
+  width: 1080px;
+  height: 1350px;
+  flex: 0 0 auto;
+  overflow: hidden;
+  isolation: isolate;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: geometricPrecision;
+}
+
+@media (max-width: 1160px) {
+  .carousel-stage {
+    align-items: flex-start;
+    overflow-x: auto;
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+@media print {
+  body { background: white; }
+  .studio-only { display: none !important; }
+  .carousel-stage { gap: 0; padding: 0; }
 }
