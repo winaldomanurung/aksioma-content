@@ -30,7 +30,7 @@ export default function CauseEffectSlide({
 
         <div className="cause-effect-rail">
           <div className="relative z-10 flex h-[64px] w-[64px] items-center justify-center rounded-full border border-red-400/50 bg-zinc-950 text-[30px] text-red-400">
-            →
+            ↓
           </div>
         </div>
 

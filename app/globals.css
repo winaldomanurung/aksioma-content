@@ -67,7 +67,7 @@ body {
 
 .carousel-stage[data-platform="tiktok"] .slide-frame {
   grid-template-rows: minmax(0, 1fr) 82px;
-  padding: 150px 178px 270px 92px;
+  padding: 108px 178px 230px 92px;
 }
 
 .slide-content {
@@ -454,6 +454,7 @@ body {
   position: relative;
   display: grid;
   grid-template-columns: 58px 1fr;
+  align-items: center;
   gap: 24px;
 }
 
@@ -461,6 +462,7 @@ body {
   position: relative;
   z-index: 2;
   display: flex;
+  align-self: center;
   height: 58px;
   width: 58px;
   align-items: center;
@@ -638,8 +640,10 @@ body {
 }
 
 .carousel-stage[data-platform="tiktok"] .cause-effect-wrap {
+  margin-top: 28px;
+  margin-bottom: auto;
   grid-template-columns: 1fr;
-  grid-template-rows: auto 120px auto;
+  grid-template-rows: auto 96px auto;
 }
 
 .carousel-stage[data-platform="tiktok"] .cause-effect-rail::before {
@@ -652,12 +656,12 @@ body {
 }
 
 .carousel-stage[data-platform="tiktok"] .framework-title {
-  margin-top: 64px;
+  margin-top: 36px;
   max-width: 760px;
 }
 
 .carousel-stage[data-platform="tiktok"] .framework-list {
-  margin-top: 70px;
+  margin-top: 44px;
 }
 
 .carousel-stage[data-platform="tiktok"] .framework-items {
@@ -694,8 +698,9 @@ body {
 
 .carousel-stage[data-platform="tiktok"] .hero-copy {
   max-width: 760px;
-  align-self: end;
-  margin-bottom: 160px;
+  align-self: start;
+  margin-top: 72px;
+  margin-bottom: 0;
 }
 
 .carousel-stage[data-platform="tiktok"] .hero-title {
@@ -708,7 +713,8 @@ body {
 
 .carousel-stage[data-platform="tiktok"] .cta-copy {
   max-width: 760px;
-  margin-bottom: 180px;
+  margin-top: 84px;
+  margin-bottom: 48px;
 }
 
 /* TikTok preview-only safe-area guide. */
@@ -768,4 +774,47 @@ body {
   body { background: white; }
   .studio-only { display: none !important; }
   .carousel-stage { gap: 0; padding: 0; }
+}
+
+
+/* ---------- AI authoring primitives ---------- */
+
+.primitive-two-column {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 28px;
+}
+
+.primitive-three-column {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+}
+
+.primitive-content-grid {
+  display: grid;
+  gap: 24px;
+}
+
+.primitive-content-grid[data-columns="1"] { grid-template-columns: 1fr; }
+.primitive-content-grid[data-columns="2"] { grid-template-columns: repeat(2, 1fr); }
+.primitive-content-grid[data-columns="3"] { grid-template-columns: repeat(3, 1fr); }
+
+.carousel-slide[data-slide-type="freeform"] .slide-content {
+  padding-top: 32px;
+}
+
+.carousel-stage[data-platform="tiktok"] .primitive-two-column,
+.carousel-stage[data-platform="tiktok"] .primitive-three-column {
+  grid-template-columns: 1fr;
+  gap: 30px;
+}
+
+.carousel-stage[data-platform="tiktok"] .primitive-content-grid[data-columns="2"],
+.carousel-stage[data-platform="tiktok"] .primitive-content-grid[data-columns="3"] {
+  grid-template-columns: 1fr;
+}
+
+.carousel-stage[data-platform="tiktok"] .carousel-slide[data-slide-type="freeform"] .slide-content {
+  padding-top: 18px;
 }

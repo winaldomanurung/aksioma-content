@@ -21,3 +21,23 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 - Fonts must be loaded before screenshots are taken.
 - Decorative elements may overflow internally, but `CarouselCanvas` itself must remain fixed and `overflow-hidden`.
 - Use semantic content props where practical so AI-generated content can be swapped without rewriting the design system.
+
+
+## AI carousel authoring rules
+
+- `app/carousel/demo/page.jsx` is the canonical portable AI specification. Keep its AI AUTHORING CONTRACT accurate whenever components change.
+- A pasted `page.jsx` should be sufficient context for another AI to create a complete replacement page without needing README access.
+- Preset slides are shortcuts, not mandatory templates.
+- Prefer `FreeformSlide` + primitives whenever presets make the information feel forced or repetitive.
+- Choose visual structure from information semantics:
+  - contrast -> CompareSlide or Freeform split composition
+  - cause/effect -> CauseEffectSlide or DiagramNode + Connector
+  - sequence/process -> FrameworkSlide or Timeline
+  - quantitative insight -> BigNumber / StatCard
+  - practical actions -> Checklist / Callout
+  - quote or mental model -> QuoteCard
+- Do not use identical card-grid compositions for more than two consecutive slides.
+- Vary density intentionally across a carousel.
+- Use connectors only when they communicate an actual relationship.
+- Important text must remain in normal layout flow so Instagram/TikTok adaptations stay safe.
+- When adding a new reusable primitive, export it from `components/carousel/index.js` and document it in the AI contract.

@@ -170,3 +170,88 @@ Field yang disarankan:
 - **notes** — catatan eksperimen, timing, atau hal yang perlu diperiksa sebelum posting.
 
 Dengan pola ini, satu `page.jsx` menjadi paket lengkap: **publishing brief + source carousel + output Instagram/TikTok**.
+
+
+## AI-native authoring workflow
+
+`app/carousel/demo/page.jsx` sekarang berfungsi sebagai **portable specification**. File tersebut memiliki blok `AKSIOMA CAROUSEL — AI AUTHORING CONTRACT` yang menjelaskan:
+
+- output yang harus dibuat AI;
+- seluruh preset slide;
+- seluruh primitive yang boleh dipakai;
+- props utama;
+- mapping jenis informasi ke visual;
+- density modes;
+- aturan anti-template;
+- aturan Instagram/TikTok;
+- struktur publishing metadata.
+
+Workflow yang dituju:
+
+```text
+1. Copy seluruh app/carousel/demo/page.jsx
+2. Paste ke AI
+3. Tambahkan instruksi/topik baru
+4. AI mengembalikan satu page.jsx lengkap
+5. Replace page lokal
+6. Preview Instagram/TikTok
+7. Export JPEG
+```
+
+### Preset versus Freeform
+
+Preset tersedia untuk struktur umum:
+
+- HeroSlide
+- StatementSlide
+- BulletSlide
+- CompareSlide
+- CauseEffectSlide
+- FrameworkSlide
+- SummarySlide
+- CTASlide
+
+Untuk menghindari hasil yang terlalu template, gunakan `FreeformSlide` dengan primitive:
+
+- SlideHeading
+- InfoCard
+- StatCard
+- BigNumber
+- QuoteCard
+- DiagramNode
+- Connector
+- Timeline
+- Checklist
+- Callout
+- Pill
+- KeywordCluster
+- MiniDiagram
+- BackgroundWord
+- AccentLine
+- CornerLabel
+- TwoColumn
+- ThreeColumn
+- ContentGrid
+- Stack
+- Divider
+
+`TwoColumn`, `ThreeColumn`, dan `ContentGrid` otomatis menjadi satu kolom pada TikTok agar layout tetap aman di 9:16.
+
+### Prinsip pemilihan layout
+
+AI harus memilih komponen berdasarkan struktur informasi, bukan sekadar bergiliran memakai template.
+
+Contoh:
+
+```text
+single provocative idea  -> StatementSlide
+contrast                 -> CompareSlide
+cause/effect             -> CauseEffectSlide
+ordered method           -> FrameworkSlide / Timeline
+number/statistic         -> FreeformSlide + BigNumber/StatCard
+conceptual mechanism     -> FreeformSlide + DiagramNode/Connector
+practical actions        -> FreeformSlide + Checklist/Callout
+mixed editorial layout   -> FreeformSlide
+```
+
+Demo slide 08 sengaja menggunakan `FreeformSlide` sebagai contoh composition custom.
