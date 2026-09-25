@@ -1,11 +1,16 @@
+export { default as AccentLine } from "./AccentLine";
+export { default as BackgroundWord } from "./BackgroundWord";
 export { default as BrandLogo } from "./BrandLogo";
 export { default as BulletSlide } from "./BulletSlide";
 export { default as CarouselCanvas } from "./CarouselCanvas";
 export { default as CauseEffectSlide } from "./CauseEffectSlide";
 export { default as CompareSlide } from "./CompareSlide";
+export { default as CornerLabel } from "./CornerLabel";
 export { default as CTASlide } from "./CTASlide";
 export { default as FrameworkSlide } from "./FrameworkSlide";
 export { default as HeroSlide } from "./HeroSlide";
+export { default as KeywordCluster } from "./KeywordCluster";
+export { default as MiniDiagram } from "./MiniDiagram";
 export { default as PlatformSwitcher } from "./PlatformSwitcher";
 export { default as PostMetaPanel } from "./PostMetaPanel";
 export { default as SlideFooter } from "./SlideFooter";

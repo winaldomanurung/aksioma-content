@@ -66,6 +66,7 @@ export default async function DemoCarouselPage({ searchParams }) {
         eyebrow="Critical Thinking"
         title="Pendapat yang terdengar yakin belum tentu benar."
         subtitle="Masalahnya sering bukan kurang informasi, tetapi kita berhenti menguji begitu sebuah penjelasan terasa masuk akal."
+        density="bold"
       />
 
       <StatementSlide
@@ -74,12 +75,15 @@ export default async function DemoCarouselPage({ searchParams }) {
         lead="Otak menyukai jawaban cepat. Karena itu kita sering menganggap sesuatu"
         highlight="benar hanya karena terasa masuk akal."
         note="Rasa yakin adalah pengalaman psikologis. Ia bukan bukti bahwa kesimpulan kita sudah melewati pengujian."
+        density="bold"
+        keywords={["rasa yakin", "intuisi", "bukti"]}
       />
 
       <BulletSlide
         slide={3}
         eyebrow="Pisahkan dulu"
         title="Satu klaim biasanya berisi tiga lapisan yang berbeda."
+        density="balanced"
         items={[
           { title: "Fakta", text: "Apa yang benar-benar dapat diamati, diukur, atau diverifikasi." },
           { title: "Interpretasi", text: "Makna yang kita berikan terhadap fakta tersebut." },
@@ -90,6 +94,7 @@ export default async function DemoCarouselPage({ searchParams }) {
       <CompareSlide
         slide={4}
         title="Berpikir cepat dan berpikir kritis bukan hal yang sama."
+        density="balanced"
         left={{
           label: "Refleks",
           heading: "Langsung percaya",
@@ -116,6 +121,7 @@ export default async function DemoCarouselPage({ searchParams }) {
         causeText="Begitu menemukan cerita yang terasa koheren, kita berhenti mencari informasi yang bisa membantahnya."
         effectTitle="Keyakinan menjadi lebih kuat daripada bukti"
         effectText="Kita lalu membela kesimpulan awal, bukan lagi mencoba memahami apa yang sebenarnya terjadi."
+        density="balanced"
       />
 
       <StatementSlide
@@ -124,11 +130,14 @@ export default async function DemoCarouselPage({ searchParams }) {
         lead="Tujuan critical thinking bukan menjadi orang yang selalu skeptis. Tujuannya adalah"
         highlight="memberi tingkat keyakinan sesuai kualitas bukti."
         note="Kita tetap boleh mengambil keputusan, tetapi dengan sadar membedakan apa yang kita tahu, duga, dan belum tahu."
+        density="bold"
+        keywords={["confidence", "evidence", "revision"]}
       />
 
       <FrameworkSlide
         slide={7}
         title="Gunakan lima pertanyaan sebelum menerima sebuah klaim."
+        density="compact"
         steps={[
           { title: "Claim", text: "Apa tepatnya yang sedang dinyatakan?" },
           { title: "Evidence", text: "Bukti apa yang benar-benar mendukungnya?" },
@@ -142,6 +151,7 @@ export default async function DemoCarouselPage({ searchParams }) {
         slide={8}
         eyebrow="Praktik"
         title="Saat berdebat, ubah fokus dari memenangkan argumen menjadi menguji argumen."
+        density="balanced"
         items={[
           { title: "Minta definisi", text: "Pastikan kalian membicarakan hal yang sama sebelum berdebat panjang." },
           { title: "Cari titik bukti", text: "Tanyakan data apa yang jika berubah akan mengubah kesimpulan." },
@@ -152,6 +162,7 @@ export default async function DemoCarouselPage({ searchParams }) {
       <SummarySlide
         slide={9}
         title="Empat kebiasaan yang membuat pikiran lebih sulit dibohongi."
+        density="balanced"
         items={[
           "Pisahkan fakta dari interpretasi.",
           "Cari asumsi yang tersembunyi.",
@@ -165,6 +176,7 @@ export default async function DemoCarouselPage({ searchParams }) {
         title="Jangan buru-buru yakin."
         body="Pendapat yang kuat bukan pendapat yang paling keras, tetapi pendapat yang tahu mengapa ia layak dipercaya dan kapan ia harus direvisi."
         cta="Simpan framework ini. Pakai lagi saat membaca berita, rapat, mengambil keputusan, atau berdebat."
+        density="bold"
       />
     </main>
   );

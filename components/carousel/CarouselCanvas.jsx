@@ -3,11 +3,15 @@ export default function CarouselCanvas({
   className = "",
   slide,
   label,
+  type = "generic",
+  density = "balanced",
 }) {
   return (
     <section
       data-carousel-slide
       data-slide={slide}
+      data-slide-type={type}
+      data-density={density}
       aria-label={label || "Carousel slide " + slide}
       className={["carousel-slide", className].join(" ")}
     >
