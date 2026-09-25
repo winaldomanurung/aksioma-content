@@ -1,4 +1,3 @@
-import MiniDiagram from "./MiniDiagram";
 import SlideShell from "./SlideShell";
 
 export default function CauseEffectSlide({
@@ -9,6 +8,24 @@ export default function CauseEffectSlide({
   effectText,
   density = "balanced",
 }) {
+  const chain = [
+    {
+      index: "01",
+      title: "Kesimpulan cepat",
+      note: "Cerita terasa masuk akal, lalu dianggap cukup.",
+    },
+    {
+      index: "02",
+      title: "Cari konfirmasi",
+      note: "Fokus bergeser ke informasi yang mendukung keyakinan awal.",
+    },
+    {
+      index: "03",
+      title: "Keyakinan mengeras",
+      note: "Kesimpulan awal semakin sulit direvisi.",
+    },
+  ];
+
   return (
     <SlideShell
       slide={slide}
@@ -28,10 +45,8 @@ export default function CauseEffectSlide({
           <p className="text-zinc-400">{causeText}</p>
         </div>
 
-        <div className="cause-effect-rail">
-          <div className="relative z-10 flex h-[64px] w-[64px] items-center justify-center rounded-full border border-red-400/50 bg-zinc-950 text-[30px] text-red-400">
-            ↓
-          </div>
+        <div className="cause-effect-rail" aria-hidden="true">
+          <span className="cause-effect-arrow">→</span>
         </div>
 
         <div className="cause-effect-card border-red-400/25 bg-gradient-to-br from-red-500/15 to-orange-400/5">
@@ -43,11 +58,31 @@ export default function CauseEffectSlide({
         </div>
       </div>
 
-      <MiniDiagram
-        dark
-        items={["Kesimpulan cepat", "Cari konfirmasi", "Keyakinan mengeras"]}
-        className="mt-8 hidden"
-      />
+      <div className="cause-effect-chain">
+        <div className="cause-effect-chain-head">
+          <p className="cause-effect-chain-label">Pola yang terjadi</p>
+          <span className="cause-effect-chain-caption">dari asumsi → menjadi keyakinan</span>
+        </div>
+
+        <div className="cause-effect-chain-grid">
+          {chain.map((item, index) => (
+            <div key={item.index} className="cause-effect-step">
+              <div className="cause-effect-step-top">
+                <span className="cause-effect-step-index">{item.index}</span>
+                <span className="cause-effect-step-dot" aria-hidden="true" />
+              </div>
+              <h3 className="cause-effect-step-title">{item.title}</h3>
+              <p className="cause-effect-step-note">{item.note}</p>
+
+              {index < chain.length - 1 ? (
+                <span className="cause-effect-step-connector" aria-hidden="true">
+                  →
+                </span>
+              ) : null}
+            </div>
+          ))}
+        </div>
+      </div>
     </SlideShell>
   );
 }
