@@ -1,16 +1,17 @@
 # Aksioma Content Studio
 
-Aksioma Content Studio adalah project Next.js untuk membuat konten carousel berbasis JSX lalu mengekspor setiap slide menjadi JPEG. Preview browser dan JPEG menggunakan DOM serta komponen yang sama.
+Aksioma Content Studio adalah project Next.js untuk membuat konten carousel dari satu source JSX lalu mengekspornya untuk Instagram dan TikTok. Preview browser dan JPEG menggunakan DOM serta komponen yang sama.
 
-## Prinsip utama
+## Output platform
 
-- Source of truth: JSX.
-- Canvas Instagram: **1080 × 1350 px**.
-- Setiap slide menggunakan `CarouselCanvas`.
-- Exporter hanya screenshot elemen `[data-carousel-slide]`.
-- Hasil JPEG masuk ke `output/` dan tidak disimpan ke Git.
+| Platform | Ukuran | Rasio |
+| --- | ---: | ---: |
+| Instagram carousel | 1080 × 1350 px | 4:5 |
+| TikTok | 1080 × 1920 px | 9:16 |
 
-## Setup
+TikTok memakai composition khusus dengan ruang aman lebih besar di kanan, atas, dan bawah agar headline, body, logo, dan footer tidak terlalu dekat dengan area UI TikTok.
+
+## Setup awal
 
 ```bash
 npm install
@@ -18,162 +19,169 @@ npm run setup:browser
 npm run dev
 ```
 
-Buka `http://localhost:3000/carousel/demo`.
+## Preview
 
-## Export menjadi JPEG
+Instagram:
 
-Biarkan development server tetap berjalan pada terminal pertama:
+```text
+http://localhost:3000/carousel/demo?platform=instagram
+```
+
+TikTok:
+
+```text
+http://localhost:3000/carousel/demo?platform=tiktok
+```
+
+TikTok dengan safe-area guide:
+
+```text
+http://localhost:3000/carousel/demo?platform=tiktok&safe=1
+```
+
+Safe-area guide hanya alat bantu preview. Overlay merah/hijau tersebut tidak muncul pada export normal.
+
+## Export JPEG
+
+Biarkan development server berjalan:
 
 ```bash
 npm run dev
 ```
 
-Di terminal kedua:
+Di terminal kedua, export Instagram:
 
 ```bash
-npm run carousel:export -- /carousel/demo
+npm run carousel:export -- /carousel/demo --platform=instagram
 ```
 
-Hasil akan dibuat sebagai `output/demo/01.jpg` sampai `10.jpg`.
+Export TikTok:
+
+```bash
+npm run carousel:export -- /carousel/demo --platform=tiktok
+```
+
+Hasil:
+
+```text
+output/
+└── demo/
+    ├── instagram/
+    │   ├── 01.jpg
+    │   ├── ...
+    │   └── 10.jpg
+    └── tiktok/
+        ├── 01.jpg
+        ├── ...
+        └── 10.jpg
+```
 
 Quality default adalah 95:
 
 ```bash
-npm run carousel:export -- /carousel/demo --quality=90
+npm run carousel:export -- /carousel/demo --platform=tiktok --quality=90
 ```
 
-Jika server memakai port lain:
+## Satu konten, dua platform
 
-```bash
-npm run carousel:export -- /carousel/demo --base-url=http://127.0.0.1:3001
-```
+Materi tidak perlu diduplikasi. Route yang sama dirender berdasarkan query `platform`.
 
-## Membuat carousel baru
-
-Buat route baru:
+Setiap carousel baru cukup dibuat di:
 
 ```text
 app/carousel/nama-konten/page.jsx
 ```
 
-Contoh minimal:
+Page menerima `searchParams`, lalu meneruskan platform ke wrapper:
 
 ```jsx
-import {
-  HeroSlide,
-  StatementSlide,
-  FrameworkSlide,
-  CTASlide,
-} from "@/components/carousel";
+export default async function Page({ searchParams }) {
+  const params = await searchParams;
+  const platform = params?.platform === "tiktok" ? "tiktok" : "instagram";
+  const safeArea = platform === "tiktok" && params?.safe === "1";
 
-export default function Page() {
   return (
-    <main className="carousel-stage">
-      <HeroSlide
-        slide={1}
-        eyebrow="Mindset"
-        title="Judul carousel"
-        subtitle="Subjudul singkat yang menjelaskan hook."
-      />
-
-      <StatementSlide
-        slide={2}
-        lead="Kalimat pembuka"
-        highlight="bagian yang ingin ditekankan."
-        note="Penjelasan pendukung."
-      />
-
-      <FrameworkSlide
-        slide={3}
-        title="Framework sederhana"
-        steps={[
-          { title: "Langkah satu", text: "Penjelasan." },
-          { title: "Langkah dua", text: "Penjelasan." },
-        ]}
-      />
-
-      <CTASlide
-        slide={4}
-        title="Penutup."
-        body="Ringkas gagasan utama."
-      />
+    <main
+      className="carousel-stage"
+      data-platform={platform}
+      data-safe-area={safeArea ? "true" : "false"}
+    >
+      {/* slide yang sama untuk kedua platform */}
     </main>
   );
 }
 ```
 
-Export:
+## Safe area TikTok
 
-```bash
-npm run carousel:export -- /carousel/nama-konten
-```
+Safe area di project ini bersifat konservatif dan sengaja memberi ruang tambahan untuk UI.
 
-## Komponen awal
-
-Komponen reusable tersedia di `components/carousel/`:
-
-- `HeroSlide` — cover/hook.
-- `StatementSlide` — satu gagasan besar dengan highlight.
-- `BulletSlide` — daftar penjelasan terstruktur.
-- `CompareSlide` — perbandingan dua konsep.
-- `CauseEffectSlide` — hubungan sebab dan akibat dengan garis penghubung.
-- `FrameworkSlide` — langkah/framework vertikal.
-- `SummarySlide` — ringkasan poin.
-- `CTASlide` — penutup dan call-to-action.
-- `SlideShell` — struktur visual dasar.
-- `CarouselCanvas` — canvas wajib 1080 × 1350.
-
-## Mengubah styling
-
-Global styling ada di `app/globals.css`. Styling per tipe slide ada di `components/carousel/`.
-
-Preview dan exporter menggunakan komponen yang sama. Karena itu perubahan pada komponen akan otomatis menjadi perubahan pada JPEG berikutnya.
-
-Ukuran canvas dikunci di `.carousel-slide` pada `app/globals.css`:
+Pada TikTok, `.slide-frame` memakai:
 
 ```css
-width: 1080px;
-height: 1350px;
+padding: 150px 178px 270px 92px;
 ```
 
-Exporter memvalidasi ukuran sebelum screenshot agar slide yang tidak sengaja berubah ukuran tidak ikut diekspor.
+Artinya elemen penting ditahan dari:
+- area atas;
+- tombol interaksi di kanan;
+- caption/navigation di bawah.
 
-## Aturan konten untuk AI
+Background, gradient, shape, dan dekorasi boleh tetap full bleed 1080 × 1920.
 
-- satu gagasan utama per slide;
-- judul idealnya 4–12 kata;
-- hindari paragraf sangat panjang;
-- maksimal sekitar 3–5 poin pada slide daftar;
-- pilih tipe slide berdasarkan fungsi informasi;
-- jangan memakai animasi, randomness, atau konten yang bergeser setelah render.
+Gunakan mode `safe=1` untuk memeriksa apakah teks, diagram, footer, dan logo tetap berada di area hijau. Safe area nyata dapat berbeda antar perangkat dan tampilan UI, jadi anggap guide ini sebagai batas kerja konservatif, bukan koordinat resmi yang absolut.
 
-## Struktur
+## Branding dan footer
+
+Semua slide menggunakan footer konsisten melalui `SlideFooter`.
+
+- background terang → logo gelap;
+- background gelap → logo terang;
+- posisi footer mengikuti safe content region masing-masing platform;
+- nomor halaman berada pada alignment yang sama.
+
+Font mengikuti Aksioma Trader:
+- **Inter** untuk body;
+- **Lexend** untuk display/heading.
+
+## Struktur utama
 
 ```text
 app/
-├── carousel/
-│   └── demo/
-│       └── page.jsx
-├── globals.css
-├── layout.js
-└── page.js
+└── carousel/
+    └── demo/
+        └── page.jsx
 
 components/
 └── carousel/
-    ├── BulletSlide.jsx
+    ├── BrandLogo.jsx
     ├── CarouselCanvas.jsx
-    ├── CauseEffectSlide.jsx
-    ├── CompareSlide.jsx
-    ├── CTASlide.jsx
-    ├── FrameworkSlide.jsx
-    ├── HeroSlide.jsx
+    ├── PlatformSwitcher.jsx
+    ├── SlideFooter.jsx
     ├── SlideShell.jsx
+    ├── HeroSlide.jsx
     ├── StatementSlide.jsx
+    ├── BulletSlide.jsx
+    ├── CompareSlide.jsx
+    ├── CauseEffectSlide.jsx
+    ├── FrameworkSlide.jsx
     ├── SummarySlide.jsx
-    └── index.js
+    └── CTASlide.jsx
 
 scripts/
 └── export-carousel.mjs
 
-output/ # generated, gitignored
+output/
+└── <slug>/
+    ├── instagram/
+    └── tiktok/
 ```
+
+## Prinsip desain
+
+- JSX adalah source of truth.
+- Jangan membuat copy materi terpisah hanya untuk TikTok.
+- Background/dekorasi boleh full bleed.
+- Informasi penting harus mengikuti safe content region.
+- Preview dan JPEG harus berasal dari komponen yang sama.
+- Hindari randomness, animasi, dan layout shift pada slide export.

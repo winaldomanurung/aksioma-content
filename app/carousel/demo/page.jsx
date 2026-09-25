@@ -5,6 +5,7 @@ import {
   CTASlide,
   FrameworkSlide,
   HeroSlide,
+  PlatformSwitcher,
   StatementSlide,
   SummarySlide,
 } from "@/components/carousel";
@@ -13,16 +14,22 @@ export const metadata = {
   title: "Demo Carousel | Aksioma Content Studio",
 };
 
-export default function DemoCarouselPage() {
+export default async function DemoCarouselPage({ searchParams }) {
+  const params = await searchParams;
+  const platform = params?.platform === "tiktok" ? "tiktok" : "instagram";
+  const safeArea = platform === "tiktok" && params?.safe === "1";
+
   return (
-    <main className="carousel-stage">
-      <div className="studio-only w-[1080px] rounded-3xl border border-black/10 bg-white/70 p-6 text-zinc-700 shadow-sm">
-        <p className="text-sm font-semibold uppercase tracking-[0.18em] text-red-600">Preview mode</p>
-        <p className="mt-2 text-lg">
-          Semua slide di bawah adalah canvas asli 1080 × 1350 px. Exporter mengambil
-          elemen yang sama, bukan membuat desain ulang.
-        </p>
-      </div>
+    <main
+      className="carousel-stage"
+      data-platform={platform}
+      data-safe-area={safeArea ? "true" : "false"}
+    >
+      <PlatformSwitcher
+        route="/carousel/demo"
+        platform={platform}
+        safeArea={safeArea}
+      />
 
       <HeroSlide
         slide={1}
@@ -56,12 +63,20 @@ export default function DemoCarouselPage() {
         left={{
           label: "Refleks",
           heading: "Langsung percaya",
-          points: ["Cocok dengan intuisi saya.", "Banyak orang mengatakannya.", "Penjelasannya terdengar sederhana."],
+          points: [
+            "Cocok dengan intuisi saya.",
+            "Banyak orang mengatakannya.",
+            "Penjelasannya terdengar sederhana.",
+          ],
         }}
         right={{
           label: "Uji",
           heading: "Tahan kesimpulan",
-          points: ["Apa bukti yang mendukung klaim ini?", "Asumsi apa yang sedang saya pakai?", "Apa penjelasan alternatifnya?"],
+          points: [
+            "Apa bukti yang mendukung klaim ini?",
+            "Asumsi apa yang sedang saya pakai?",
+            "Apa penjelasan alternatifnya?",
+          ],
         }}
       />
 

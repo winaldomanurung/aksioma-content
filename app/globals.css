@@ -52,6 +52,10 @@ body {
   text-rendering: geometricPrecision;
 }
 
+.carousel-stage[data-platform="tiktok"] .carousel-slide {
+  height: 1920px;
+}
+
 .slide-frame {
   position: relative;
   z-index: 10;
@@ -59,6 +63,11 @@ body {
   height: 100%;
   grid-template-rows: minmax(0, 1fr) 82px;
   padding: 76px 78px 62px;
+}
+
+.carousel-stage[data-platform="tiktok"] .slide-frame {
+  grid-template-rows: minmax(0, 1fr) 82px;
+  padding: 150px 178px 270px 92px;
 }
 
 .slide-content {
@@ -83,6 +92,54 @@ body {
 
 .slide-footer-logo-light {
   filter: invert(1) brightness(0.88);
+}
+
+/* TikTok preview-only safe-area guide. Not visible in normal export. */
+.tiktok-safe-overlay {
+  pointer-events: none;
+  position: absolute;
+  inset: 0;
+  z-index: 50;
+  display: none;
+}
+
+.carousel-stage[data-platform="tiktok"][data-safe-area="true"] .tiktok-safe-overlay {
+  display: block;
+}
+
+.tiktok-safe-overlay::before {
+  content: "";
+  position: absolute;
+  left: 92px;
+  right: 178px;
+  top: 150px;
+  bottom: 270px;
+  border: 3px dashed rgba(34, 197, 94, 0.9);
+  border-radius: 24px;
+  box-shadow: 0 0 0 9999px rgba(239, 68, 68, 0.12);
+}
+
+.tiktok-safe-overlay::after {
+  content: "TIKTOK SAFE CONTENT AREA";
+  position: absolute;
+  left: 112px;
+  top: 168px;
+  border-radius: 999px;
+  background: rgba(22, 163, 74, 0.92);
+  padding: 8px 14px;
+  color: white;
+  font-family: var(--font-lexend), sans-serif;
+  font-size: 18px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+}
+
+.platform-switcher {
+  width: 1080px;
+}
+
+.platform-switcher a {
+  transition: background-color 160ms ease, color 160ms ease, border-color 160ms ease;
 }
 
 @media (max-width: 1160px) {

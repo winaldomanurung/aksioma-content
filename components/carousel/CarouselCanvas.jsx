@@ -12,6 +12,7 @@ export default function CarouselCanvas({
       className={["carousel-slide", className].join(" ")}
     >
       {children}
+      <div className="tiktok-safe-overlay" aria-hidden="true" />
     </section>
   );
 }

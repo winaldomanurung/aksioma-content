@@ -7,29 +7,48 @@ const args = process.argv.slice(2);
 const routeArg = args.find((arg) => !arg.startsWith("--")) || "/carousel/demo";
 const baseUrlArg = args.find((arg) => arg.startsWith("--base-url="));
 const qualityArg = args.find((arg) => arg.startsWith("--quality="));
+const platformArg = args.find((arg) => arg.startsWith("--platform="));
 
 const route = routeArg.startsWith("/") ? routeArg : "/" + routeArg;
 const baseUrl = (baseUrlArg ? baseUrlArg.split("=")[1] : "http://127.0.0.1:3000").replace(/\/$/, "");
 const quality = Number(qualityArg ? qualityArg.split("=")[1] : 95);
+const platform = platformArg ? platformArg.split("=")[1] : "instagram";
+
+const platforms = {
+  instagram: { width: 1080, height: 1350 },
+  tiktok: { width: 1080, height: 1920 },
+};
+
+if (!platforms[platform]) {
+  throw new Error("--platform harus instagram atau tiktok.");
+}
 
 if (!Number.isInteger(quality) || quality < 1 || quality > 100) {
   throw new Error("--quality harus berupa angka 1 sampai 100.");
 }
 
-const slug = route.split("?")[0].split("/").filter(Boolean).pop() || "carousel";
-const outputDir = path.join(process.cwd(), "output", slug);
+const cleanRoute = route.split("?")[0];
+const slug = cleanRoute.split("/").filter(Boolean).pop() || "carousel";
+const outputDir = path.join(process.cwd(), "output", slug, platform);
+const expected = platforms[platform];
 
 await fs.mkdir(outputDir, { recursive: true });
 
 const browser = await chromium.launch();
 const page = await browser.newPage({
-  viewport: { width: 1280, height: 1500 },
+  viewport: {
+    width: Math.max(1280, expected.width + 200),
+    height: Math.max(1500, expected.height + 200),
+  },
   deviceScaleFactor: 1,
 });
 
 try {
-  const url = baseUrl + route;
+  const separator = cleanRoute.includes("?") ? "&" : "?";
+  const url = baseUrl + cleanRoute + separator + "platform=" + platform;
+
   console.log("Opening " + url);
+  console.log("Platform: " + platform + " (" + expected.width + "x" + expected.height + ")");
 
   await page.goto(url, { waitUntil: "networkidle" });
   await page.evaluate(async () => {
@@ -54,10 +73,10 @@ try {
     const width = Math.round(box.width);
     const height = Math.round(box.height);
 
-    if (width !== 1080 || height !== 1350) {
+    if (width !== expected.width || height !== expected.height) {
       throw new Error(
         "Slide " + (index + 1) + " berukuran " + width + "x" + height +
-        "; expected 1080x1350. Export dibatalkan agar hasil tidak berbeda dari canvas standar."
+        "; expected " + expected.width + "x" + expected.height + " untuk " + platform + "."
       );
     }
 
