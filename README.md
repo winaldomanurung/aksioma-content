@@ -278,3 +278,27 @@ Background/dekorasi boleh full bleed. Teks, card, logo, footer, page number, dan
 Buka `app/carousel/studio-template/page.jsx` di GitHub. Ini adalah contoh **page.jsx valid** yang menyimpan definisi carousel di template literal dengan marker `AKSIOMA_STUDIO_JSON_START/END`. Kamu bisa copy seluruh file itu ke AI untuk meminta versi baru, lalu paste seluruh hasilnya ke `/studio`. Studio hanya mengambil bagian JSON di antara marker; kode JSX tidak dieksekusi. File itu juga dapat ditempatkan di repo sebagai route biasa jika memang ingin meng-commit hasilnya.
 
 Versi `app/carousel/demo/page.jsx` menggunakan JSX langsung dan **tidak** dapat ditempel mentah ke Studio. Untuk input Studio, pilih format declarative dari `studio-template/page.jsx`.
+
+
+## Template AI dan ekspor langsung dari HP
+
+Halaman `/studio/template` menyediakan form topik, audiens, tujuan, dan jumlah slide.
+Tombol **Copy prompt lengkap** menyalin sekaligus brief, dokumentasi komponen
+(termasuk freeform primitives), aturan desain, dan contoh JSON. Pengguna tidak
+perlu membuka GitHub atau menyalin source `page.jsx` untuk membuat konten baru.
+
+Alur: `/studio/template` → salin prompt → ChatGPT → salin JSON hasilnya →
+`/studio` → paste → Render carousel → pilih platform → Generate JPEG/ZIP.
+
+Tombol Generate sekarang mempersiapkan file di browser, lalu memunculkan
+**Simpan file** sebagai anchor asli yang harus diketuk. Ini mengurangi kegagalan
+unduhan akibat pemblokiran klik otomatis setelah proses asynchronous. Di iOS,
+opsi 'Buka gambar' membantu menyimpan JPEG melalui UI browser.
+
+Clipboard punya fallback berbasis seleksi teks bila Clipboard API ditolak.
+Browser tetap dapat melarang clipboard sepenuhnya, sehingga tersedia tombol
+**Pilih semua teks** untuk salin manual.
+
+Ekspor menggunakan SVG foreignObject → Canvas di browser. Tidak semua
+browser/versi iOS mendukung semua fitur SVG, font, dan CSS. Gunakan
+exporter Playwright lokal bila hasil masih gagal atau tidak setara preview.

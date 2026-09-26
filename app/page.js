@@ -30,6 +30,12 @@ export default function Home() {
             Buka Carousel Studio
           </Link>
           <Link
+            href="/studio/template"
+            className="rounded-full border border-red-500/40 bg-red-500/10 px-7 py-4 font-semibold text-red-200 transition hover:bg-red-500/20"
+          >
+            Template AI siap copy
+          </Link>
+          <Link
             href="/carousel/demo"
             className="rounded-full border border-white/15 px-7 py-4 font-semibold text-zinc-200 transition hover:bg-white/10"
           >
