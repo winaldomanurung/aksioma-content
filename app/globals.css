@@ -1408,31 +1408,28 @@ body {
 .carousel-slide[data-slide-type="statement"] .slide-content > .flex:first-child p { font-size:30px;letter-spacing:.12em; }
 
 
-/* Editorial bookend footer: social signature and page number, not a navigation bar. */
+/* Minimal bookend footer: no ornamental midline. */
 .account-bookend-footer {
   display:flex;
   align-items:center;
   justify-content:space-between;
-  gap:28px;
+  gap:20px;
   border-top:1px solid currentColor;
-  padding-top:26px;
-  font-size:20px;
-  font-weight:700;
-  letter-spacing:.015em;
+  padding-top:24px;
+  font-family:var(--font-inter),Arial,sans-serif;
+  letter-spacing:-.01em;
 }
-.account-bookend-footer-handle { white-space:nowrap; }
-.account-bookend-footer-rule {
-  flex:1;
-  height:1px;
-  max-width:160px;
-  background:currentColor;
-  opacity:.27;
+.account-bookend-footer-handle {
+  white-space:nowrap;
+  font-size:18px;
+  font-weight:600;
+  opacity:.92;
 }
 .account-bookend-footer-page {
-  font-family:var(--font-lexend),Arial,sans-serif;
-  font-size:22px;
+  font-family:var(--font-inter),Arial,sans-serif;
+  font-size:20px;
   font-weight:700;
-  letter-spacing:.04em;
+  letter-spacing:.02em;
   font-variant-numeric:tabular-nums;
 }
 /* Prominent closing destination, inspired by full-width editorial CTA strips. */
@@ -1458,26 +1455,28 @@ body {
 }
 .account-bookend-action-copy { display:flex;flex:1;flex-direction:column;gap:10px;min-width:0; }
 .account-bookend-action-eyebrow {
-  font-size:17px;
-  letter-spacing:.15em;
-  font-weight:800;
-  opacity:.8;
+  font-family:var(--font-inter),Arial,sans-serif;
+  font-size:15px;
+  letter-spacing:.14em;
+  font-weight:700;
+  opacity:.72;
 }
 .account-bookend-action-website {
   display:block;
   max-width:100%;
-  font-family:var(--font-lexend),Arial,sans-serif;
-  font-size:51px;
-  font-weight:850;
-  letter-spacing:-.052em;
-  line-height:1.13;
+  font-family:var(--font-inter),Arial,sans-serif;
+  font-size:49px;
+  font-weight:800;
+  letter-spacing:-.045em;
+  line-height:1.12;
   overflow-wrap:anywhere;
 }
 .account-bookend-action-cta {
-  font-size:22px;
+  font-family:var(--font-inter),Arial,sans-serif;
+  font-size:20px;
   line-height:1.32;
-  font-weight:550;
-  opacity:.82;
+  font-weight:500;
+  opacity:.8;
 }
 .account-bookend-main--end .account-bookend-action-arrow {
   display:flex;
@@ -1499,3 +1498,17 @@ body {
   padding:30px 32px;
 }
 .carousel-stage[data-platform="tiktok"] .account-bookend-action-website { font-size:47px; }
+
+/* Clean editorial typography across both account bookends. */
+.account-bookend-display h1,
+.account-bookend-end-title {
+  font-family:var(--font-inter),Arial,sans-serif;
+  letter-spacing:-.055em;
+}
+.account-bookend-edition,
+.account-bookend-kicker,
+.account-bookend-end-overline,
+.account-bookend-cover-foot,
+.account-bookend-number {
+  font-family:var(--font-inter),Arial,sans-serif;
+}
