@@ -49,7 +49,6 @@ export default function AccountBookend({kind,account="journey",data,number}){
         )}
         <footer className="account-bookend-footer">
           <span className="account-bookend-footer-handle">{handle}</span>
-          <span className="account-bookend-footer-rule" aria-hidden="true"/>
           <span className="account-bookend-footer-page">{String(number).padStart(2,"0")}</span>
         </footer>
       </div>
