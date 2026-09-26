@@ -45,7 +45,7 @@ export default function AccountBookend({kind,account="journey",data,number}){
           </div>
         )}
         <footer className="account-bookend-footer">
-          <span>@{trader?"aksioma.trader":"aksioma.journey"}</span>
+          <span>{trader?"AKSIOMA / TRADER":"@aksioma.journey"}</span>
           <span>{trader?"RESEARCH · RISK · DISCIPLINE":"THINK · LEARN · GROW"}</span>
           <span>{String(number).padStart(2,"0")}</span>
         </footer>
