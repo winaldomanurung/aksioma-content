@@ -7,6 +7,7 @@ import {
   TwoColumn, ThreeColumn, ContentGrid, Stack, Divider
 } from "@/components/carousel";
 import {AssetIcon,AssetShape} from "./AssetPrimitives";
+import AccountBookend from "./AccountBookend";
 
 function Primitive({ node, dark = false }) {
   const children=node.children?.map((child,i)=><Primitive key={i} node={child} dark={dark}/>);
@@ -34,18 +35,18 @@ function Primitive({ node, dark = false }) {
     default: return null;
   }
 }
-export function StudioSlide({data,number}){
+export function StudioSlide({data,number,account="journey",total=10}){
   const slide=number;
   const s=data;
   switch(s.type){
-    case "hero": return <HeroSlide {...s} slide={slide}/>;
+    case "hero": return number===1 ? <AccountBookend kind="hero" account={account} data={s} number={number}/> : <HeroSlide {...s} slide={slide}/>;
     case "statement": return <StatementSlide {...s} slide={slide}/>;
     case "bullet": return <BulletSlide {...s} slide={slide}/>;
     case "compare": return <CompareSlide {...s} slide={slide}/>;
     case "causeEffect": return <CauseEffectSlide {...s} slide={slide}/>;
     case "framework": return <FrameworkSlide {...s} slide={slide}/>;
     case "summary": return <SummarySlide {...s} slide={slide}/>;
-    case "cta": return <CTASlide {...s} slide={slide}/>;
+    case "cta": return number===total ? <AccountBookend kind="cta" account={account} data={s} number={number}/> : <CTASlide {...s} slide={slide}/>;
     case "freeform": {
       const dark=s.theme ? (backgroundThemes[s.theme]?.dark ?? !!s.dark) : !!s.dark;
       return (
