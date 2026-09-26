@@ -1352,3 +1352,52 @@ body {
 .carousel-slide[data-slide-type="freeform"][data-studio-dark="false"] .studio-freeform-body .text-red-500,
 .carousel-slide[data-slide-type="freeform"][data-studio-dark="false"] .studio-freeform-body .text-red-600 {color:#991b1b!important;}
 .carousel-slide[data-slide-type="freeform"][data-studio-dark="true"] .slide-content > .flex:first-child .text-red-500 {color:#fecdd3!important;}
+
+
+/* ---------- Account-specific editorial bookends ---------- */
+.account-bookend { --bookend-accent:#ff7467; position:relative; isolation:isolate; font-family:var(--font-inter),Arial,sans-serif; background:#171a22; color:#fff; }
+.account-bookend--journey.account-bookend--cover { background:linear-gradient(148deg,#1a1923 0%,#292431 58%,#441f32 100%); --bookend-accent:#ff8e84; }
+.account-bookend--journey.account-bookend--end { background:linear-gradient(145deg,#e8b767 0%,#edc981 56%,#f7e5bb 100%); color:#202836; --bookend-accent:#8e302f; }
+.account-bookend--trader.account-bookend--cover { background:linear-gradient(145deg,#101c31 0%,#192e51 55%,#113f4c 100%); --bookend-accent:#7be9d2; }
+.account-bookend--trader.account-bookend--end { background:linear-gradient(145deg,#0e1830 0%,#1c3475 55%,#324fe0 100%); --bookend-accent:#ccf27b; }
+.account-bookend-orb { position:absolute; z-index:0; border-radius:50%; pointer-events:none; }
+.account-bookend-orb--one { width:770px;height:770px;top:-320px;right:-250px;border:2px solid currentColor;opacity:.12; }
+.account-bookend-orb--two { width:800px;height:800px;bottom:-540px;left:-280px;background:var(--bookend-accent);opacity:.13; }
+.account-bookend--journey.account-bookend--end .account-bookend-orb--one { background:#fff7e4;border:0;opacity:.75; }
+.account-bookend--trader .account-bookend-orb--two { width:860px;height:860px;left:-350px;bottom:-470px;opacity:.12; }
+.account-bookend-grid { position:absolute;inset:0;z-index:0;opacity:.15;pointer-events:none;background-image:linear-gradient(currentColor 1px,transparent 1px),linear-gradient(90deg,currentColor 1px,transparent 1px);background-size:120px 120px;mask-image:linear-gradient(140deg,transparent 16%,#000 100%); }
+.account-bookend-inner { position:relative;z-index:1;display:flex;flex-direction:column;height:100%;padding:78px 78px 64px; }
+.account-bookend-header,.account-bookend-footer { display:flex;align-items:center;justify-content:space-between;gap:28px; }
+.account-bookend-brand { font-family:var(--font-lexend),Arial,sans-serif;font-size:37px;font-weight:800;letter-spacing:-.065em;white-space:nowrap; }
+.account-bookend-brand>span { color:var(--bookend-accent); }
+.account-bookend-brand strong { font-size:22px;font-weight:550;letter-spacing:.015em;margin-left:13px; }
+.account-bookend-edition { font-size:14px;letter-spacing:.22em;font-weight:750;text-align:right;opacity:.75; }
+.account-bookend-main { display:flex;flex:1;flex-direction:column;justify-content:center;min-height:0; }
+.account-bookend-kicker { display:flex;align-items:center;gap:20px;margin-bottom:78px;font-size:20px;font-weight:800;letter-spacing:.22em;text-transform:uppercase; }
+.account-bookend-kicker-mark { display:block;width:54px;height:4px;background:var(--bookend-accent);border-radius:99px;flex:none; }
+.account-bookend-display { max-width:940px; }
+.account-bookend-display>p { font-size:31px;font-weight:500;letter-spacing:.12em;margin:0 0 20px;opacity:.78; }
+.account-bookend-display h1 { margin:0;font-family:var(--font-lexend),Arial,sans-serif;font-size:clamp(76px,9vw,112px);font-weight:850;letter-spacing:-.075em;line-height:1.04;overflow-wrap:break-word; }
+.account-bookend--trader .account-bookend-display h1 { border-left:9px solid var(--bookend-accent);padding-left:32px; }
+.account-bookend-cover-foot { display:flex;align-items:flex-end;justify-content:space-between;gap:55px;margin-top:86px; }
+.account-bookend-cover-foot>p { margin:0;max-width:680px;font-size:30px;line-height:1.4;opacity:.84; }
+.account-bookend-number { font-family:var(--font-lexend),Arial,sans-serif;font-size:80px;line-height:1;font-weight:800;letter-spacing:-.07em; }
+.account-bookend-number span { display:block;margin-top:15px;font-size:13px;letter-spacing:.25em;opacity:.7;text-align:right; }
+.account-bookend-footer { border-top:1px solid currentColor;padding-top:25px;font-size:17px;letter-spacing:.08em;font-weight:750; }
+.account-bookend-footer span:nth-child(2) { font-size:14px;letter-spacing:.18em;opacity:.72; }
+.account-bookend-main--end { align-items:flex-start; }
+.account-bookend-main--end .account-bookend-kicker { margin-bottom:60px; }
+.account-bookend-end-overline { font-size:19px;letter-spacing:.16em;font-weight:800;max-width:850px;line-height:1.5; }
+.account-bookend-end-title { margin:26px 0 0;max-width:900px;font-family:var(--font-lexend),Arial,sans-serif;font-size:94px;line-height:1.04;letter-spacing:-.065em;font-weight:850;overflow-wrap:break-word; }
+.account-bookend-end-body { margin:32px 0 0;max-width:800px;font-size:30px;line-height:1.42;opacity:.8; }
+.account-bookend-action { display:flex;align-items:center;gap:24px;width:100%;margin-top:78px;padding:24px 30px;border:2px solid currentColor;border-radius:100px;background:#fff;color:#212a3b; }
+.account-bookend--journey .account-bookend-action { background:#fff9e9; }
+.account-bookend--trader .account-bookend-action { background:#d8f68b; }
+.account-bookend-action-icon { display:flex;align-items:center;justify-content:center;width:66px;height:66px;flex:none;border-radius:50%;background:#202b40;color:#fff;font-size:34px;font-weight:700; }
+.account-bookend-action>div:nth-child(2) { flex:1;min-width:0; }
+.account-bookend-action>div:nth-child(2) span { display:block;font-size:14px;letter-spacing:.17em;font-weight:800;opacity:.72; }
+.account-bookend-action strong { display:block;font-size:27px;line-height:1.26;margin-top:6px; }
+.account-bookend-action-arrow { display:flex;align-items:center;justify-content:center;flex:none;width:62px;height:62px;border-radius:50%;border:2px solid currentColor;font-size:34px; }
+.carousel-stage[data-platform="tiktok"] .account-bookend-inner { padding:90px 96px 102px; }
+.carousel-stage[data-platform="tiktok"] .account-bookend-end-title { font-size:85px; }
+.carousel-stage[data-platform="tiktok"] .account-bookend-action { margin-top:52px; }
