@@ -218,7 +218,7 @@ body {
 
 .statement-title {
   font-family: var(--font-lexend), sans-serif;
-  font-size: calc(57px * var(--density-scale, 1));
+  font-size: calc(69px * var(--density-scale, 1));
   font-weight: 600;
   line-height: 1.1;
   letter-spacing: -0.035em;
@@ -227,8 +227,8 @@ body {
 .statement-note {
   margin-top: calc(44px * var(--density-gap, 1));
   max-width: 760px;
-  font-size: 28px;
-  line-height: 1.48;
+  font-size: 30px;
+  line-height: 1.42;
 }
 
 .statement-visual {
@@ -1401,3 +1401,8 @@ body {
 .carousel-stage[data-platform="tiktok"] .account-bookend-inner { padding:90px 96px 102px; }
 .carousel-stage[data-platform="tiktok"] .account-bookend-end-title { font-size:85px; }
 .carousel-stage[data-platform="tiktok"] .account-bookend-action { margin-top:52px; }
+
+/* Original Aksioma mark remains unchanged across Journey and Trader. */
+.account-bookend-original-logo { width:195px;height:auto;max-height:75px;object-fit:contain;object-position:left center; }
+/* Make interior slide section headings proportional to the generous 1080px canvas. */
+.carousel-slide[data-slide-type="statement"] .slide-content > .flex:first-child p { font-size:30px;letter-spacing:.12em; }
