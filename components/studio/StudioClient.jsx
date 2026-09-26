@@ -13,7 +13,7 @@ const INITIAL=JSON.stringify(exampleCarousel,null,2);
 const DRAFT_KEY="aksioma-studio-draft-v1";
 const slugify=s=>String(s||"carousel").normalize("NFKD").toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"").slice(0,60)||"carousel";
 
-function SlidePreview({data,number}){
+function SlidePreview({data,number,account,total}){
   const wrap=useRef(null);
   const [scale,setScale]=useState(1);
   useEffect(()=>{
@@ -26,7 +26,7 @@ function SlidePreview({data,number}){
   return(
     <div ref={wrap} className="w-full" style={{height:1350*scale}}>
       <div style={{width:1080,height:1350,transformOrigin:"top left",transform:"scale("+scale+")"}}>
-        <StudioSlide data={data} number={number}/>
+        <StudioSlide data={data} number={number} account={account} total={total}/>
       </div>
     </div>
   );
@@ -36,6 +36,7 @@ export default function StudioClient(){
   const [source,setSource]=useState(INITIAL);
   const [carousel,setCarousel]=useState(exampleCarousel);
   const [platform,setPlatform]=useState("instagram");
+  const [account,setAccount]=useState("journey");
   const [safe,setSafe]=useState(false);
   const [error,setError]=useState("");
   const [status,setStatus]=useState("");
@@ -62,7 +63,8 @@ export default function StudioClient(){
     try{
       const value=parseCarouselSource(source);
       setCarousel(value);setSelected(0);setError("");clearDownload();
-      setStatus(value.slides.length+" slide valid. Preview diperbarui.");
+      if(value.meta.account==="journey"||value.meta.account==="trader")setAccount(value.meta.account);
+      setStatus(value.slides.length+" slide valid. Preview diperbarui untuk Aksioma "+(value.meta.account==="trader"?"Trader":"Journey")+".");
     }catch(e){setError(e.message);setStatus("");}
   }
 
@@ -87,7 +89,7 @@ export default function StudioClient(){
         files.push({name:platform+"/"+name,blob});
       }
       const output=all?await makeZip(files):files[0].blob;
-      const filename=slugify(carousel.meta.title)+"-"+platform+(all?".zip":"-"+files[0].name.split("/").pop());
+      const filename="aksioma-"+account+"-"+slugify(carousel.meta.title)+"-"+platform+(all?".zip":"-"+files[0].name.split("/").pop());
       const url=URL.createObjectURL(output);
       downloadUrl.current=url;
       setDownload({url,filename,kind:all?"zip":"jpeg",size:output.size});
@@ -109,6 +111,18 @@ export default function StudioClient(){
           <a className="rounded-full border border-black/15 px-5 py-3 text-sm font-semibold hover:bg-white" href="/carousel/demo">Lihat demo JSX ↗</a>
         </header>
 
+        <section className="mb-6 rounded-[24px] border border-black/10 bg-white p-4 sm:p-5">
+          <div className="flex flex-wrap items-center justify-between gap-4">
+            <div><p className="font-display text-sm font-bold">Pilih akun konten</p><p className="mt-1 text-xs text-zinc-500">Satu editor, dua identitas visual. Slide pembuka dan penutup mengikuti akun yang dipilih.</p></div>
+            <div className="flex flex-wrap gap-2">
+              {["journey","trader"].map(value=><button key={value} type="button" aria-pressed={account===value}
+                onClick={()=>{setAccount(value);clearDownload();}}
+                className={["rounded-full px-5 py-3 text-sm font-bold",account===value?(value==="trader"?"bg-blue-800 text-white":"bg-red-500 text-white"):"bg-zinc-100 text-zinc-700"].join(" ")}>
+                Aksioma {value==="trader"?"Trader":"Journey"}
+              </button>)}
+            </div>
+          </div>
+        </section>
         <div className="grid items-start gap-6 lg:grid-cols-[minmax(320px,500px)_minmax(0,1fr)]">
           <section className="min-w-0 rounded-[28px] border border-black/10 bg-white p-5 shadow-sm sm:p-6">
             <div className="flex items-center justify-between gap-3">
@@ -142,7 +156,7 @@ export default function StudioClient(){
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <div>
                   <p className="font-display text-sm font-bold">{carousel.meta.title}</p>
-                  <p className="mt-1 text-xs text-zinc-500">{carousel.slides.length} slide · 1080×1350 · {platform==="tiktok"?"TikTok Photo":"Instagram"}</p>
+                  <p className="mt-1 text-xs text-zinc-500">{carousel.slides.length} slide · Aksioma {account==="trader"?"Trader":"Journey"} · 1080×1350 · {platform==="tiktok"?"TikTok Photo":"Instagram"}</p>
                 </div>
                 <div className="flex flex-wrap gap-2">
                   <button type="button" aria-pressed={platform==="instagram"} onClick={()=>{setPlatform("instagram");setSafe(false);clearDownload();}} className={["rounded-full px-4 py-2 text-xs font-bold",platform==="instagram"?"bg-zinc-950 text-white":"bg-zinc-100 text-zinc-700"].join(" ")}>Instagram</button>
@@ -179,7 +193,7 @@ export default function StudioClient(){
             <div className="rounded-[26px] bg-zinc-200 p-2 sm:p-5">
               <div className="w-full" data-platform={platform} data-safe-area={safe&&platform==="tiktok"?"true":"false"}>
                 <div className="carousel-stage !min-h-0 !gap-0 !p-0" data-platform={platform} data-safe-area={safe&&platform==="tiktok"?"true":"false"} style={{display:"block",overflow:"visible"}}>
-                  {allVisible?carousel.slides.map((s,i)=><div className="mb-5" key={i}><SlidePreview data={s} number={i+1}/></div>):<SlidePreview data={current} number={selected+1}/>}
+                  {allVisible?carousel.slides.map((s,i)=><div className="mb-5" key={i}><SlidePreview data={s} number={i+1} account={account} total={carousel.slides.length}/></div>):<SlidePreview data={current} number={selected+1} account={account} total={carousel.slides.length}/>}
                 </div>
               </div>
             </div>
@@ -194,7 +208,7 @@ export default function StudioClient(){
       {/* Export source uses unscaled, offscreen DOM. Never hide with display:none. */}
       <div ref={exportStage} className="carousel-stage" data-platform={platform} data-safe-area="false" aria-hidden="true"
         style={{position:"fixed",left:"-100000px",top:0,width:1080,display:"flex",gap:0,padding:0,pointerEvents:"none"}}>
-        {carousel.slides.map((s,i)=><StudioSlide key={i} data={s} number={i+1}/>)}
+        {carousel.slides.map((s,i)=><StudioSlide key={i} data={s} number={i+1} account={account} total={carousel.slides.length}/>)}
       </div>
     </main>
   );
