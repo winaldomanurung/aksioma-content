@@ -1377,7 +1377,7 @@ body {
 .account-bookend-kicker-mark { display:block;width:54px;height:4px;background:var(--bookend-accent);border-radius:99px;flex:none; }
 .account-bookend-display { max-width:940px; }
 .account-bookend-display>p { font-size:31px;font-weight:500;letter-spacing:.12em;margin:0 0 20px;opacity:.78; }
-.account-bookend-display h1 { margin:0;font-family:var(--font-lexend),Arial,sans-serif;font-size:clamp(76px,9vw,112px);font-weight:850;letter-spacing:-.075em;line-height:1.04;overflow-wrap:break-word; }
+.account-bookend-display h1 { margin:0;font-family:var(--font-lexend),Arial,sans-serif;font-size:106px;font-weight:850;letter-spacing:-.075em;line-height:1.04;overflow-wrap:break-word; }
 .account-bookend--trader .account-bookend-display h1 { border-left:9px solid var(--bookend-accent);padding-left:32px; }
 .account-bookend-cover-foot { display:flex;align-items:flex-end;justify-content:space-between;gap:55px;margin-top:86px; }
 .account-bookend-cover-foot>p { margin:0;max-width:680px;font-size:30px;line-height:1.4;opacity:.84; }
