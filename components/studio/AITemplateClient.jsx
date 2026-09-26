@@ -7,14 +7,15 @@ import {copyText} from "@/lib/studio/clipboard";
 
 export default function AITemplateClient(){
   const [topic,setTopic]=useState("");
+  const [account,setAccount]=useState("journey");
   const [audience,setAudience]=useState("Young professionals");
   const [objective,setObjective]=useState("Save, share dan follow");
   const [slides,setSlides]=useState(10);
   const [feedback,setFeedback]=useState("");
   const [tab,setTab]=useState("prompt");
   const textRef=useRef(null);
-  const prompt=makeAiPrompt({topic,audience,objective,slides});
-  const content=tab==="prompt"?prompt:starterJson;
+  const prompt=makeAiPrompt({topic,audience,objective,slides,account});
+  const content=tab==="prompt"?prompt:JSON.stringify({...JSON.parse(starterJson),meta:{...JSON.parse(starterJson).meta,account}},null,2);
 
   async function copy(value){
     try{
@@ -49,6 +50,13 @@ export default function AITemplateClient(){
             <span className="font-display flex h-10 w-10 items-center justify-center rounded-xl bg-red-500 font-bold text-white">01</span>
             <div><h2 className="font-display text-lg font-bold">Brief konten</h2><p className="text-sm text-zinc-500">Cukup isi topik; lainnya bisa dibiarkan.</p></div>
           </div>
+          <div className="mb-5 flex flex-wrap gap-2">
+            {["journey","trader"].map(value=><button key={value} type="button" aria-pressed={account===value} onClick={()=>setAccount(value)}
+              className={["rounded-full px-5 py-3 text-sm font-bold",account===value?(value==="trader"?"bg-blue-800 text-white":"bg-red-500 text-white"):"bg-zinc-100 text-zinc-700"].join(" ")}>
+              Aksioma {value==="trader"?"Trader":"Journey"}
+            </button>)}
+          </div>
+          <p className="mb-5 text-xs text-zinc-600">Prompt dan identitas cover/CTA mengikuti akun yang dipilih. Pilihan akun juga dapat diubah di Studio.</p>
           <div className="grid gap-4 sm:grid-cols-2">
             <label className="sm:col-span-2">
               <span className="text-sm font-semibold">Topik carousel</span>
