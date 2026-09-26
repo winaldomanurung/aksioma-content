@@ -347,6 +347,13 @@ export default async function DemoCarouselPage({ searchParams }) {
         causeText="Begitu menemukan cerita yang terasa koheren, kita berhenti mencari informasi yang bisa membantahnya."
         effectTitle="Keyakinan menjadi lebih kuat daripada bukti"
         effectText="Kita lalu membela kesimpulan awal, bukan lagi mencoba memahami apa yang sebenarnya terjadi."
+        chainLabel="Pola yang terjadi"
+        chainCaption="dari asumsi → menjadi keyakinan"
+        chain={[
+          { title: "Kesimpulan cepat", note: "Cerita terasa masuk akal, lalu dianggap cukup." },
+          { title: "Cari konfirmasi", note: "Fokus bergeser ke informasi yang mendukung keyakinan awal." },
+          { title: "Keyakinan mengeras", note: "Kesimpulan awal semakin sulit direvisi." },
+        ]}
         density="balanced"
       />
 

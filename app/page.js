@@ -24,8 +24,14 @@ export default function Home() {
 
         <div className="mt-12 flex flex-wrap gap-4">
           <Link
-            href="/carousel/demo"
+            href="/studio"
             className="rounded-full bg-red-500 px-7 py-4 font-semibold text-white transition hover:bg-red-400"
+          >
+            Buka Carousel Studio
+          </Link>
+          <Link
+            href="/carousel/demo"
+            className="rounded-full border border-white/15 px-7 py-4 font-semibold text-zinc-200 transition hover:bg-white/10"
           >
             Buka demo 10 slide
           </Link>

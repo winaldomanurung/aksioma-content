@@ -7,7 +7,7 @@ Aksioma Content Studio membuat carousel dari satu source JSX lalu mengekspornya 
 - Instagram: **1080 × 1350 px (4:5)**
 - TikTok Photo Carousel: **1080 × 1350 px (4:5)**
 
-Exporter sekarang memaksa mode platform langsung pada DOM sebelum screenshot dan memvalidasi ukuran setiap slide. Jika TikTok tidak benar-benar 1080×1920, export akan berhenti dengan error.
+Exporter sekarang memaksa mode platform langsung pada DOM sebelum screenshot dan memvalidasi ukuran setiap slide. Jika canvas tidak sesuai 1080×1350, export akan berhenti dengan error.
 
 ## Setup awal
 
@@ -74,7 +74,7 @@ Requested platform: instagram
 Rendered canvas: 1080x1350
 
 Requested platform: tiktok
-Rendered canvas: 1080x1920
+Rendered canvas: 1080x1350
 ```
 
 Hasil:
@@ -92,7 +92,7 @@ output/
 
 ## Safe area TikTok
 
-Mode TikTok memakai composition 9:16 dengan ruang ekstra di atas, kanan, dan bawah untuk mengurangi risiko headline, body, logo, dan footer tertutup UI TikTok.
+Mode TikTok Photo menggunakan canvas 4:5 dengan margin konten lebih konservatif agar informasi penting tidak dekat dengan batas gambar.
 
 Safe-area overlay hanya tampil saat URL memakai `safe=1`; overlay tersebut tidak ikut diekspor.
 
@@ -235,7 +235,7 @@ Untuk menghindari hasil yang terlalu template, gunakan `FreeformSlide` dengan pr
 - Stack
 - Divider
 
-`TwoColumn`, `ThreeColumn`, dan `ContentGrid` otomatis menjadi satu kolom pada TikTok agar layout tetap aman pada TikTok photo carousel 4:5.
+Pada TikTok Photo 4:5, primitive kolom tetap bisa digunakan; periksa kepadatan dan safe area pada preview sebelum export.
 
 ### Prinsip pemilihan layout
 
@@ -271,3 +271,10 @@ Safe-area preview memakai margin konservatif pada canvas 4:5:
 - plus internal buffer 20px
 
 Background/dekorasi boleh full bleed. Teks, card, logo, footer, page number, dan informasi utama harus tetap berada di dalam content frame.
+
+
+### Template page.jsx yang kompatibel dengan Studio
+
+Buka `app/carousel/studio-template/page.jsx` di GitHub. Ini adalah contoh **page.jsx valid** yang menyimpan definisi carousel di template literal dengan marker `AKSIOMA_STUDIO_JSON_START/END`. Kamu bisa copy seluruh file itu ke AI untuk meminta versi baru, lalu paste seluruh hasilnya ke `/studio`. Studio hanya mengambil bagian JSON di antara marker; kode JSX tidak dieksekusi. File itu juga dapat ditempatkan di repo sebagai route biasa jika memang ingin meng-commit hasilnya.
+
+Versi `app/carousel/demo/page.jsx` menggunakan JSX langsung dan **tidak** dapat ditempel mentah ke Studio. Untuk input Studio, pilih format declarative dari `studio-template/page.jsx`.

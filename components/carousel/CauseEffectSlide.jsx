@@ -7,24 +7,10 @@ export default function CauseEffectSlide({
   effectTitle,
   effectText,
   density = "balanced",
+  chain = [],
+  chainLabel = "Pola yang terjadi",
+  chainCaption = "",
 }) {
-  const chain = [
-    {
-      index: "01",
-      title: "Kesimpulan cepat",
-      note: "Cerita terasa masuk akal, lalu dianggap cukup.",
-    },
-    {
-      index: "02",
-      title: "Cari konfirmasi",
-      note: "Fokus bergeser ke informasi yang mendukung keyakinan awal.",
-    },
-    {
-      index: "03",
-      title: "Keyakinan mengeras",
-      note: "Kesimpulan awal semakin sulit direvisi.",
-    },
-  ];
 
   return (
     <SlideShell
@@ -58,21 +44,21 @@ export default function CauseEffectSlide({
         </div>
       </div>
 
-      <div className="cause-effect-chain">
+      {chain.length > 0 ? <div className="cause-effect-chain">
         <div className="cause-effect-chain-head">
-          <p className="cause-effect-chain-label">Pola yang terjadi</p>
-          <span className="cause-effect-chain-caption">dari asumsi → menjadi keyakinan</span>
+          <p className="cause-effect-chain-label">{chainLabel}</p>
+          {chainCaption ? <span className="cause-effect-chain-caption">{chainCaption}</span> : null}
         </div>
 
         <div className="cause-effect-chain-grid">
           {chain.map((item, index) => (
-            <div key={item.index} className="cause-effect-step">
+            <div key={index} className="cause-effect-step">
               <div className="cause-effect-step-top">
-                <span className="cause-effect-step-index">{item.index}</span>
+                <span className="cause-effect-step-index">{String(index + 1).padStart(2, "0")}</span>
                 <span className="cause-effect-step-dot" aria-hidden="true" />
               </div>
               <h3 className="cause-effect-step-title">{item.title}</h3>
-              <p className="cause-effect-step-note">{item.note}</p>
+              {item.note ? <p className="cause-effect-step-note">{item.note}</p> : null}
 
               {index < chain.length - 1 ? (
                 <span className="cause-effect-step-connector" aria-hidden="true">
@@ -82,7 +68,7 @@ export default function CauseEffectSlide({
             </div>
           ))}
         </div>
-      </div>
+      </div> : null}
     </SlideShell>
   );
 }
