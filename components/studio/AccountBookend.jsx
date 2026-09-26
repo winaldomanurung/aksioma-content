@@ -1,10 +1,13 @@
 import CarouselCanvas from "@/components/carousel/CarouselCanvas";
+import BrandLogo from "@/components/carousel/BrandLogo";
 
 // Account-specific editorial covers. All decoration is native CSS/SVG-free DOM,
 // so the existing browser JPEG exporter captures it without remote assets.
 export default function AccountBookend({kind,account="journey",data,number}){
   const trader=account==="trader";
   const cover=kind==="hero";
+  const handle=trader?"@aksioma.trader":"@aksioma.journey";
+  const website=trader?"aksioma-trader.com":"aksioma-journey.com";
   return (
     <CarouselCanvas slide={number} type={kind} isDark={trader||cover} label={data.title}
       className={"account-bookend "+(trader?"account-bookend--trader":"account-bookend--journey")+" "+(cover?"account-bookend--cover":"account-bookend--end")}>
@@ -13,7 +16,7 @@ export default function AccountBookend({kind,account="journey",data,number}){
       <div className="account-bookend-grid" aria-hidden="true"/>
       <div className="account-bookend-inner">
         <header className="account-bookend-header">
-          <span className="account-bookend-brand">aksioma<span>.</span><strong>{trader?"trader":"journey"}</strong></span>
+          <BrandLogo variant={trader||cover?"light":"dark"} className="account-bookend-original-logo"/>
           <span className="account-bookend-edition">{cover?"THE EDITORIAL / 01":"KEEP GROWING / "+String(number).padStart(2,"0")}</span>
         </header>
         {cover ? (
@@ -45,8 +48,8 @@ export default function AccountBookend({kind,account="journey",data,number}){
           </div>
         )}
         <footer className="account-bookend-footer">
-          <span>{trader?"AKSIOMA / TRADER":"@aksioma.journey"}</span>
-          <span>{trader?"RESEARCH · RISK · DISCIPLINE":"THINK · LEARN · GROW"}</span>
+          <span>{handle}</span>
+          <span>{website}</span>
           <span>{String(number).padStart(2,"0")}</span>
         </footer>
       </div>
