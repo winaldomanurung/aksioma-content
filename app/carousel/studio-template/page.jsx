@@ -37,6 +37,19 @@ keywordCluster {items:[string],dark?}
 miniDiagram {items:[string],dark?}
 twoColumn | threeColumn | contentGrid | stack {children:[nodes],columns?}
 divider {dark?}
+assetIcon {set:"lucide"|"phosphor",name,size?:"sm"|"md"|"lg",
+           tone?:"ink"|"accent"|"light",label?}
+  Lucide names: brain, lightbulb, shield-check, target, network,
+  scale, message-circle, sparkles.
+  Phosphor names: brain, lightbulb, shield-check, target, scales,
+  chat-circle-text, check-circle, sparkle.
+assetShape {name,position?:"full"|"topRight"|"bottomRight"|"bottomLeft",
+            opacity?:"subtle"|"soft"|"bold"}
+  Shape names: wave-red, orbital-rings, soft-blobs, editorial-grid.
+
+All assets are local SVGs; never use arbitrary URL/image paths or unknown
+names. Decorative shapes must stay behind text, and meaningful icons stay
+inside the safe content area. Browse /studio/assets for copyable examples.
 
 Design according to meaning, not mechanical slide rotation; use Freeform
 for editorial composition. Avoid dense text and repeated card grids. A TikTok

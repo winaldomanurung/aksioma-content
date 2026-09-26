@@ -36,6 +36,12 @@ export default function Home() {
             Template AI siap copy
           </Link>
           <Link
+            href="/studio/assets"
+            className="rounded-full border border-white/15 px-7 py-4 font-semibold text-zinc-200 transition hover:bg-white/10"
+          >
+            Asset Library
+          </Link>
+          <Link
             href="/carousel/demo"
             className="rounded-full border border-white/15 px-7 py-4 font-semibold text-zinc-200 transition hover:bg-white/10"
           >

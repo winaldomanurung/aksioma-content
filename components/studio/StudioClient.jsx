@@ -130,7 +130,10 @@ export default function StudioClient(){
             <div className="mt-6 rounded-2xl bg-[#f5f1e8] p-4 text-sm text-zinc-700">
               <p className="font-display font-bold">Buat konten baru dengan AI</p>
               <p className="mt-2 leading-6">Tak perlu copy source dari GitHub. Isi topik di halaman Template AI, lalu salin prompt lengkap dengan satu tombol.</p>
-              <Link href="/studio/template" className="mt-3 inline-flex rounded-full bg-zinc-950 px-5 py-3 font-semibold text-white hover:bg-zinc-800">Buka Template AI →</Link>
+              <div className="mt-3 flex flex-wrap gap-2">
+                <Link href="/studio/template" className="inline-flex rounded-full bg-zinc-950 px-5 py-3 font-semibold text-white hover:bg-zinc-800">Buka Template AI →</Link>
+                <Link href="/studio/assets" className="inline-flex rounded-full border border-black/15 bg-white px-5 py-3 font-semibold text-zinc-900 hover:bg-zinc-50">Lihat Asset Library ↗</Link>
+              </div>
             </div>
           </section>
 

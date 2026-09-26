@@ -5,6 +5,7 @@ import {
   Timeline, Checklist, Callout, Pill, KeywordCluster, MiniDiagram,
   TwoColumn, ThreeColumn, ContentGrid, Stack, Divider
 } from "@/components/carousel";
+import {AssetIcon,AssetShape} from "./AssetPrimitives";
 
 function Primitive({ node }) {
   const children=node.children?.map((child,i)=><Primitive key={i} node={child}/>);
@@ -27,6 +28,8 @@ function Primitive({ node }) {
     case "contentGrid": return <ContentGrid columns={node.columns}>{children}</ContentGrid>;
     case "stack": return <Stack>{children}</Stack>;
     case "divider": return <Divider dark={node.dark}/>;
+    case "assetIcon": return <AssetIcon set={node.set} name={node.name} size={node.size} tone={node.tone} label={node.label}/>;
+    case "assetShape": return <AssetShape name={node.name} position={node.position} opacity={node.opacity}/>;
     default: return null;
   }
 }

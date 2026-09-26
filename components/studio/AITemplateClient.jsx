@@ -38,7 +38,10 @@ export default function AITemplateClient(){
             <h1 className="font-display mt-3 text-3xl font-bold tracking-tight sm:text-5xl">Sekali copy, langsung buat konten.</h1>
             <p className="mt-4 max-w-2xl text-base leading-7 text-zinc-600">Isi topik, salin prompt lengkap, lalu paste ke ChatGPT. Semua aturan komponen, struktur JSON, dan contoh sudah tergabung otomatis.</p>
           </div>
-          <Link href="/studio" className="rounded-full border border-black/15 bg-white px-5 py-3 text-sm font-bold hover:bg-zinc-50">← Kembali ke Studio</Link>
+          <div className="flex flex-wrap gap-2">
+            <Link href="/studio/assets" className="rounded-full border border-black/15 bg-white px-5 py-3 text-sm font-bold hover:bg-zinc-50">Asset Library ↗</Link>
+            <Link href="/studio" className="rounded-full border border-black/15 bg-white px-5 py-3 text-sm font-bold hover:bg-zinc-50">← Kembali ke Studio</Link>
+          </div>
         </header>
 
         <section className="mt-8 rounded-[28px] border border-black/10 bg-white p-5 shadow-sm sm:p-8">

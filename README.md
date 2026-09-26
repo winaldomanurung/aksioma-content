@@ -302,3 +302,33 @@ Browser tetap dapat melarang clipboard sepenuhnya, sehingga tersedia tombol
 Ekspor menggunakan SVG foreignObject → Canvas di browser. Tidak semua
 browser/versi iOS mendukung semua fitur SVG, font, dan CSS. Gunakan
 exporter Playwright lokal bila hasil masih gagal atau tidak setara preview.
+
+
+## Local Asset Library (icons and decorative SVG)
+
+Buka `/studio/assets`. Katalog ini berisi 8 ikon Lucide, 8 ikon Phosphor
+duotone, dan 4 SVG dekoratif orisinal Aksioma. Tombol **Copy JSON**
+menghasilkan primitive `assetIcon` atau `assetShape` yang bisa dimasukkan
+ke dalam `freeform.nodes`. Asset yang tidak ada di registry ditolak
+validator, sehingga input tidak dapat memuat URL gambar sembarangan.
+
+Contoh:
+```json
+{"type":"assetIcon","set":"phosphor","name":"brain","size":"lg","tone":"accent"}
+```
+
+```json
+{"type":"assetShape","name":"orbital-rings","position":"topRight","opacity":"subtle"}
+```
+
+`/studio/template` sekarang mencantumkan seluruh daftar asset yang bisa
+dipilih AI. SVG berasal dari folder `public/assets`, bukan CDN. Lisensi
+ikon Lucide (ISC) dan Phosphor (MIT) disimpan di
+`public/assets/licenses`. Bentuk dekoratif dibuat khusus untuk Aksioma,
+terinspirasi estetika SVG generatif; bukan ekspor resmi Haikei.
+
+**Perhatian:** Browser JPEG exporter belum dijamin identik dengan
+Playwright pada semua browser. Cek hasil JPEG setelah render ikon dan
+dekorasi, terutama di Safari. Semua gambar disimpan sebagai SVG lokal,
+namun hasil akhir tetap bergantung pada kemampuan browser mengekspor
+`foreignObject`.
