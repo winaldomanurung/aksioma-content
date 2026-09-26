@@ -1,5 +1,6 @@
 import { Inter, Lexend } from "next/font/google";
 import "./globals.css";
+import SiteNav from "@/components/studio/SiteNav";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -23,7 +24,7 @@ export default function RootLayout({ children }) {
 
   return (
     <html lang="id" className={rootClass}>
-      <body className="min-h-full">{children}</body>
+      <body className="min-h-full"><SiteNav/>{children}</body>
     </html>
   );
 }

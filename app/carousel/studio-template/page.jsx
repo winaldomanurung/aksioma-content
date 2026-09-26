@@ -19,7 +19,7 @@ causeEffect {causeTitle,causeText,effectTitle,effectText,
 framework {title,steps:[{title,text}]}
 summary {title,items:[string]}
 cta {title,body,cta}
-freeform {eyebrow,dark,density,backgroundWord,cornerLabel,nodes:[...]}
+freeform {eyebrow,dark?,theme?,density,backgroundWord,cornerLabel,nodes:[...]}
 
 Freeform node types:
 slideHeading {title,body?,eyebrow?}
@@ -39,13 +39,13 @@ twoColumn | threeColumn | contentGrid | stack {children:[nodes],columns?}
 divider {dark?}
 assetIcon {set:"lucide"|"phosphor",name,size?:"sm"|"md"|"lg",
            tone?:"ink"|"accent"|"light",label?}
-  Lucide names: brain, lightbulb, shield-check, target, network,
-  scale, message-circle, sparkles.
-  Phosphor names: brain, lightbulb, shield-check, target, scales,
-  chat-circle-text, check-circle, sparkle.
 assetShape {name,position?:"full"|"topRight"|"bottomRight"|"bottomLeft",
             opacity?:"subtle"|"soft"|"bold"}
-  Shape names: wave-red, orbital-rings, soft-blobs, editorial-grid.
+See /studio/assets for exact allowlisted names and usage rationale:
+48 icons, 14 decorative shapes, 18 background themes. AI prompt /studio/template
+includes complete names and suggested uses. NEVER invent asset names.
+Freeform background theme is a slide-level field, NOT a node.
+Theme automatically determines whether text/cards need light or dark foreground.
 
 All assets are local SVGs; never use arbitrary URL/image paths or unknown
 names. Decorative shapes must stay behind text, and meaningful icons stay

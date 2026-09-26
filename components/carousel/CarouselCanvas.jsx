@@ -5,6 +5,8 @@ export default function CarouselCanvas({
   label,
   type = "generic",
   density = "balanced",
+  theme,
+  isDark,
 }) {
   return (
     <section
@@ -12,6 +14,8 @@ export default function CarouselCanvas({
       data-slide={slide}
       data-slide-type={type}
       data-density={density}
+      data-theme={theme || undefined}
+      data-studio-dark={isDark ? "true" : "false"}
       aria-label={label || "Carousel slide " + slide}
       className={["carousel-slide", className].join(" ")}
     >

@@ -7,6 +7,7 @@ export default function FreeformSlide({
   dark = false,
   density = "balanced",
   backgroundWord,
+  theme,
   cornerLabel,
   className = "",
 }) {
@@ -15,6 +16,7 @@ export default function FreeformSlide({
       slide={slide}
       eyebrow={eyebrow}
       dark={dark}
+      theme={theme}
       type="freeform"
       density={density}
       backgroundWord={backgroundWord}

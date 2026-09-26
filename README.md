@@ -332,3 +332,23 @@ Playwright pada semua browser. Cek hasil JPEG setelah render ikon dan
 dekorasi, terutama di Safari. Semua gambar disimpan sebagai SVG lokal,
 namun hasil akhir tetap bergantung pada kemampuan browser mengekspor
 `foreignObject`.
+
+## Asset Library expanded + contrast-safe themes + site navigation
+
+/studio/assets provides 48 locally bundled icons (24 Lucide, 24 Phosphor),
+14 original decorative shapes, and 18 contrast-paired themes.
+Every asset card explains its semantic use and provides copyable JSON.
+Background themes are restricted to freeform and automatically select
+light or dark foreground/card styles; legacy presets remain unchanged.
+
+The persistent top menu links Home, Studio, Template AI, Asset Library,
+and Demo JSX. It is outside the slide canvas, so JPEG excludes the menu.
+
+Download first attempts locally bundled dom-to-image. If that fails,
+the existing SVG/Canvas exporter runs as fallback. Both error messages
+are reported if neither succeeds. Upstream MIT license is stored at
+public/vendor/dom-to-image-LICENSE.txt.
+
+Browser support varies, especially Safari foreignObject. A successful
+Vercel build alone cannot verify JPEG export on every device.
+Use Playwright export locally if both browser methods fail.

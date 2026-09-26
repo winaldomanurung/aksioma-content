@@ -1298,3 +1298,57 @@ body {
 .studio-asset-decoration--soft { opacity:.55; }
 .studio-asset-decoration--bold { opacity:.82; }
 /* Keep the informative icon/label in the safe content flow. Shapes stay behind it. */
+
+
+/* ---- Shared navigational menubar; intentionally outside slide canvas ---- */
+.studio-site-nav {position:sticky;top:0;z-index:100;isolation:isolate;background:rgba(15,15,17,.97);color:#fff;border-bottom:1px solid rgba(255,255,255,.14);backdrop-filter:blur(12px);}
+.studio-site-nav-inner {max-width:1500px;margin:auto;display:flex;align-items:center;justify-content:space-between;gap:24px;padding:14px 24px;}
+.studio-nav-brand {font-family:var(--font-lexend),sans-serif;white-space:nowrap;font-size:19px;font-weight:800;letter-spacing:-.025em;color:#fff;}
+.studio-nav-brand span {color:#fb7185;}
+.studio-nav-brand small {font-size:9px;letter-spacing:.17em;color:#c4c4cc;vertical-align:middle;margin-left:5px;}
+.studio-nav-links {display:flex;gap:7px;align-items:center;overflow-x:auto;scrollbar-width:thin;}
+.studio-nav-link {display:inline-flex;white-space:nowrap;align-items:center;padding:11px 15px;border-radius:9999px;color:#e4e4e7;font-size:13px;font-weight:650;transition:background .15s;}
+.studio-nav-link:hover {background:rgba(255,255,255,.15);color:white;}
+.studio-nav-link--active {background:#ef4444;color:white;}
+@media(max-width:760px){.studio-site-nav-inner{display:block;padding:11px 12px 8px}.studio-nav-brand{display:inline-block;margin:0 0 8px 9px}.studio-nav-links{padding-bottom:4px}.studio-nav-link{padding:9px 13px;font-size:12px}}
+/* ---- Explicit paired foreground/background design tokens ---- */
+.carousel-slide[data-theme="paper"] {background:#f5f1e8!important;color:#18181b!important;}
+.carousel-slide[data-theme="ivory"] {background:linear-gradient(145deg,#fffdf7,#f2eee3)!important;color:#1c1917!important;}
+.carousel-slide[data-theme="sand"] {background:linear-gradient(140deg,#f8ebd8,#eedbc1)!important;color:#29211b!important;}
+.carousel-slide[data-theme="blush"] {background:linear-gradient(140deg,#fff1ee,#f8dcd9)!important;color:#361d24!important;}
+.carousel-slide[data-theme="peach"] {background:linear-gradient(140deg,#fff3df,#f9d5bf)!important;color:#3d2218!important;}
+.carousel-slide[data-theme="lemon"] {background:linear-gradient(140deg,#fff9cf,#f1e7ae)!important;color:#312a11!important;}
+.carousel-slide[data-theme="mint"] {background:linear-gradient(145deg,#ecf9ed,#d6eee1)!important;color:#173027!important;}
+.carousel-slide[data-theme="ice"] {background:linear-gradient(145deg,#effbfe,#dceff6)!important;color:#172d35!important;}
+.carousel-slide[data-theme="lilac"] {background:linear-gradient(140deg,#f8f2ff,#e9e0f9)!important;color:#2c213e!important;}
+.carousel-slide[data-theme="graphite"] {background:linear-gradient(140deg,#111115,#28242d)!important;color:#fff!important;}
+.carousel-slide[data-theme="midnight"] {background:linear-gradient(135deg,#090a10,#201d32)!important;color:#fff!important;}
+.carousel-slide[data-theme="navy"] {background:linear-gradient(140deg,#101e33,#203650)!important;color:#fff!important;}
+.carousel-slide[data-theme="forest"] {background:linear-gradient(140deg,#10291f,#254634)!important;color:#fff!important;}
+.carousel-slide[data-theme="plum"] {background:linear-gradient(145deg,#23172b,#43304e)!important;color:#fff!important;}
+.carousel-slide[data-theme="wine"] {background:linear-gradient(135deg,#361723,#63283a)!important;color:#fff!important;}
+.carousel-slide[data-theme="ember"] {background:linear-gradient(145deg,#451c13,#80371d)!important;color:#fff!important;}
+.carousel-slide[data-theme="cobalt"] {background:linear-gradient(145deg,#10254e,#24469a)!important;color:#fff!important;}
+.carousel-slide[data-theme="teal"] {background:linear-gradient(145deg,#0c3439,#1c5760)!important;color:#fff!important;}
+/* Ensure readable copy regardless of light/dark theme on freeform. */
+.carousel-slide[data-slide-type="freeform"][data-studio-dark="true"] .studio-freeform-body {color:#fff;}
+.carousel-slide[data-slide-type="freeform"][data-studio-dark="true"] .studio-freeform-body .studio-asset-icon {color:#fff;background:rgba(255,255,255,.12);border-color:rgba(255,255,255,.24);}
+.carousel-slide[data-slide-type="freeform"][data-studio-dark="true"] .studio-asset-icon--ink img {filter:brightness(0) invert(1);}
+.carousel-slide[data-slide-type="freeform"][data-studio-dark="true"] .studio-asset-icon--accent img {filter:brightness(0) invert(1);}
+.carousel-slide[data-slide-type="freeform"][data-studio-dark="true"] .studio-asset-icon-label {color:#fff;}
+.carousel-slide[data-slide-type="freeform"][data-studio-dark="false"] .studio-asset-icon {color:#18181b;background:rgba(255,255,255,.68);border-color:rgba(0,0,0,.14);}
+.carousel-slide[data-slide-type="freeform"][data-studio-dark="false"] .studio-asset-icon--light img {filter:brightness(0);}
+.carousel-slide[data-slide-type="freeform"][data-studio-dark="false"] .studio-asset-icon-label {color:#18181b;}
+.carousel-slide[data-slide-type="freeform"][data-studio-dark="true"] .studio-freeform-body .text-zinc-600,
+.carousel-slide[data-slide-type="freeform"][data-studio-dark="true"] .studio-freeform-body .text-zinc-700 {color:#e4e4e7!important;}
+.carousel-slide[data-slide-type="freeform"][data-studio-dark="true"] .studio-freeform-body .bg-white\/60,
+.carousel-slide[data-slide-type="freeform"][data-studio-dark="true"] .studio-freeform-body .bg-white\/55 {background:rgba(255,255,255,.12)!important;}
+
+/* Robust label and paragraph contrast over all Freeform theme variants. */
+.carousel-slide[data-slide-type="freeform"][data-studio-dark="true"] .studio-freeform-body .text-zinc-500,
+.carousel-slide[data-slide-type="freeform"][data-studio-dark="true"] .studio-freeform-body .text-zinc-400 {color:#e4e4e7!important;}
+.carousel-slide[data-slide-type="freeform"][data-studio-dark="true"] .studio-freeform-body .text-red-500,
+.carousel-slide[data-slide-type="freeform"][data-studio-dark="true"] .studio-freeform-body .text-red-600 {color:#fecdd3!important;}
+.carousel-slide[data-slide-type="freeform"][data-studio-dark="false"] .studio-freeform-body .text-red-500,
+.carousel-slide[data-slide-type="freeform"][data-studio-dark="false"] .studio-freeform-body .text-red-600 {color:#991b1b!important;}
+.carousel-slide[data-slide-type="freeform"][data-studio-dark="true"] .slide-content > .flex:first-child .text-red-500 {color:#fecdd3!important;}

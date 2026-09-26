@@ -1,3 +1,4 @@
+import {backgroundThemes} from "@/lib/studio/assets";
 import {
   HeroSlide, StatementSlide, BulletSlide, CompareSlide, CauseEffectSlide,
   FrameworkSlide, SummarySlide, CTASlide, FreeformSlide, SlideHeading,
@@ -7,13 +8,13 @@ import {
 } from "@/components/carousel";
 import {AssetIcon,AssetShape} from "./AssetPrimitives";
 
-function Primitive({ node }) {
-  const children=node.children?.map((child,i)=><Primitive key={i} node={child}/>);
+function Primitive({ node, dark = false }) {
+  const children=node.children?.map((child,i)=><Primitive key={i} node={child} dark={dark}/>);
   switch(node.type) {
-    case "slideHeading": return <SlideHeading title={node.title} eyebrow={node.eyebrow} body={node.body} align={node.align}/>;
-    case "infoCard": return <InfoCard title={node.title} eyebrow={node.eyebrow} variant={node.variant}><>{node.text}</></InfoCard>;
-    case "statCard": return <StatCard value={node.value} label={node.label} note={node.note} variant={node.variant}/>;
-    case "bigNumber": return <BigNumber value={node.value} label={node.label} dark={node.dark}/>;
+    case "slideHeading": return <SlideHeading title={node.title} eyebrow={node.eyebrow} body={node.body} align={node.align} dark={dark}/>;
+    case "infoCard": return <InfoCard title={node.title} eyebrow={node.eyebrow} variant={dark ? (node.variant==="glass"?"glass":"dark") : (["dark","glass"].includes(node.variant)?"soft":node.variant)}><>{node.text}</></InfoCard>;
+    case "statCard": return <StatCard value={node.value} label={node.label} note={node.note} variant={dark?"dark":"light"}/>;
+    case "bigNumber": return <BigNumber value={node.value} label={node.label} dark={dark}/>;
     case "quoteCard": return <QuoteCard quote={node.quote} source={node.source} dark={node.dark}/>;
     case "diagramNode": return <DiagramNode title={node.title} body={node.body} accent={node.accent} dark={node.dark}/>;
     case "connector": return <Connector direction={node.direction} label={node.label} dark={node.dark}/>;
@@ -28,7 +29,7 @@ function Primitive({ node }) {
     case "contentGrid": return <ContentGrid columns={node.columns}>{children}</ContentGrid>;
     case "stack": return <Stack>{children}</Stack>;
     case "divider": return <Divider dark={node.dark}/>;
-    case "assetIcon": return <AssetIcon set={node.set} name={node.name} size={node.size} tone={node.tone} label={node.label}/>;
+    case "assetIcon": return <AssetIcon set={node.set} name={node.name} size={node.size} tone={node.tone|| (dark?"light":"ink")} label={node.label}/>;
     case "assetShape": return <AssetShape name={node.name} position={node.position} opacity={node.opacity}/>;
     default: return null;
   }
@@ -45,14 +46,17 @@ export function StudioSlide({data,number}){
     case "framework": return <FrameworkSlide {...s} slide={slide}/>;
     case "summary": return <SummarySlide {...s} slide={slide}/>;
     case "cta": return <CTASlide {...s} slide={slide}/>;
-    case "freeform": return (
-      <FreeformSlide slide={slide} eyebrow={s.eyebrow} dark={s.dark} density={s.density}
+    case "freeform": {
+      const dark=s.theme ? (backgroundThemes[s.theme]?.dark ?? !!s.dark) : !!s.dark;
+      return (
+      <FreeformSlide slide={slide} eyebrow={s.eyebrow} dark={dark} theme={s.theme} density={s.density}
         backgroundWord={s.backgroundWord} cornerLabel={s.cornerLabel}>
         <div className="studio-freeform-body">
-          {s.nodes.map((n,i)=><Primitive key={i} node={n}/>)}
+          {s.nodes.map((n,i)=><Primitive key={i} node={n} dark={dark}/>)}
         </div>
       </FreeformSlide>
     );
+    }
     default: return null;
   }
 }

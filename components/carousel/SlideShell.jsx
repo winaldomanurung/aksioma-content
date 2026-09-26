@@ -3,6 +3,7 @@ import BackgroundWord from "./BackgroundWord";
 import CarouselCanvas from "./CarouselCanvas";
 import CornerLabel from "./CornerLabel";
 import SlideFooter from "./SlideFooter";
+import {backgroundThemes} from "@/lib/studio/assets";
 
 export default function SlideShell({
   children,
@@ -14,15 +15,17 @@ export default function SlideShell({
   density = "balanced",
   backgroundWord,
   cornerLabel,
+  theme,
 }) {
+  const resolvedDark = theme ? (backgroundThemes[theme]?.dark ?? dark) : dark;
   const canvasClass = [
-    dark ? "bg-zinc-950 text-white" : "bg-[#f5f1e8] text-zinc-950",
+    resolvedDark ? "bg-zinc-950 text-white" : "bg-[#f5f1e8] text-zinc-950",
     className,
   ].join(" ");
 
   const eyebrowClass = [
     "font-display text-[22px] font-semibold uppercase tracking-[0.16em]",
-    dark ? "text-red-400" : "text-red-600",
+    resolvedDark ? "text-red-400" : "text-red-700",
   ].join(" ");
 
   return (
@@ -30,11 +33,13 @@ export default function SlideShell({
       slide={slide}
       type={type}
       density={density}
+      theme={theme}
+      isDark={resolvedDark}
       className={canvasClass}
     >
       {backgroundWord ? (
         <BackgroundWord
-          dark={dark}
+          dark={resolvedDark}
           className="bottom-[170px] right-[-28px] rotate-[-7deg]"
         >
           {backgroundWord}
@@ -42,13 +47,13 @@ export default function SlideShell({
       ) : null}
 
       <AccentLine
-        dark={dark}
+        dark={resolvedDark}
         className="right-[76px] top-[120px] rotate-[-18deg] opacity-70"
       />
 
       {cornerLabel ? (
         <CornerLabel
-          dark={dark}
+          dark={resolvedDark}
           className="right-[76px] top-[78px]"
         >
           {cornerLabel}
@@ -59,7 +64,7 @@ export default function SlideShell({
         <div className="slide-content flex min-h-0 flex-col">
           {eyebrow ? (
             <div className="flex items-center gap-5">
-              <span className={dark ? "h-[3px] w-14 bg-red-400" : "h-[3px] w-14 bg-red-500"} />
+              <span className={resolvedDark ? "h-[3px] w-14 bg-red-400" : "h-[3px] w-14 bg-red-600"} />
               <p className={eyebrowClass}>{eyebrow}</p>
             </div>
           ) : null}
@@ -67,7 +72,7 @@ export default function SlideShell({
           {children}
         </div>
 
-        <SlideFooter slide={slide} dark={dark} />
+        <SlideFooter slide={slide} dark={resolvedDark} />
       </div>
     </CarouselCanvas>
   );
