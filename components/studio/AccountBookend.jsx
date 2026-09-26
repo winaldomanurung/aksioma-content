@@ -38,19 +38,19 @@ export default function AccountBookend({kind,account="journey",data,number}){
             <h2 className="account-bookend-end-title">{data.title}</h2>
             <p className="account-bookend-end-body">{data.body||data.subtitle}</p>
             <div className="account-bookend-action">
-              <div className="account-bookend-action-icon" aria-hidden="true">{trader?"↗":"✦"}</div>
-              <div>
-                <span>{trader?"BUILD YOUR MARKET PERSPECTIVE":"GROW WITH INTENTION"}</span>
-                <strong>{data.cta||"Simpan dan bagikan insight ini."}</strong>
+              <div className="account-bookend-action-copy">
+                <span className="account-bookend-action-eyebrow">{trader?"LANJUTKAN BELAJAR DI":"TEMUKAN MATERI LAINNYA DI"}</span>
+                <strong className="account-bookend-action-website">{website}</strong>
+                <span className="account-bookend-action-cta">{data.cta||"Simpan dan bagikan insight ini."}</span>
               </div>
               <span className="account-bookend-action-arrow" aria-hidden="true">↗</span>
             </div>
           </div>
         )}
         <footer className="account-bookend-footer">
-          <span>{handle}</span>
-          <span>{website}</span>
-          <span>{String(number).padStart(2,"0")}</span>
+          <span className="account-bookend-footer-handle">{handle}</span>
+          <span className="account-bookend-footer-rule" aria-hidden="true"/>
+          <span className="account-bookend-footer-page">{String(number).padStart(2,"0")}</span>
         </footer>
       </div>
     </CarouselCanvas>
