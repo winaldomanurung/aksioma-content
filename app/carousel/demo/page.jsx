@@ -64,7 +64,7 @@ PRESET SLIDES
 2) StatementSlide
    StatementSlide({
      slide, eyebrow?, lead, highlight, note?,
-     density?, keywords?
+     density?
    })
    USE FOR: one provocative idea, reframe, misconception, principle.
 
@@ -177,7 +177,7 @@ ANTI-TEMPLATE RULES
 - Do NOT force every idea into numbered circles/cards.
 - Vary density intentionally across the carousel.
 - Vary composition: statement, contrast, process, diagram, freeform, summary.
-- Background words / lines / shapes must support hierarchy or meaning; avoid
+- Do not append keyword chips to statements merely to repeat the text.\n- Background words / lines / shapes must support hierarchy or meaning; avoid
   arbitrary decoration.
 - Prefer one strong idea per slide over adding text merely to fill space.
 - If a slide feels empty, improve hierarchy/composition before adding copy.
@@ -293,7 +293,6 @@ export default async function DemoCarouselPage({ searchParams }) {
         highlight="benar hanya karena terasa masuk akal."
         note="Rasa yakin adalah pengalaman psikologis. Ia bukan bukti bahwa kesimpulan kita sudah melewati pengujian."
         density="bold"
-        keywords={["rasa yakin", "intuisi", "bukti"]}
       />
 
       <BulletSlide
