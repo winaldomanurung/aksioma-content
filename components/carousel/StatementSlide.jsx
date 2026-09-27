@@ -1,4 +1,3 @@
-import KeywordCluster from "./KeywordCluster";
 import SlideShell from "./SlideShell";
 
 export default function StatementSlide({
@@ -8,7 +7,6 @@ export default function StatementSlide({
   highlight,
   note,
   density = "bold",
-  keywords = ["belief", "evidence", "assumption"],
 }) {
   return (
     <SlideShell
@@ -33,7 +31,6 @@ export default function StatementSlide({
             <p className="statement-note text-zinc-600">{note}</p>
           ) : null}
 
-          <KeywordCluster items={keywords} className="mt-8" />
         </div>
 
         <div className="statement-visual" aria-hidden="true">
