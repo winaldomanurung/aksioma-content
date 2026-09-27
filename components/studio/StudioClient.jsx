@@ -73,6 +73,17 @@ export default function StudioClient(){
     catch{setError("Penyimpanan browser tidak tersedia. Salin source ke tempat lain.");}
   }
 
+  function clearContent(){
+    if(working||!source.trim())return;
+    if(!window.confirm("Hapus seluruh isi editor? Draft tersimpan di browser juga akan dihapus."))return;
+    try{localStorage.removeItem(DRAFT_KEY);}
+    catch{/* private browsing */}
+    setSource("");
+    setError("");
+    clearDownload();
+    setStatus("Editor dikosongkan. Preview terakhir tetap terlihat sampai carousel baru dirender.");
+  }
+
   async function exportImages(all=false){
     if(working)return;
     setWorking(true);setError("");setStatus("Menyiapkan font dan asset…");clearDownload();
@@ -138,6 +149,7 @@ export default function StudioClient(){
               <button type="button" onClick={render} disabled={working} className="rounded-full bg-red-500 px-5 py-3 text-sm font-bold text-white hover:bg-red-600 disabled:opacity-50">Render carousel</button>
               <button type="button" onClick={saveDraft} className="rounded-full border border-black/15 px-4 py-3 text-sm font-semibold hover:bg-zinc-50">Save draft</button>
               <button type="button" onClick={()=>{setSource(INITIAL);setStatus("Contoh dimuat. Tekan Render carousel.");setError("");}} className="rounded-full border border-black/15 px-4 py-3 text-sm font-semibold hover:bg-zinc-50">Load contoh</button>
+              <button type="button" onClick={clearContent} disabled={working||!source.trim()} className="rounded-full border border-red-200 px-4 py-3 text-sm font-semibold text-red-700 hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-40">Hapus konten</button>
             </div>
             {error&&<div role="alert" className="mt-4 rounded-xl border border-red-200 bg-red-50 p-3 text-sm leading-6 text-red-800">{error}</div>}
             {status&&<div role="status" className="mt-4 rounded-xl border border-emerald-200 bg-emerald-50 p-3 text-sm leading-6 text-emerald-900">{status}</div>}
