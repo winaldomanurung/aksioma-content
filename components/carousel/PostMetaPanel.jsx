@@ -6,13 +6,13 @@ import {copyText} from "@/lib/studio/clipboard";
 // Display and clipboard must use the very same plain-text caption.
 function normalizeCaption(value) {
   return String(value ?? "")
-    .replace(/\\r\\n?/g, "\n")
-    .replace(/\\\\r\\\\n|\\\\n|\\\\r/g, "\n")
+    .replace(/\r\n?/g, "\n")
+    .replace(/\\r\\n|\\n|\\r/g, "\n")
     .replace(/\n[ \t]+/g, "\n")
     .replace(/[ \t]+\n/g, "\n");
 }
 
-function MetaBlock({label, value, children, className = "", preserveLines = false}) {
+function MetaBlock({label, value, children, className = ""}) {
   const [copyState,setCopyState]=useState("");
   const content=String(value ?? "");
   async function handleCopy(){
@@ -33,7 +33,7 @@ function MetaBlock({label, value, children, className = "", preserveLines = fals
           {copyState==="Tersalin"?"✓ Tersalin":"Copy"}
         </button>
       </div>
-      <div className={["mt-3 break-words text-[15px] leading-6 text-zinc-800",preserveLines?"whitespace-pre-wrap":"whitespace-pre-wrap"].join(" ")}>
+      <div className="mt-3 whitespace-pre-wrap break-words text-[15px] leading-6 text-zinc-800">
         {children ?? content}
       </div>
       {copyState && copyState!=="Tersalin" ? <p role="alert" className="mt-2 text-xs text-red-700">{copyState}</p> : null}
@@ -64,7 +64,7 @@ export default function PostMetaPanel({
         <MetaBlock label="Objective" value={objective} className="col-span-4"/>
         <MetaBlock label="Content pillar" value={contentPillar} className="col-span-4"/>
         <MetaBlock label="Primary hook" value={hook} className="col-span-4"/>
-        <MetaBlock label="Instagram caption" value={instagramText} className="col-span-6" preserveLines/>
+        <MetaBlock label="Instagram caption" value={instagramText} className="col-span-6"/>
         <MetaBlock label="TikTok caption" value={tiktokText} className="col-span-6" preserveLines/>
         <MetaBlock label="CTA" value={cta} className="col-span-5"/>
         <MetaBlock label="Keywords" value={keywordText} className="col-span-3">
