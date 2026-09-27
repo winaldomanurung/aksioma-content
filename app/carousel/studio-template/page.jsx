@@ -11,7 +11,7 @@ never compiles or executes pasted JavaScript/JSX.
 
 Slide types:
 hero {eyebrow,title,subtitle,accent,density}
-statement {eyebrow,lead,highlight,note,keywords,density}
+statement {eyebrow,lead,highlight,note,density}
 bullet {eyebrow,title,items:[{title,text}],density}
 compare {title,left:{label,heading,points:[]},right:{label,heading,points:[]}}
 causeEffect {causeTitle,causeText,effectTitle,effectText,
@@ -33,7 +33,7 @@ timeline {items:[{title,text}],dark?}
 checklist {items:[string],dark?}
 callout {label?,text,dark?}
 pill {text,dark?}
-keywordCluster {items:[string],dark?}
+keywordCluster {items:[string],dark?} // only for meaningful categorization, not decorative repetition
 miniDiagram {items:[string],dark?}
 twoColumn | threeColumn | contentGrid | stack {children:[nodes],columns?}
 divider {dark?}
@@ -51,7 +51,7 @@ All assets are local SVGs; never use arbitrary URL/image paths or unknown
 names. Decorative shapes must stay behind text, and meaningful icons stay
 inside the safe content area. Browse /studio/assets for copyable examples.
 
-Design according to meaning, not mechanical slide rotation; use Freeform
+Never add decorative keyword pills below a statement. The statement itself\nshould carry the message; use a diagram or comparison only when it adds meaning.\nDesign according to meaning, not mechanical slide rotation; use Freeform
 for editorial composition. Avoid dense text and repeated card grids. A TikTok
 photo carousel is 1080×1350 with extra content margins. Meta requires a
 working title, captions for both platforms, objective, pillar, hook, CTA,
