@@ -75,7 +75,6 @@ export default function StudioClient(){
 
   function clearContent(){
     if(working||!source.trim())return;
-    if(!window.confirm("Hapus seluruh isi editor? Draft tersimpan di browser juga akan dihapus."))return;
     try{localStorage.removeItem(DRAFT_KEY);}
     catch{/* private browsing */}
     setSource("");
