@@ -48,7 +48,7 @@ Freeform background theme is a slide-level field, NOT a node.
 Theme automatically determines whether text/cards need light or dark foreground.
 
 All assets are local SVGs; never use arbitrary URL/image paths or unknown
-names. Decorative shapes must stay behind text, and meaningful icons stay
+names. Freeform nodes flow BELOW the section eyebrow; never overlap the section label.\nKeep the combined height of icons, heading, cards, and gaps within the slide.\nReduce redundant icons or shorten copy if a composition becomes crowded.\nDecorative shapes must stay behind text, and meaningful icons stay
 inside the safe content area. Browse /studio/assets for copyable examples.
 
 Never add decorative keyword pills below a statement. The statement itself\nshould carry the message; use a diagram or comparison only when it adds meaning.\nDesign according to meaning, not mechanical slide rotation; use Freeform
