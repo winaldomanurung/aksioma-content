@@ -1267,6 +1267,17 @@ body {
   gap: 26px;
   margin-top: 42px;
   min-width: 0;
+  /* Keep overflowing nodes below the section heading, never over it. */
+  overflow: hidden;
+}
+.carousel-slide[data-slide-type="freeform"] .slide-content > .flex:first-child {
+  flex: none;
+  position: relative;
+  z-index: 3;
+  min-height: max-content;
+}
+.carousel-slide[data-slide-type="freeform"] .studio-freeform-body > :not(.studio-asset-decoration) {
+  flex-shrink: 0;
 }
 .studio-freeform-body > .primitive-two-column,
 .studio-freeform-body > .primitive-three-column,
