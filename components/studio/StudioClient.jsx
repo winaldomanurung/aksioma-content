@@ -35,7 +35,7 @@ function SlidePreview({data,number,account,total}){
 export default function StudioClient(){
   const [source,setSource]=useState(INITIAL);
   const [carousel,setCarousel]=useState(exampleCarousel);
-  const [platform,setPlatform]=useState("instagram");
+  const [platform,setPlatform]=useState("tiktok");
   const [account,setAccount]=useState("journey");
   const [safe,setSafe]=useState(false);
   const [error,setError]=useState("");
