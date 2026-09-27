@@ -299,8 +299,7 @@ body {
   padding: 24px;
 }
 
-.bullet-card:nth-child(2) { margin-left: 34px; }
-.bullet-card:nth-child(3) { margin-left: 68px; }
+.bullet-card:nth-child(n) { margin-left: 0; }
 
 .bullet-number {
   display: flex;
@@ -794,8 +793,7 @@ body {
   padding: 34px;
 }
 
-.carousel-stage[data-platform="tiktok"] .bullet-card:nth-child(2) { margin-left: 46px; }
-.carousel-stage[data-platform="tiktok"] .bullet-card:nth-child(3) { margin-left: 92px; }
+.carousel-stage[data-platform="tiktok"] .bullet-card:nth-child(n) { margin-left: 0; }
 
 .carousel-stage[data-platform="tiktok"] .compare-title {
   margin-top: 70px;
@@ -1094,8 +1092,7 @@ body {
   padding: 22px;
 }
 
-.carousel-stage[data-platform="tiktok"] .bullet-card:nth-child(2) { margin-left: 28px; }
-.carousel-stage[data-platform="tiktok"] .bullet-card:nth-child(3) { margin-left: 56px; }
+.carousel-stage[data-platform="tiktok"] .bullet-card:nth-child(n) { margin-left: 0; }
 
 .carousel-stage[data-platform="tiktok"] .compare-title {
   margin-top: 46px;
