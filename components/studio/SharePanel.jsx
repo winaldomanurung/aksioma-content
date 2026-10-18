@@ -2,7 +2,7 @@
 
 import {useState} from "react";
 import {copyText} from "@/lib/studio/clipboard";
-import {canShareFiles,captionFor,shareCarousel} from "@/lib/studio/post-kit";
+import {canShareFiles,captionFor,shareCarousel,shareEnvironment} from "@/lib/studio/post-kit";
 
 // Hands the exported JPEGs and caption to the phone's share sheet (pick
 // Instagram or TikTok there), or lets the person copy the caption and upload
@@ -13,11 +13,21 @@ export default function SharePanel({files,meta,platform,working=false,onPrepare}
   const caption=captionFor(meta,platform);
   const asFiles=(files||[]).map(f=>new File([f.blob],f.name.split("/").pop(),{type:"image/jpeg"}));
   const shareable=canShareFiles(asFiles);
-  async function share(){
+  const [detail,setDetail]=useState("");
+  async function share(list=asFiles){
     try{
-      const outcome=await shareCarousel({files:asFiles,title:meta.title,text:caption});
+      setDetail("");
+      const outcome=await shareCarousel({files:list,title:meta.title,text:caption});
       setMessage(outcome==="shared"?"Dibagikan. Bila caption tidak ikut terisi, tempel dari tombol Salin caption.":"Dibatalkan.");
-    }catch(e){setMessage(e.message);}
+    }catch(e){
+      setMessage(e.message);
+      const env=shareEnvironment();
+      const hints=[];
+      if(env.iframe)hints.push("halaman dibuka di dalam frame/preview");
+      if(env.inApp)hints.push("sepertinya di browser dalam aplikasi (webview)");
+      if(env.secure===false)hints.push("bukan koneksi HTTPS");
+      setDetail((hints.length?"Kemungkinan penyebab: "+hints.join(", ")+". Buka alamat situs ini langsung di Chrome (Android) atau Safari (iPhone). ":"")+"Kode: "+(e?.name||"Error")+".");
+    }
   }
   async function copy(){
     try{await copyText(caption);setMessage("Caption "+(platform==="tiktok"?"TikTok":"Instagram")+" disalin.");}
@@ -33,13 +43,15 @@ export default function SharePanel({files,meta,platform,working=false,onPrepare}
       </ol>
       <div className="mt-3 flex flex-wrap gap-2">
         {!files?<button type="button" onClick={onPrepare} disabled={working} className="min-h-11 rounded-full bg-zinc-950 px-5 py-2.5 text-sm font-bold text-white hover:bg-zinc-800 disabled:opacity-50">{working?"Menyiapkan…":"1. Siapkan gambar"}</button>:null}
-        <button type="button" onClick={share} disabled={!shareable||!files} className="min-h-11 rounded-full bg-emerald-700 px-5 py-2.5 text-sm font-bold text-white hover:bg-emerald-800 disabled:opacity-40">{files?"Bagikan ke aplikasi":"2. Bagikan ke aplikasi"}</button>
+        <button type="button" onClick={()=>share()} disabled={!shareable||!files} className="min-h-11 rounded-full bg-emerald-700 px-5 py-2.5 text-sm font-bold text-white hover:bg-emerald-800 disabled:opacity-40">{files?"Bagikan ke aplikasi":"2. Bagikan ke aplikasi"}</button>
         <button type="button" onClick={copy} className="min-h-11 rounded-full border border-emerald-700 px-5 py-2.5 text-sm font-semibold text-emerald-900">Salin caption</button>
         <a href={platform==="tiktok"?"https://www.tiktok.com/upload":"https://www.instagram.com/"} target="_blank" rel="noreferrer" className="inline-flex min-h-11 items-center rounded-full border border-black/15 px-5 py-2.5 text-sm font-semibold text-zinc-800">Buka {platform==="tiktok"?"TikTok":"Instagram"} ↗</a>
       </div>
       {!files?<p className="mt-2 text-xs leading-5 text-zinc-500">Tekan “Siapkan gambar” dulu; setelah selesai tombol Bagikan aktif.</p>:null}
       {files&&!shareable?<p className="mt-2 text-xs leading-5 text-zinc-500">Peramban ini belum bisa membagikan file langsung (umum di desktop). Gunakan Simpan file lalu unggah dari aplikasi.</p>:null}
+      {files&&files.length>1&&shareable?<div className="mt-3"><p className="text-xs font-semibold text-zinc-700">Atau bagikan satu per satu:</p><div className="mt-2 flex flex-wrap gap-2">{asFiles.map((file,i)=><button key={file.name} type="button" onClick={()=>share([file])} className="min-h-11 min-w-11 rounded-full border border-emerald-700 px-3 text-xs font-bold text-emerald-900">{i+1}</button>)}</div></div>:null}
       {message?<p role="status" className="mt-2 text-xs text-emerald-900">{message}</p>:null}
+      {detail?<p className="mt-1 text-xs leading-5 text-zinc-600">{detail}</p>:null}
     </section>
   );
 }
