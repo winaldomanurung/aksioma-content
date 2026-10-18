@@ -9,6 +9,10 @@ import {StudioSlide} from "./StudioSlide";
 import PreviewBoundary from "./PreviewBoundary";
 import ImageEditorOverlay from "./ImageEditorOverlay";
 import ImageToolbar from "./ImageToolbar";
+import ImageLibrary from "./ImageLibrary";
+import ImagePicker from "./ImagePicker";
+import {collectImageIds,listImageSlots,setAtPath} from "@/lib/studio/images";
+import {useImageLibrary} from "@/lib/studio/image-store";
 import {updateSlideInSource} from "@/lib/studio/source-edit";
 import {fitWarnings} from "@/lib/studio/component-specs";
 import PostMetaPanel from "@/components/carousel/PostMetaPanel";
@@ -145,26 +149,38 @@ export default function StudioClient(){
     finally{setWorking(false);}
   }
 
+  const library=useImageLibrary();
   const baseSlide=carousel.slides[selected]||carousel.slides[0];
   const currentImages=baseSlide.images||[];
   const current=liveImages?{...baseSlide,images:liveImages}:baseSlide;
   const warnings=fitWarnings(baseSlide);
 
-  // Commit a finished drag/resize/upload: update the preview AND the source text.
-  function applyImages(list){
+  // Commit a change to one slide (image overlay edit, slot assignment): update
+  // the preview AND the source text.
+  function applySlidePatch(patch){
     setLiveImages(null);
     const index=Math.min(selected,carousel.slides.length-1);
     const nextCarousel={...carousel,slides:carousel.slides.map((slide,i)=>{
       if(i!==index)return slide;
       const next={...slide};
-      if(list.length)next.images=list;else delete next.images;
+      for(const [key,value] of Object.entries(patch)){
+        if(value===undefined||(Array.isArray(value)&&!value.length))delete next[key];else next[key]=value;
+      }
       return next;
     })};
     setRendered(nextCarousel);
     clearDownload();
-    try{setEdited(updateSlideInSource(source,index,{images:list}));}
-    catch(e){setError("Posisi gambar berubah di preview, tetapi source tidak bisa diperbarui otomatis: "+(e?.message||e));}
+    try{setEdited(updateSlideInSource(source,index,patch));}
+    catch(e){setError("Perubahan tampil di preview, tetapi source tidak bisa diperbarui otomatis: "+(e?.message||e));}
   }
+  const applyImages=list=>applySlidePatch({images:list});
+  function assignSlot(path,id){
+    const next=setAtPath(baseSlide,path,id);
+    applySlidePatch({[path[0]]:next[path[0]]});
+  }
+  const slots=listImageSlots(baseSlide);
+  const missing=library.loaded?collectImageIds(baseSlide).filter(id=>!library.rows.some(r=>r.id===id)):[];
+
   return (
     <main className="min-h-screen bg-[#ebe8e1] px-4 py-8 text-zinc-900 sm:px-7 lg:py-12">
       <div className="mx-auto max-w-[1500px]">
@@ -271,7 +287,21 @@ export default function StudioClient(){
               <p className="font-bold">Perkiraan konten terlalu padat (berdasarkan pengukuran layout)</p>
               <ul className="mt-1 list-disc pl-5">{warnings.map((w,i)=><li key={i}>{w}</li>)}</ul>
             </div>:null}
+            {missing.length?<div role="status" className="mt-3 rounded-xl border border-amber-300 bg-amber-50 p-3 text-xs leading-5 text-amber-900">
+              <p className="font-bold">Gambar tidak ditemukan di browser ini</p>
+              <p>Id: {missing.join(", ")}. Unggah ulang di Perpustakaan Gambar dan pilih pada slot, atau hapus dari JSON.</p>
+            </div>:null}
+            {!allVisible&&slots.length?<section aria-label="Slot gambar" className="mt-4 rounded-[20px] border border-black/10 bg-white p-4" data-slot-panel="true">
+              <p className="font-display text-sm font-bold">Slot gambar di slide ini</p>
+              <ul className="mt-3 space-y-3">
+                {slots.map((slot,i)=><li key={slot.path.join(".")+i} className="grid gap-1 sm:grid-cols-[140px_1fr] sm:items-center">
+                  <span className="text-xs font-semibold text-zinc-600">{slot.label}</span>
+                  <ImagePicker label={"Gambar untuk "+slot.label} value={slot.id} onChange={id=>assignSlot(slot.path,id)}/>
+                </li>)}
+              </ul>
+            </section>:null}
             {!allVisible?<div className="mt-4"><ImageToolbar images={currentImages} selectedId={selectedImage} onSelect={setSelectedImage} onChange={applyImages}/></div>:null}
+            {!allVisible?<div className="mt-4"><ImageLibrary/></div>:null}
             <p className="mt-3 text-xs leading-5 text-zinc-500">Safe area adalah panduan konservatif. Sebelum posting, periksa hasil di TikTok. Export browser mungkin berbeda sedikit dari Playwright untuk font/efek tertentu.</p>
           </section>
         </div>

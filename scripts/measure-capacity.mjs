@@ -126,6 +126,16 @@ for (const [name, def] of Object.entries(primitiveLists)) {
 
 // Single text fields: the longest value that still fits (other fields medium).
 const charCases = [];
+// Fixed-size blocks: does each size fit under a standard heading?
+const fitCases = [];
+for (const size of ["sm", "md", "lg"]) {
+  fitCases.push({ key: "photoHero:" + size, build: () => freeform([{ type: "photoHero", size, title: text(30), text: text(90, 1) }], { heading: true }) });
+  fitCases.push({ key: "photoHero:" + size + ":overlay", build: () => freeform([{ type: "photoHero", size, overlay: true, title: text(30), text: text(90, 1) }], { heading: true }) });
+}
+for (const size of ["sm", "md", "lg"]) {
+  fitCases.push({ key: "phoneMockup:" + size, build: () => freeform([{ type: "phoneMockup", size, caption: text(80) }], { heading: true }) });
+  for (const n of [2, 3, 4]) fitCases.push({ key: "collage:" + size + ":" + n, build: () => freeform([{ type: "collage", size, items: range(n).map((i) => ({ caption: text(20, i) })) }], { heading: true }) });
+}
 const addChar = (key, build, extra = {}) => charCases.push({ key, build, ...extra });
 addChar("hero.title", (n) => ({ type: "hero", eyebrow: text(20), title: text(n), subtitle: text(110, 2) }), { number: 1, accounts: ["journey", "trader"] });
 addChar("hero.subtitle", (n) => ({ type: "hero", eyebrow: text(20), title: text(40), subtitle: text(n, 2) }), { number: 1, accounts: ["journey", "trader"] });
@@ -169,6 +179,12 @@ ffSingle("pollCard.question", (n) => ({ type: "pollCard", question: text(n), opt
 ffSingle("sourceNote.text", (n) => ({ type: "sourceNote", text: text(n) }));
 ffSingle("progressRing.label", (n) => ({ type: "progressRing", value: 64, label: text(n), note: text(60, 1) }));
 ffSingle("progressRing.note", (n) => ({ type: "progressRing", value: 64, label: text(24), note: text(n, 1) }));
+ffSingle("avatarQuote.quote", (n) => ({ type: "avatarQuote", quote: text(n), name: text(24, 1), role: text(40, 2) }));
+ffSingle("avatarQuote.role", (n) => ({ type: "avatarQuote", quote: text(90), name: text(24, 1), role: text(n, 2) }));
+for (const field of ["title", "text"]) {
+  addChar("photoHero." + field, (n) => freeform([{ type: "photoHero", size: "sm", title: field === "title" ? text(n) : text(30), text: field === "text" ? text(n, 1) : text(80, 1) }]));
+}
+ffSingle("phoneMockup.caption", (n) => ({ type: "phoneMockup", size: "md", caption: text(n) }));
 ffSingle("pill.text", (n) => ({ type: "pill", text: text(n) }));
 
 // ---------- browser side ----------
@@ -298,6 +314,7 @@ async function main() {
     classes: CLASSES,
     lists: {},
     chars: {},
+    fits: {},
   };
 
   const listNames = Object.keys(listCases);
@@ -336,6 +353,14 @@ async function main() {
       data.chars[entry.key][platform] = best;
     }
     console.log("chars " + entry.key.padEnd(28) + " instagram=" + data.chars[entry.key].instagram + "  tiktok=" + data.chars[entry.key].tiktok);
+  }
+
+  for (const entry of fitCases) {
+    data.fits[entry.key] = {};
+    for (const platform of PLATFORMS) {
+      data.fits[entry.key][platform] = (await fits(entry.build(), { platform })).ok;
+    }
+    console.log("fit " + entry.key.padEnd(24) + " instagram=" + data.fits[entry.key].instagram + " tiktok=" + data.fits[entry.key].tiktok);
   }
 
   await browser.close();

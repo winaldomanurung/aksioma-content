@@ -1,13 +1,12 @@
 "use client";
 
-import {useContext,useEffect,useSyncExternalStore} from "react";
+import {useContext} from "react";
 import {SlideImagesContext} from "./slide-images-context";
 import {imageRadius} from "@/lib/studio/images";
-import {loadImageUrl,peekImageUrl,subscribeImages} from "@/lib/studio/image-store";
+import {useImageUrl} from "@/lib/studio/image-store";
 
 function StoredImage({image}){
-  const url=useSyncExternalStore(subscribeImages,()=>peekImageUrl(image.id),()=>undefined);
-  useEffect(()=>{loadImageUrl(image.id);},[image.id]);
+  const url=useImageUrl(image.id);
   // Missing image: render nothing (never a broken icon in an export).
   if(!url)return null;
   return (

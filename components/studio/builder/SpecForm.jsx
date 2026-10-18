@@ -3,6 +3,7 @@
 import {backgroundThemes} from "@/lib/studio/assets";
 import {ALL_SPECS,TIER_LENGTHS,charLimit,fieldCountLimits} from "@/lib/studio/component-specs";
 import {CHILD_TYPES,clone} from "@/lib/studio/builder";
+import ImagePicker from "@/components/studio/ImagePicker";
 
 const inputClass="mt-1 w-full rounded-lg border border-black/15 bg-white px-3 py-2 text-sm text-zinc-900 outline-none focus:border-red-400";
 const NODE_CHOICES=Object.keys(ALL_SPECS).filter(name=>ALL_SPECS[name].kind!=="slide");
@@ -42,6 +43,8 @@ function Field({field,value,onChange,ctx}){
       return <label className="block" htmlFor={id}>{label}
         <input id={id} className={inputClass} value={value??""} placeholder={field.placeholder} onChange={e=>onChange(e.target.value)}/>
         <div className="mt-1">{counterFor(field,value)}</div></label>;
+    case "image":
+      return <div>{label}<div className="mt-1"><ImagePicker label={field.label} value={value||""} onChange={onChange}/></div></div>;
     case "textarea":
       return <label className="block" htmlFor={id}>{label}
         <textarea id={id} rows={3} className={inputClass} value={value??""} onChange={e=>onChange(e.target.value)}/>

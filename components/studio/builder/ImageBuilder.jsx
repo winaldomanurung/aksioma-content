@@ -4,6 +4,7 @@ import {useState} from "react";
 import {IMAGE_SPEC} from "@/lib/studio/component-specs";
 import {carouselFor,clone} from "@/lib/studio/builder";
 import ImageToolbar from "@/components/studio/ImageToolbar";
+import ImageLibrary from "@/components/studio/ImageLibrary";
 import ScaledSlide from "./ScaledSlide";
 import JsonOutput from "./JsonOutput";
 
@@ -28,6 +29,7 @@ export default function ImageBuilder(){
     <div className="grid items-start gap-6 lg:grid-cols-[minmax(300px,460px)_minmax(0,1fr)]">
       <div className="space-y-4">
         <ImageToolbar images={images} selectedId={selectedId} onSelect={setSelectedId} onChange={commit}/>
+        <ImageLibrary/>
         <div className="rounded-[20px] border border-black/10 bg-white p-4 text-xs leading-5 text-zinc-600">
           <p className="font-bold text-zinc-800">Cara pakai di Carousel Source</p>
           <ol className="mt-2 list-decimal space-y-1 pl-5">

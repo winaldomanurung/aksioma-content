@@ -43,3 +43,7 @@ export { default as PollCard } from "./PollCard";
 export { default as SwipeHint } from "./SwipeHint";
 export { default as SourceNote } from "./SourceNote";
 export { default as ProgressRing } from "./ProgressRing";
+export { default as PhotoHero } from "./PhotoHero";
+export { default as PhoneMockup } from "./PhoneMockup";
+export { default as Collage } from "./Collage";
+export { default as AvatarQuote } from "./AvatarQuote";

@@ -8,7 +8,8 @@ import {
   Timeline, Checklist, Callout, Pill, KeywordCluster, MiniDiagram,
   TwoColumn, ThreeColumn, ContentGrid, Stack, Divider,
   BarChart, Matrix2x2, DataTable, MythFact, ProsCons, BeforeAfter,
-  Funnel, Ladder, QACard, PollCard, SwipeHint, SourceNote, ProgressRing
+  Funnel, Ladder, QACard, PollCard, SwipeHint, SourceNote, ProgressRing,
+  PhotoHero, PhoneMockup, Collage, AvatarQuote
 } from "@/components/carousel";
 import {AssetIcon,AssetShape} from "./AssetPrimitives";
 import AccountBookend from "./AccountBookend";
@@ -48,6 +49,10 @@ function Primitive({ node, dark = false }) {
     case "swipeHint": return <SwipeHint text={node.text} align={node.align} dark={dark||node.dark}/>;
     case "sourceNote": return <SourceNote text={node.text} label={node.label} dark={dark||node.dark}/>;
     case "progressRing": return <ProgressRing value={node.value} label={node.label} note={node.note} dark={dark||node.dark}/>;
+    case "photoHero": return <PhotoHero image={node.image} size={node.size} shape={node.shape} fit={node.fit} title={node.title} text={node.text} overlay={node.overlay} dark={dark||node.dark}/>;
+    case "phoneMockup": return <PhoneMockup image={node.image} size={node.size} align={node.align} caption={node.caption} dark={dark||node.dark}/>;
+    case "collage": return <Collage items={node.items} size={node.size} shape={node.shape} dark={dark||node.dark}/>;
+    case "avatarQuote": return <AvatarQuote avatar={node.avatar} quote={node.quote} name={node.name} role={node.role} dark={dark||node.dark}/>;
     case "assetIcon": return <AssetIcon set={node.set} name={node.name} size={node.size} tone={node.tone|| (dark?"light":"ink")} label={node.label}/>;
     case "assetShape": return <AssetShape name={node.name} position={node.position} opacity={node.opacity}/>;
     default: return null;
