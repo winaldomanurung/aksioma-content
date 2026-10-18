@@ -1,17 +1,30 @@
 "use client";
 
-import {useEffect,useRef,useState} from "react";
+import {useEffect,useMemo,useRef,useState,useSyncExternalStore} from "react";
 import {exampleCarousel} from "@/lib/studio/example";
 import {parseCarouselSource} from "@/lib/studio/schema";
 import {slideToJpeg} from "@/lib/studio/export-browser";
 import {makeZip} from "@/lib/studio/zip";
 import {StudioSlide} from "./StudioSlide";
+import PreviewBoundary from "./PreviewBoundary";
 import PostMetaPanel from "@/components/carousel/PostMetaPanel";
 import Link from "next/link";
 
 const INITIAL=JSON.stringify(exampleCarousel,null,2);
 const DRAFT_KEY="aksioma-studio-draft-v1";
 const slugify=s=>String(s||"carousel").normalize("NFKD").toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"").slice(0,60)||"carousel";
+
+// The saved draft lives in localStorage, an external store. It is read with
+// useSyncExternalStore so the server render and first client render agree and
+// the saved draft appears after hydration without setState inside an effect.
+const draftListeners=new Set();
+const readDraft=()=>{try{return localStorage.getItem(DRAFT_KEY);}catch{return null;}};
+const subscribeDraft=callback=>{
+  draftListeners.add(callback);
+  window.addEventListener("storage",callback);
+  return()=>{draftListeners.delete(callback);window.removeEventListener("storage",callback);};
+};
+const notifyDraft=()=>draftListeners.forEach(callback=>callback());
 
 function SlidePreview({data,number,account,total}){
   const wrap=useRef(null);
@@ -33,10 +46,11 @@ function SlidePreview({data,number,account,total}){
 }
 
 export default function StudioClient(){
-  const [source,setSource]=useState(INITIAL);
-  const [carousel,setCarousel]=useState(exampleCarousel);
+  const savedDraft=useSyncExternalStore(subscribeDraft,readDraft,()=>null);
+  const [edited,setEdited]=useState(null);       // null until the editor is touched
+  const [rendered,setRendered]=useState(null);   // null until a carousel is rendered
+  const [accountChoice,setAccountChoice]=useState(null); // null = follow meta.account
   const [platform,setPlatform]=useState("tiktok");
-  const [account,setAccount]=useState("journey");
   const [safe,setSafe]=useState(false);
   const [error,setError]=useState("");
   const [status,setStatus]=useState("");
@@ -47,11 +61,24 @@ export default function StudioClient(){
   const downloadUrl=useRef(null);
   const exportStage=useRef(null);
 
-  useEffect(()=>{
-    try{const saved=localStorage.getItem(DRAFT_KEY);if(saved)setSource(saved);}
-    catch{/* private browsing */}
-    return ()=>{if(downloadUrl.current)URL.revokeObjectURL(downloadUrl.current);};
-  },[]);
+  const source=edited??savedDraft??INITIAL;
+  // Until something is rendered, the preview shows the saved draft (so editor
+  // and preview agree after a reload), falling back to the bundled example.
+  const draftPreview=useMemo(()=>{
+    if(!savedDraft)return exampleCarousel;
+    try{return parseCarouselSource(savedDraft);}catch{return exampleCarousel;}
+  },[savedDraft]);
+  const carousel=rendered??draftPreview;
+  const account=accountChoice??(carousel.meta.account==="trader"?"trader":"journey");
+
+  useEffect(()=>()=>{if(downloadUrl.current)URL.revokeObjectURL(downloadUrl.current);},[]);
+
+  // Edit the source without the preview jumping to a different carousel:
+  // pin whatever is currently shown the first time the text changes.
+  function editSource(value){
+    if(rendered===null)setRendered(carousel);
+    setEdited(value);
+  }
 
   function clearDownload(){
     if(downloadUrl.current)URL.revokeObjectURL(downloadUrl.current);
@@ -62,22 +89,22 @@ export default function StudioClient(){
   function render(){
     try{
       const value=parseCarouselSource(source);
-      setCarousel(value);setSelected(0);setError("");clearDownload();
-      if(value.meta.account==="journey"||value.meta.account==="trader")setAccount(value.meta.account);
+      setRendered(value);setSelected(0);setError("");clearDownload();
+      if(value.meta.account==="journey"||value.meta.account==="trader")setAccountChoice(null);
       setStatus(value.slides.length+" slide valid. Preview diperbarui untuk Aksioma "+(value.meta.account==="trader"?"Trader":"Journey")+".");
     }catch(e){setError(e.message);setStatus("");}
   }
 
   function saveDraft(){
-    try{localStorage.setItem(DRAFT_KEY,source);setStatus("Draft tersimpan di browser perangkat ini.");setError("");}
+    try{localStorage.setItem(DRAFT_KEY,source);notifyDraft();setStatus("Draft tersimpan di browser perangkat ini.");setError("");}
     catch{setError("Penyimpanan browser tidak tersedia. Salin source ke tempat lain.");}
   }
 
   function clearContent(){
     if(working||!source.trim())return;
-    try{localStorage.removeItem(DRAFT_KEY);}
+    try{localStorage.removeItem(DRAFT_KEY);notifyDraft();}
     catch{/* private browsing */}
-    setSource("");
+    editSource("");
     setError("");
     clearDownload();
     setStatus("Editor dikosongkan. Preview terakhir tetap terlihat sampai carousel baru dirender.");
@@ -126,7 +153,7 @@ export default function StudioClient(){
             <div><p className="font-display text-sm font-bold">Pilih akun konten</p><p className="mt-1 text-xs text-zinc-500">Satu editor, dua identitas visual. Slide pembuka dan penutup mengikuti akun yang dipilih.</p></div>
             <div className="flex flex-wrap gap-2">
               {["journey","trader"].map(value=><button key={value} type="button" aria-pressed={account===value}
-                onClick={()=>{setAccount(value);clearDownload();}}
+                onClick={()=>{setAccountChoice(value);clearDownload();}}
                 className={["rounded-full px-5 py-3 text-sm font-bold",account===value?(value==="trader"?"bg-blue-800 text-white":"bg-red-500 text-white"):"bg-zinc-100 text-zinc-700"].join(" ")}>
                 Aksioma {value==="trader"?"Trader":"Journey"}
               </button>)}
@@ -141,13 +168,13 @@ export default function StudioClient(){
             </div>
             <p className="mt-2 text-sm leading-6 text-zinc-500">AI dapat mengembalikan satu JSON dengan <code>meta</code> dan <code>slides</code>. Source tidak dikirim ke server.</p>
             <label className="mt-5 block text-xs font-semibold uppercase tracking-wider text-zinc-500" htmlFor="studio-source">Paste definisi carousel</label>
-            <textarea id="studio-source" spellCheck={false} value={source} onChange={e=>setSource(e.target.value)}
+            <textarea id="studio-source" spellCheck={false} value={source} onChange={e=>editSource(e.target.value)}
               className="mt-2 h-[360px] w-full resize-y rounded-xl border border-black/15 bg-zinc-950 p-4 font-mono text-[12px] leading-5 text-zinc-100 outline-none focus:border-red-400 sm:h-[480px]"
               placeholder={'{"version":1,"meta":{"title":"..."},"slides":[...]}'}/>
             <div className="mt-4 flex flex-wrap gap-2">
               <button type="button" onClick={render} disabled={working} className="rounded-full bg-red-500 px-5 py-3 text-sm font-bold text-white hover:bg-red-600 disabled:opacity-50">Render carousel</button>
               <button type="button" onClick={saveDraft} className="rounded-full border border-black/15 px-4 py-3 text-sm font-semibold hover:bg-zinc-50">Save draft</button>
-              <button type="button" onClick={()=>{setSource(INITIAL);setStatus("Contoh dimuat. Tekan Render carousel.");setError("");}} className="rounded-full border border-black/15 px-4 py-3 text-sm font-semibold hover:bg-zinc-50">Load contoh</button>
+              <button type="button" onClick={()=>{editSource(INITIAL);setStatus("Contoh dimuat. Tekan Render carousel.");setError("");}} className="rounded-full border border-black/15 px-4 py-3 text-sm font-semibold hover:bg-zinc-50">Load contoh</button>
               <button type="button" onClick={clearContent} disabled={working||!source.trim()} className="rounded-full border border-red-200 px-4 py-3 text-sm font-semibold text-red-700 hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-40">Hapus konten</button>
             </div>
             {error&&<div role="alert" className="mt-4 rounded-xl border border-red-200 bg-red-50 p-3 text-sm leading-6 text-red-800">{error}</div>}
@@ -201,6 +228,7 @@ export default function StudioClient(){
                 {carousel.slides.map((slide,i)=><button key={i} type="button" onClick={()=>{setSelected(i);setAllVisible(false);clearDownload();}} className={["min-w-10 rounded-xl px-3 py-3 text-xs font-bold",selected===i?"bg-red-500 text-white":"bg-white text-zinc-600"].join(" ")}>{String(i+1).padStart(2,"0")}</button>)}
               </div>
             </div>
+            <PreviewBoundary resetKey={carousel}>
             <div className="rounded-[26px] bg-zinc-200 p-2 sm:p-5">
               <div className="w-full" data-platform={platform} data-safe-area={safe&&platform==="tiktok"?"true":"false"}>
                 <div className="carousel-stage !min-h-0 !gap-0 !p-0" data-platform={platform} data-safe-area={safe&&platform==="tiktok"?"true":"false"} style={{display:"block",overflow:"visible"}}>
@@ -208,6 +236,7 @@ export default function StudioClient(){
                 </div>
               </div>
             </div>
+            </PreviewBoundary>
             <p className="mt-3 text-xs leading-5 text-zinc-500">Safe area adalah panduan konservatif. Sebelum posting, periksa hasil di TikTok. Export browser mungkin berbeda sedikit dari Playwright untuk font/efek tertentu.</p>
           </section>
         </div>
@@ -217,10 +246,12 @@ export default function StudioClient(){
       </div>
 
       {/* Export source uses unscaled, offscreen DOM. Never hide with display:none. */}
+      <PreviewBoundary resetKey={carousel} fallback={null}>
       <div ref={exportStage} className="carousel-stage" data-platform={platform} data-safe-area="false" aria-hidden="true"
         style={{position:"fixed",left:"-100000px",top:0,width:1080,display:"flex",gap:0,padding:0,pointerEvents:"none"}}>
         {carousel.slides.map((s,i)=><StudioSlide key={i} data={s} number={i+1} account={account} total={carousel.slides.length}/>)}
       </div>
+      </PreviewBoundary>
     </main>
   );
 }

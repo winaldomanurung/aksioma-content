@@ -6,7 +6,7 @@ export default function MiniDiagram({
   return (
     <div className={["mini-diagram", className].join(" ")}>
       {items.map((item, index) => (
-        <div key={item}>
+        <div key={index}>
           <div
             className={[
               "mini-diagram-node",

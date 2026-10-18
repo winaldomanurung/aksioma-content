@@ -6,6 +6,9 @@ export default function SummarySlide({
   title,
   items = [],
   density = "balanced",
+  backgroundWord,
+  cornerLabel,
+  keywords = [],
 }) {
   return (
     <SlideShell
@@ -14,21 +17,19 @@ export default function SummarySlide({
       dark
       type="summary"
       density={density}
-      backgroundWord="KEEP"
-      cornerLabel="Takeaway"
+      backgroundWord={backgroundWord}
+      cornerLabel={cornerLabel}
     >
       <div className="summary-wrap">
         <h2 className="summary-title">{title}</h2>
 
-        <KeywordCluster
-          dark
-          items={["fact", "assumption", "alternative", "confidence"]}
-          className="mt-8"
-        />
+        {keywords.length > 0 ? (
+          <KeywordCluster dark items={keywords} className="mt-8" />
+        ) : null}
 
         <div className="summary-grid">
           {items.map((item, index) => (
-            <div key={item} className="summary-card">
+            <div key={index} className="summary-card">
               <span className="font-display text-[18px] font-semibold text-red-400">
                 {String(index + 1).padStart(2, "0")}
               </span>

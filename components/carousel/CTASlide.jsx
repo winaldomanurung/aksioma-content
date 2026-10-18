@@ -11,6 +11,9 @@ export default function CTASlide({
   body,
   cta = "Simpan post ini untuk dipakai saat kamu membutuhkannya.",
   density = "bold",
+  backgroundWord,
+  cornerLabel,
+  keywords = [],
 }) {
   return (
     <CarouselCanvas
@@ -24,13 +27,17 @@ export default function CTASlide({
       <div className="absolute -bottom-36 -left-36 h-[520px] w-[520px] rounded-full bg-zinc-950/10" />
       <div className="absolute right-[80px] top-[240px] h-[260px] w-[260px] rotate-45 rounded-[50px] border border-white/25" />
 
-      <BackgroundWord dark className="bottom-[230px] right-[-50px] rotate-[-8deg]">
-        SAVE
-      </BackgroundWord>
+      {backgroundWord ? (
+        <BackgroundWord dark className="bottom-[230px] right-[-50px] rotate-[-8deg]">
+          {backgroundWord}
+        </BackgroundWord>
+      ) : null}
       <AccentLine dark className="left-[78px] top-[210px]" />
-      <CornerLabel dark className="right-[78px] top-[78px]">
-        Takeaway
-      </CornerLabel>
+      {cornerLabel ? (
+        <CornerLabel dark className="right-[78px] top-[78px]">
+          {cornerLabel}
+        </CornerLabel>
+      ) : null}
 
       <div className="slide-frame">
         <div className="slide-content flex min-h-0 flex-col">
@@ -43,11 +50,9 @@ export default function CTASlide({
               {body}
             </p>
 
-            <KeywordCluster
-              dark
-              items={["save", "apply", "review"]}
-              className="mt-9"
-            />
+            {keywords.length > 0 ? (
+              <KeywordCluster dark items={keywords} className="mt-9" />
+            ) : null}
           </div>
 
           <div className="mb-8 rounded-[30px] border border-white/25 bg-white/10 p-7 backdrop-blur-sm">

@@ -54,6 +54,12 @@ PostMetaPanel accepts:
 }
 
 PRESET SLIDES
+Decoration props: StatementSlide, BulletSlide, CompareSlide, CauseEffectSlide,
+FrameworkSlide, SummarySlide and CTASlide accept optional backgroundWord and
+cornerLabel. CompareSlide, FrameworkSlide, SummarySlide and CTASlide also accept
+optional keywords: [string]. Nothing is added when they are omitted, so write them
+for THIS topic only (a keyword chip row must carry real information).
+
 1) HeroSlide
    HeroSlide({
      slide, eyebrow, title, subtitle,
@@ -64,7 +70,7 @@ PRESET SLIDES
 2) StatementSlide
    StatementSlide({
      slide, eyebrow?, lead, highlight, note?,
-     density?
+     density?, backgroundWord?, cornerLabel?
    })
    USE FOR: one provocative idea, reframe, misconception, principle.
 
@@ -72,7 +78,7 @@ PRESET SLIDES
    BulletSlide({
      slide, eyebrow?, title,
      items: [{ title, text }],
-     density?
+     density?, backgroundWord?, cornerLabel?
    })
    USE FOR: 3–5 parallel points that genuinely belong in a list.
 
@@ -81,7 +87,7 @@ PRESET SLIDES
      slide, eyebrow?, title,
      left: { label, heading, points: [] },
      right: { label, heading, points: [] },
-     density?
+     density?, backgroundWord?, cornerLabel?, keywords?
    })
    USE FOR: true contrast, before/after, wrong/right, A/B.
 
@@ -89,7 +95,7 @@ PRESET SLIDES
    CauseEffectSlide({
      slide, causeTitle, causeText,
      effectTitle, effectText,
-     density?
+     density?, backgroundWord?, cornerLabel?
    })
    USE FOR: one clear causal relationship.
 
@@ -97,19 +103,21 @@ PRESET SLIDES
    FrameworkSlide({
      slide, eyebrow?, title,
      steps: [{ title, text }],
-     density?
+     density?, backgroundWord?, cornerLabel?, keywords?
    })
    USE FOR: named framework, checklist-like method, ordered questions.
 
 7) SummarySlide
    SummarySlide({
-     slide, title, items: [], density?
+     slide, title, items: [], density?,
+     backgroundWord?, cornerLabel?, keywords?
    })
    USE FOR: synthesis near the end, not as a generic list replacement.
 
 8) CTASlide
    CTASlide({
-     slide, title, body, cta?, density?
+     slide, title, body, cta?, density?,
+     backgroundWord?, cornerLabel?, keywords?
    })
    USE FOR: closing takeaway + desired action.
 
@@ -293,6 +301,8 @@ export default async function DemoCarouselPage({ searchParams }) {
         highlight="benar hanya karena terasa masuk akal."
         note="Rasa yakin adalah pengalaman psikologis. Ia bukan bukti bahwa kesimpulan kita sudah melewati pengujian."
         density="bold"
+        backgroundWord="THINK"
+        cornerLabel="Pause / Test"
       />
 
       <BulletSlide
@@ -300,6 +310,8 @@ export default async function DemoCarouselPage({ searchParams }) {
         eyebrow="Pisahkan dulu"
         title="Satu klaim biasanya berisi tiga lapisan yang berbeda."
         density="balanced"
+        backgroundWord="BREAK"
+        cornerLabel="3 layers"
         items={[
           {
             title: "Fakta",
@@ -320,6 +332,9 @@ export default async function DemoCarouselPage({ searchParams }) {
         slide={4}
         title="Berpikir cepat dan berpikir kritis bukan hal yang sama."
         density="balanced"
+        backgroundWord="VS"
+        cornerLabel="Contrast"
+        keywords={["intuisi", "bukti", "uji"]}
         left={{
           label: "Refleks",
           heading: "Langsung percaya",
@@ -354,6 +369,8 @@ export default async function DemoCarouselPage({ searchParams }) {
           { title: "Keyakinan mengeras", note: "Kesimpulan awal semakin sulit direvisi." },
         ]}
         density="balanced"
+        backgroundWord="WHY"
+        cornerLabel="Mechanism"
       />
 
       <StatementSlide
@@ -363,13 +380,17 @@ export default async function DemoCarouselPage({ searchParams }) {
         highlight="memberi tingkat keyakinan sesuai kualitas bukti."
         note="Kita tetap boleh mengambil keputusan, tetapi dengan sadar membedakan apa yang kita tahu, duga, dan belum tahu."
         density="bold"
-        keywords={["confidence", "evidence", "revision"]}
+        backgroundWord="THINK"
+        cornerLabel="Pause / Test"
       />
 
       <FrameworkSlide
         slide={7}
         title="Gunakan lima pertanyaan sebelum menerima sebuah klaim."
         density="compact"
+        backgroundWord="TEST"
+        cornerLabel="5 questions"
+        keywords={["claim", "evidence", "assumption", "alternative", "test"]}
         steps={[
           { title: "Claim", text: "Apa tepatnya yang sedang dinyatakan?" },
           {
@@ -428,6 +449,9 @@ export default async function DemoCarouselPage({ searchParams }) {
         slide={9}
         title="Empat kebiasaan yang membuat pikiran lebih sulit dibohongi."
         density="balanced"
+        backgroundWord="KEEP"
+        cornerLabel="Takeaway"
+        keywords={["fact", "assumption", "alternative", "confidence"]}
         items={[
           "Pisahkan fakta dari interpretasi.",
           "Cari asumsi yang tersembunyi.",
@@ -442,6 +466,9 @@ export default async function DemoCarouselPage({ searchParams }) {
         body="Pendapat yang kuat bukan pendapat yang paling keras, tetapi pendapat yang tahu mengapa ia layak dipercaya dan kapan ia harus direvisi."
         cta="Simpan framework ini. Pakai lagi saat membaca berita, rapat, mengambil keputusan, atau berdebat."
         density="bold"
+        backgroundWord="SAVE"
+        cornerLabel="Takeaway"
+        keywords={["save", "apply", "review"]}
       />
     </main>
   );

@@ -6,6 +6,8 @@ export default function BulletSlide({
   title,
   items = [],
   density = "balanced",
+  backgroundWord,
+  cornerLabel,
 }) {
   return (
     <SlideShell
@@ -14,15 +16,15 @@ export default function BulletSlide({
       dark
       type="bullet"
       density={density}
-      backgroundWord="BREAK"
-      cornerLabel="3 layers"
+      backgroundWord={backgroundWord}
+      cornerLabel={cornerLabel}
     >
       <div className="bullet-wrap">
         <h2 className="bullet-title">{title}</h2>
 
         <div className="bullet-grid">
           {items.map((item, index) => (
-            <div key={item.title} className="bullet-card">
+            <div key={index} className="bullet-card">
               <div className="bullet-number">
                 {String(index + 1).padStart(2, "0")}
               </div>

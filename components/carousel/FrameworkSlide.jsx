@@ -7,6 +7,9 @@ export default function FrameworkSlide({
   steps = [],
   eyebrow = "Framework",
   density = "compact",
+  backgroundWord,
+  cornerLabel,
+  keywords = [],
 }) {
   return (
     <SlideShell
@@ -14,20 +17,19 @@ export default function FrameworkSlide({
       eyebrow={eyebrow}
       type="framework"
       density={density}
-      backgroundWord="TEST"
-      cornerLabel="5 questions"
+      backgroundWord={backgroundWord}
+      cornerLabel={cornerLabel}
     >
       <h2 className="framework-title">{title}</h2>
 
-      <KeywordCluster
-        items={["claim", "evidence", "assumption", "alternative", "test"]}
-        className="mt-7"
-      />
+      {keywords.length > 0 ? (
+        <KeywordCluster items={keywords} className="mt-7" />
+      ) : null}
 
       <div className="framework-list">
         <div className="framework-items">
           {steps.map((step, index) => (
-            <div key={step.title} className="framework-item">
+            <div key={index} className="framework-item">
               <div className="framework-number">{index + 1}</div>
               <div className="framework-card">
                 <h3>{step.title}</h3>

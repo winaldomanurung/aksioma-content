@@ -11,13 +11,15 @@ never compiles or executes pasted JavaScript/JSX.
 
 Slide types:
 hero {eyebrow,title,subtitle,accent,density}
-statement {eyebrow,lead,highlight,note,density}
-bullet {eyebrow,title,items:[{title,text}],density}
-compare {title,left:{label,heading,points:[]},right:{label,heading,points:[]}}
+statement {eyebrow,lead,highlight,note,density,backgroundWord?,cornerLabel?}
+bullet {eyebrow,title,items:[{title,text}],density,backgroundWord?,cornerLabel?}
+compare {title,left:{label,heading,points:[]},right:{label,heading,points:[]},
+         backgroundWord?,cornerLabel?,keywords?:[string]}
 causeEffect {causeTitle,causeText,effectTitle,effectText,
-             chainLabel?,chainCaption?,chain?:[{title,note}]}
-framework {title,steps:[{title,text}]}
-summary {title,items:[string]}
+             chainLabel?,chainCaption?,chain?:[{title,note}],
+             backgroundWord?,cornerLabel?}
+framework {title,steps:[{title,text}],backgroundWord?,cornerLabel?,keywords?:[string]}
+summary {title,items:[string],backgroundWord?,cornerLabel?,keywords?:[string]}
 cta {title,body,cta}
 freeform {eyebrow,dark?,theme?,density,backgroundWord,cornerLabel,nodes:[...]}
 
@@ -82,14 +84,14 @@ const carouselSource = String.raw`
   },
   "slides": [
     {"type":"hero","eyebrow":"Critical Thinking","title":"Yakin belum tentu benar.","subtitle":"Belajar menguji sebuah pendapat sebelum mempercayainya.","density":"bold"},
-    {"type":"statement","lead":"Perasaan yakin tidak sama dengan","highlight":"kualitas bukti.","note":"Keyakinan perlu disesuaikan dengan informasi yang tersedia."},
-    {"type":"bullet","title":"Tiga lapisan dalam sebuah pendapat.","items":[{"title":"Fakta","text":"Apa yang benar-benar terjadi?"},{"title":"Interpretasi","text":"Makna yang kita berikan."},{"title":"Kesimpulan","text":"Hal yang kita putuskan untuk percaya."}]},
-    {"type":"compare","title":"Reaksi cepat versus pengujian.","left":{"label":"Refleks","heading":"Langsung percaya","points":["Terasa masuk akal","Sesuai intuisi"]},"right":{"label":"Refleksi","heading":"Tahan kesimpulan","points":["Periksa sumber","Cari alternatif"]}},
-    {"type":"causeEffect","causeTitle":"Kesimpulan terlalu awal","causeText":"Kita berhenti mencari bukti.","effectTitle":"Keyakinan mengeras","effectText":"Informasi yang bertentangan mulai diabaikan.","chainLabel":"Pola yang terjadi","chain":[{"title":"Duga","note":"Penjelasan pertama terasa cocok."},{"title":"Cari dukungan","note":"Kita memilih bukti yang sejalan."},{"title":"Yakin","note":"Sudut pandang semakin sulit berubah."}]},
+    {"type":"statement","backgroundWord":"THINK","cornerLabel":"Pause / Test","lead":"Perasaan yakin tidak sama dengan","highlight":"kualitas bukti.","note":"Keyakinan perlu disesuaikan dengan informasi yang tersedia."},
+    {"type":"bullet","backgroundWord":"BREAK","cornerLabel":"3 layers","title":"Tiga lapisan dalam sebuah pendapat.","items":[{"title":"Fakta","text":"Apa yang benar-benar terjadi?"},{"title":"Interpretasi","text":"Makna yang kita berikan."},{"title":"Kesimpulan","text":"Hal yang kita putuskan untuk percaya."}]},
+    {"type":"compare","backgroundWord":"VS","cornerLabel":"Contrast","keywords":["intuisi","bukti","uji"],"title":"Reaksi cepat versus pengujian.","left":{"label":"Refleks","heading":"Langsung percaya","points":["Terasa masuk akal","Sesuai intuisi"]},"right":{"label":"Refleksi","heading":"Tahan kesimpulan","points":["Periksa sumber","Cari alternatif"]}},
+    {"type":"causeEffect","backgroundWord":"WHY","cornerLabel":"Mechanism","causeTitle":"Kesimpulan terlalu awal","causeText":"Kita berhenti mencari bukti.","effectTitle":"Keyakinan mengeras","effectText":"Informasi yang bertentangan mulai diabaikan.","chainLabel":"Pola yang terjadi","chain":[{"title":"Duga","note":"Penjelasan pertama terasa cocok."},{"title":"Cari dukungan","note":"Kita memilih bukti yang sejalan."},{"title":"Yakin","note":"Sudut pandang semakin sulit berubah."}]},
     {"type":"freeform","eyebrow":"Cara berpikir","dark":false,"backgroundWord":"TEST","nodes":[{"type":"slideHeading","title":"Bangun cara berpikir yang bisa diuji.","body":"Gunakan hubungan antargagasan, bukan sekadar daftar."},{"type":"twoColumn","children":[{"type":"infoCard","variant":"accent","title":"Bukti","text":"Apa yang mendukung klaim?"},{"type":"infoCard","variant":"soft","title":"Alternatif","text":"Adakah penjelasan lain?"}]},{"type":"callout","label":"Inti","text":"Setiap kesimpulan punya syarat untuk direvisi."}]},
-    {"type":"framework","title":"Lima pertanyaan untuk berpikir kritis.","density":"compact","steps":[{"title":"Claim","text":"Apa klaimnya?"},{"title":"Evidence","text":"Apa buktinya?"},{"title":"Assumption","text":"Apa asumsinya?"},{"title":"Alternative","text":"Apa alternatifnya?"},{"title":"Test","text":"Apa yang bisa menguji?"}]},
+    {"type":"framework","backgroundWord":"TEST","cornerLabel":"5 questions","keywords":["claim","evidence","assumption","alternative","test"],"title":"Lima pertanyaan untuk berpikir kritis.","density":"compact","steps":[{"title":"Claim","text":"Apa klaimnya?"},{"title":"Evidence","text":"Apa buktinya?"},{"title":"Assumption","text":"Apa asumsinya?"},{"title":"Alternative","text":"Apa alternatifnya?"},{"title":"Test","text":"Apa yang bisa menguji?"}]},
     {"type":"freeform","eyebrow":"Latihan","dark":true,"nodes":[{"type":"slideHeading","title":"Jadikan debat proses belajar."},{"type":"timeline","dark":true,"items":[{"title":"Definisikan","text":"Pastikan makna istilah sama."},{"title":"Periksa","text":"Cari bukti yang relevan."},{"title":"Perbarui","text":"Revisi jika informasi berubah."}]}]},
-    {"type":"summary","title":"Empat kebiasaan sederhana.","items":["Pisahkan fakta dan interpretasi.","Periksa asumsi.","Cari alternatif.","Sesuaikan keyakinan dengan bukti."]},
+    {"type":"summary","backgroundWord":"KEEP","cornerLabel":"Takeaway","keywords":["fact","assumption","alternative","confidence"],"title":"Empat kebiasaan sederhana.","items":["Pisahkan fakta dan interpretasi.","Periksa asumsi.","Cari alternatif.","Sesuaikan keyakinan dengan bukti."]},
     {"type":"cta","title":"Jangan buru-buru yakin.","body":"Pikiran yang kuat terbuka untuk diuji.","cta":"Simpan lima pertanyaan ini untuk diskusi berikutnya."}
   ]
 }
@@ -106,12 +108,14 @@ export default async function Page({searchParams}){
   const params=await searchParams;
   const platform=params?.platform==="tiktok"?"tiktok":"instagram";
   const safeArea=platform==="tiktok"&&params?.safe==="1";
+  // Same inputs as /studio, so the Playwright export matches the Studio preview.
+  const account=data.meta.account==="trader"?"trader":"journey";
   return (
     <main className="carousel-stage" data-platform={platform}
       data-safe-area={safeArea?"true":"false"}>
       <PostMetaPanel {...data.meta}/>
       <PlatformSwitcher route="/carousel/studio-template" platform={platform} safeArea={safeArea}/>
-      {data.slides.map((slide,index)=><StudioSlide key={index} data={slide} number={index+1}/>)}
+      {data.slides.map((slide,index)=><StudioSlide key={index} data={slide} number={index+1} account={account} total={data.slides.length}/>)}
     </main>
   );
 }

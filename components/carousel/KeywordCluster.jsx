@@ -5,9 +5,9 @@ export default function KeywordCluster({
 }) {
   return (
     <div className={["keyword-cluster", className].join(" ")}>
-      {items.map((item) => (
+      {items.map((item, index) => (
         <span
-          key={item}
+          key={index}
           className={[
             "keyword-chip",
             dark

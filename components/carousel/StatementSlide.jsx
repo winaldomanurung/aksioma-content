@@ -7,6 +7,8 @@ export default function StatementSlide({
   highlight,
   note,
   density = "bold",
+  backgroundWord,
+  cornerLabel,
 }) {
   return (
     <SlideShell
@@ -14,8 +16,8 @@ export default function StatementSlide({
       eyebrow={eyebrow}
       type="statement"
       density={density}
-      backgroundWord="THINK"
-      cornerLabel="Pause / Test"
+      backgroundWord={backgroundWord}
+      cornerLabel={cornerLabel}
     >
       <div className="statement-layout">
         <div className="statement-copy">

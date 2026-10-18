@@ -10,6 +10,8 @@ export default function CauseEffectSlide({
   chain = [],
   chainLabel = "Pola yang terjadi",
   chainCaption = "",
+  backgroundWord,
+  cornerLabel,
 }) {
 
   return (
@@ -19,8 +21,8 @@ export default function CauseEffectSlide({
       dark
       type="cause-effect"
       density={density}
-      backgroundWord="WHY"
-      cornerLabel="Mechanism"
+      backgroundWord={backgroundWord}
+      cornerLabel={cornerLabel}
     >
       <div className="cause-effect-wrap">
         <div className="cause-effect-card border-white/10 bg-white/[0.045]">
