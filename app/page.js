@@ -42,6 +42,12 @@ export default function Home() {
             Adaptasi konten orang lain
           </Link>
           <Link
+            href="/studio/report"
+            className="rounded-full border border-white/15 px-7 py-4 font-semibold text-zinc-200 transition hover:bg-white/10"
+          >
+            Laporan Pasar harian
+          </Link>
+          <Link
             href="/studio/assets"
             className="rounded-full border border-white/15 px-7 py-4 font-semibold text-zinc-200 transition hover:bg-white/10"
           >

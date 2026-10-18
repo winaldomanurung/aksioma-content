@@ -56,3 +56,4 @@ export { default as PriceChart } from "./PriceChart";
 export { default as StockCompare } from "./StockCompare";
 export { default as TradePlan } from "./TradePlan";
 export { default as EventCalendar } from "./EventCalendar";
+export { default as MarketRank } from "./MarketRank";

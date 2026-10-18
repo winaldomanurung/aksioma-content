@@ -10,7 +10,7 @@ import {
   BarChart, Matrix2x2, DataTable, MythFact, ProsCons, BeforeAfter,
   Funnel, Ladder, QACard, PollCard, SwipeHint, SourceNote, ProgressRing,
   PhotoHero, PhoneMockup, Collage, AvatarQuote,
-  TextBlock, Footnote, Glossary, Flow, StockList, PriceChart, StockCompare, TradePlan, EventCalendar
+  TextBlock, Footnote, Glossary, Flow, StockList, PriceChart, StockCompare, TradePlan, EventCalendar, MarketRank
 } from "@/components/carousel";
 import {AssetIcon,AssetShape} from "./AssetPrimitives";
 import AccountBookend from "./AccountBookend";
@@ -65,6 +65,7 @@ function Primitive({ node, dark = false }) {
     case "stockCompare": return <StockCompare left={node.left} right={node.right} rows={node.rows} disclaimer={node.disclaimer} dark={dark||node.dark}/>;
     case "tradePlan": return <TradePlan ticker={node.ticker} scenarios={node.scenarios} risk={node.risk} dark={dark||node.dark}/>;
     case "eventCalendar": return <EventCalendar items={node.items} dark={dark||node.dark}/>;
+    case "marketRank": return <MarketRank items={node.items} tone={node.tone} dark={dark||node.dark}/>;
     case "assetIcon": return <AssetIcon set={node.set} name={node.name} size={node.size} tone={node.tone|| (dark?"light":"ink")} label={node.label}/>;
     case "assetShape": return <AssetShape name={node.name} position={node.position} opacity={node.opacity}/>;
     default: return null;

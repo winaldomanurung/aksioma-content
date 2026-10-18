@@ -2008,3 +2008,29 @@ textarea, input[type="text"], input[type="search"], input[type="number"], input:
 .mkt-cal-body { min-width: 0; }
 .mkt-cal-title { margin: 0; overflow: hidden; font-size: 27px; font-weight: 700; line-height: 1.2; text-overflow: ellipsis; white-space: nowrap; }
 .mkt-cal-note { margin: 3px 0 0; overflow: hidden; color: var(--mk-muted); font-size: 19px; line-height: 1.2; text-overflow: ellipsis; white-space: nowrap; }
+
+/* marketRank: 6 rows x 92 + gaps = about 602 */
+.mkt-rank { gap: 10px; }
+.mkt-rank-row {
+  display: grid; grid-template-columns: 46px 150px minmax(0, 1fr) auto auto; align-items: center; gap: 18px; height: 92px; box-sizing: border-box;
+  overflow: hidden; border: 1px solid var(--mk-line); border-radius: 22px; background: var(--mk-card); padding: 0 24px 0 20px;
+}
+.mkt-rank-row[data-value="no"] { grid-template-columns: 46px 150px minmax(0, 1fr) auto; }
+.mkt-rank-no {
+  display: flex; width: 44px; height: 44px; align-items: center; justify-content: center; border-radius: 9999px;
+  background: var(--mk-accent); color: var(--mk-accent-ink); font-family: var(--font-lexend), sans-serif; font-size: 22px; font-weight: 800;
+}
+.mkt-rank-ticker { overflow: hidden; font-family: var(--font-lexend), sans-serif; font-size: 34px; font-weight: 800; letter-spacing: .01em; text-transform: uppercase; white-space: nowrap; }
+.mkt-rank-track { display: block; height: 14px; overflow: hidden; border-radius: 9999px; background: color-mix(in srgb, var(--mk-muted) 22%, transparent); }
+.mkt-rank-fill { display: block; height: 100%; border-radius: 9999px; background: var(--mk-info); }
+.mkt-rank-track[data-sign="up"] .mkt-rank-fill { background: var(--mk-up); }
+.mkt-rank-track[data-sign="down"] .mkt-rank-fill { background: var(--mk-down); }
+.mkt-rank-value { min-width: 150px; text-align: right; font-family: var(--font-lexend), sans-serif; font-size: 28px; font-weight: 700; white-space: nowrap; }
+.mkt-rank-change {
+  min-width: 118px; box-sizing: border-box; border-radius: 9999px; padding: 7px 14px; text-align: center; white-space: nowrap;
+  background: var(--mk-pill-bg); color: var(--mk-pill-ink); font-size: 24px; font-weight: 800;
+}
+.mkt-rank-row[data-value="no"] .mkt-rank-change { font-size: 30px; padding: 9px 18px; min-width: 150px; }
+.mkt-rank-change[data-sign="up"] { background: color-mix(in srgb, var(--mk-up) 16%, transparent); color: var(--mk-up); }
+.mkt-rank-change[data-sign="down"] { background: color-mix(in srgb, var(--mk-down) 16%, transparent); color: var(--mk-down); }
+.mkt-rank-value[data-sign="down"] { color: var(--mk-down); }

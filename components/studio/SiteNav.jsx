@@ -8,6 +8,7 @@ const sections=[
   {href:"/studio/template",label:"Template AI"},
   {href:"/studio/remix",label:"Adaptasi Konten"},
   {href:"/studio/stocks",label:"Impor Saham"},
+  {href:"/studio/report",label:"Laporan Pasar"},
   {href:"/studio/components",label:"Komponen"},
   {href:"/studio/assets",label:"Asset Library"},
   {href:"/carousel/demo",label:"Demo JSX"},

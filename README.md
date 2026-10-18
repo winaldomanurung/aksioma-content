@@ -10,6 +10,7 @@ Aksioma Content Studio membuat carousel dari satu source JSX lalu mengekspornya 
 | `/studio/template` | Isi topik, salin prompt lengkap ke ChatGPT/Claude, paste JSON hasilnya ke Studio. |
 | `/studio/remix` | **Adaptasi konten**: tempel konten orang lain, pilih kemasan baru (mitos vs fakta, FAQ, checklist, Top N, dll.) dan detail tambahan, lalu salin prompt adaptasi. |
 | `/studio/stocks` | **Impor saham**: tempel tabel dari Excel/Google Sheets/CSV (Kode, Nama, Sinyal, Entry, Target, Cut loss, Catatan), langsung jadi carousel `stockList` yang dibagi otomatis per slide, lalu buka di Studio. |
+| `/studio/report` | **Laporan Pasar** (Aksioma Trader): tempel laporan harian "Market & Foreign Flow" (Top Foreign Buy, Top Local Buy, Top Gainer, Top Loser). Otomatis jadi 7 slide: cover, ringkasan, 4 daftar peringkat, penutup. |
 | `/studio/components` | Katalog komponen dan batas kapasitasnya. |
 | `/studio/assets` | Ikon, bentuk dekorasi, dan tema latar. |
 | `/carousel/demo` | Demo JSX dan kontrak penulisan AI (AI AUTHORING CONTRACT). |
@@ -55,9 +56,25 @@ Semua berukuran tetap sehingga muat satu slide di bawah `slideHeading`, dan hany
 | `priceChart` | Grafik garis (`points`) atau candlestick (`candles: [{o,h,l,c}]`), 5–60 data, plus maks 4 garis level (`entry`, `target`, `stop`, `support`, `resistance`). |
 | `stockCompare` | Dua saham berdampingan, 1–6 baris metrik, penanda sisi yang lebih unggul (`better`). |
 | `tradePlan` | 1–3 skenario `bull`/`base`/`bear` dengan pemicu, target, catatan, dan satu baris risiko. |
+| `marketRank` | 1–6 baris peringkat (kode, bar proporsional, nilai, perubahan %), nada warna `up`/`down`/`neutral`. Dipakai oleh Laporan Pasar. |
 | `eventCalendar` | 1–6 agenda dengan tanggal, judul, label, dan catatan. |
 
 Batas karakter lengkap ada di `lib/studio/market.js` dan `lib/studio/stock.js`; kontrak untuk AI ada di `app/carousel/demo/page.jsx`.
+
+### Format Laporan Pasar
+
+```text
+Market & Foreign Flow Report Penutupan Sesi Kedua | 16 Oct 2026
+
+IHSG mengalami penurunan 11.57% dimotori oleh pembelian Investor Lokal sebesar 3.39 Triliun Rupiah.
+
+Top Foreign Buy
+GOTO, 291.5M / -7.4%
+Top Gainer
+TRUK, 24.8%
+```
+
+Judul harus memuat `Report` dan `|` tanggal. Setiap bagian `Top ...` berisi baris `KODE, nilai / persen` atau `KODE, persen` (maks 6 baris per daftar). Angka ditampilkan persis seperti data (format Indonesia: `1.234,5`). Nilai negatif pada Local Buy ditampilkan apa adanya dengan peringatan. Logika ada di `lib/studio/market-report.js`.
 
 ### Preset template
 
