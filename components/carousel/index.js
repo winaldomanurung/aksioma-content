@@ -52,3 +52,7 @@ export { default as Footnote } from "./Footnote";
 export { default as Glossary } from "./Glossary";
 export { default as Flow } from "./Flow";
 export { default as StockList } from "./StockList";
+export { default as PriceChart } from "./PriceChart";
+export { default as StockCompare } from "./StockCompare";
+export { default as TradePlan } from "./TradePlan";
+export { default as EventCalendar } from "./EventCalendar";

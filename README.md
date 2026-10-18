@@ -9,6 +9,7 @@ Aksioma Content Studio membuat carousel dari satu source JSX lalu mengekspornya 
 | `/studio` | Paste JSON carousel (atau `page.jsx` dengan blok JSON), pilih akun, font, platform, lalu render, cek kualitas, dan unduh JPEG/ZIP. Semua berjalan di browser. |
 | `/studio/template` | Isi topik, salin prompt lengkap ke ChatGPT/Claude, paste JSON hasilnya ke Studio. |
 | `/studio/remix` | **Adaptasi konten**: tempel konten orang lain, pilih kemasan baru (mitos vs fakta, FAQ, checklist, Top N, dll.) dan detail tambahan, lalu salin prompt adaptasi. |
+| `/studio/stocks` | **Impor saham**: tempel tabel dari Excel/Google Sheets/CSV (Kode, Nama, Sinyal, Entry, Target, Cut loss, Catatan), langsung jadi carousel `stockList` yang dibagi otomatis per slide, lalu buka di Studio. |
 | `/studio/components` | Katalog komponen dan batas kapasitasnya. |
 | `/studio/assets` | Ikon, bentuk dekorasi, dan tema latar. |
 | `/carousel/demo` | Demo JSX dan kontrak penulisan AI (AI AUTHORING CONTRACT). |
@@ -44,6 +45,23 @@ Komponen `stockList` menampilkan 1–8 saham sesuai input: ticker, nama, sinyal 
   {"type":"stockList","items":[{"ticker":"ABCD","name":"Contoh Bank Tbk","signal":"accumulate","entry":"1.000","target":"1.250","stop":"950"}]}
 ]}
 ```
+
+### Komponen pasar
+
+Semua berukuran tetap sehingga muat satu slide di bawah `slideHeading`, dan hanya memakai data dari input (tidak ada data pasar otomatis).
+
+| Komponen | Isi |
+| --- | --- |
+| `priceChart` | Grafik garis (`points`) atau candlestick (`candles: [{o,h,l,c}]`), 5–60 data, plus maks 4 garis level (`entry`, `target`, `stop`, `support`, `resistance`). |
+| `stockCompare` | Dua saham berdampingan, 1–6 baris metrik, penanda sisi yang lebih unggul (`better`). |
+| `tradePlan` | 1–3 skenario `bull`/`base`/`bear` dengan pemicu, target, catatan, dan satu baris risiko. |
+| `eventCalendar` | 1–6 agenda dengan tanggal, judul, label, dan catatan. |
+
+Batas karakter lengkap ada di `lib/studio/market.js` dan `lib/studio/stock.js`; kontrak untuk AI ada di `app/carousel/demo/page.jsx`.
+
+### Preset template
+
+Di `/studio/remix` tersedia preset bawaan (Top 5 saham mingguan, Mitos vs fakta, Edukasi pemula, Checklist trading). Pengaturan saat ini bisa disimpan sebagai preset sendiri; preset tersimpan di localStorage browser dan tidak ikut ke repo.
 
 ### Skrip
 

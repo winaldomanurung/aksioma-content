@@ -10,7 +10,7 @@ import {
   BarChart, Matrix2x2, DataTable, MythFact, ProsCons, BeforeAfter,
   Funnel, Ladder, QACard, PollCard, SwipeHint, SourceNote, ProgressRing,
   PhotoHero, PhoneMockup, Collage, AvatarQuote,
-  TextBlock, Footnote, Glossary, Flow, StockList
+  TextBlock, Footnote, Glossary, Flow, StockList, PriceChart, StockCompare, TradePlan, EventCalendar
 } from "@/components/carousel";
 import {AssetIcon,AssetShape} from "./AssetPrimitives";
 import AccountBookend from "./AccountBookend";
@@ -61,6 +61,10 @@ function Primitive({ node, dark = false }) {
     case "glossary": return <Glossary items={node.items} dark={dark||node.dark}/>;
     case "flow": return <Flow items={node.items} direction={node.direction} fork={node.fork} dark={dark||node.dark}/>;
     case "stockList": return <StockList items={node.items} numbered={node.numbered} disclaimer={node.disclaimer} disclaimerText={node.disclaimerText} dark={dark||node.dark}/>;
+    case "priceChart": return <PriceChart candles={node.candles} points={node.points} levels={node.levels} title={node.title} caption={node.caption} from={node.from} to={node.to} dark={dark||node.dark}/>;
+    case "stockCompare": return <StockCompare left={node.left} right={node.right} rows={node.rows} disclaimer={node.disclaimer} dark={dark||node.dark}/>;
+    case "tradePlan": return <TradePlan ticker={node.ticker} scenarios={node.scenarios} risk={node.risk} dark={dark||node.dark}/>;
+    case "eventCalendar": return <EventCalendar items={node.items} dark={dark||node.dark}/>;
     case "assetIcon": return <AssetIcon set={node.set} name={node.name} size={node.size} tone={node.tone|| (dark?"light":"ink")} label={node.label}/>;
     case "assetShape": return <AssetShape name={node.name} position={node.position} opacity={node.opacity}/>;
     default: return null;

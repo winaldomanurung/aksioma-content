@@ -1,12 +1,23 @@
 "use client";
 
 import Link from "next/link";
-import {useRef, useState} from "react";
+import {useRef, useState, useSyncExternalStore} from "react";
 import {STYLE_PRESETS} from "@/lib/studio/ai-guide";
 import {FONT_PRESETS, FONT_IDS} from "@/lib/studio/fonts";
 import {copyText} from "@/lib/studio/clipboard";
 import {makeRemixPrompt, PACKAGINGS, DETAILS, TONES, REMIX_MAX_CHARS} from "@/lib/studio/remix-prompt";
 
+const PRESET_KEY = "aksioma-remix-presets-v1";
+const BUILTIN = [
+  {id: "b-top5", name: "Top 5 saham mingguan", builtin: true, account: "trader", packaging: "daftar", tone: "tegas", details: ["konteks", "tandingan"], slides: 7, style: "data", font: "aksioma", audience: "Investor ritel pemula", objective: "Save + Share", extraNotes: "Gunakan stockList hanya dengan data dari sumber."},
+  {id: "b-mitos", name: "Mitos vs fakta", builtin: true, account: "journey", packaging: "mitos", tone: "hangat", details: ["contoh", "kesalahan"], slides: 8, style: "edukatif", font: "aksioma", audience: "Young professionals", objective: "Save + Share", extraNotes: ""},
+  {id: "b-pemula", name: "Edukasi pemula", builtin: true, account: "journey", packaging: "edukasi", tone: "santai", details: ["analogi", "langkah", "glosarium"], slides: 10, style: "edukatif", font: "jakarta", audience: "Pemula", objective: "Save, share dan follow", extraNotes: "Hindari istilah teknis tanpa penjelasan."},
+  {id: "b-checklist", name: "Checklist trading", builtin: true, account: "trader", packaging: "checklist", tone: "tegas", details: ["kesalahan", "diskusi"], slides: 8, style: "seimbang", font: "grotesk", audience: "Trader pemula", objective: "Save", extraNotes: ""},
+];
+const presetListeners = new Set();
+const readPresets = () => { try { return localStorage.getItem(PRESET_KEY) || "[]"; } catch { return "[]"; } };
+const subscribePresets = (cb) => { presetListeners.add(cb); window.addEventListener("storage", cb); return () => { presetListeners.delete(cb); window.removeEventListener("storage", cb); }; };
+const writePresets = (list) => { try { localStorage.setItem(PRESET_KEY, JSON.stringify(list)); presetListeners.forEach((cb) => cb()); return true; } catch { return false; } };
 const field = "mt-2 w-full rounded-xl border border-black/15 bg-[#f9f7f3] px-4 py-3 text-base outline-none focus:border-red-400";
 const chip = (on) => ["min-h-11 rounded-full px-4 py-2 text-sm font-semibold", on ? "bg-zinc-950 text-white" : "bg-zinc-100 text-zinc-700"].join(" ");
 
@@ -25,6 +36,24 @@ export default function RemixClient() {
   const [extraNotes, setExtraNotes] = useState("");
   const [feedback, setFeedback] = useState("");
   const textRef = useRef(null);
+  const [presetName, setPresetName] = useState("");
+  const saved = useSyncExternalStore(subscribePresets, readPresets, () => "[]");
+  const userPresets = (() => { try { const v = JSON.parse(saved); return Array.isArray(v) ? v : []; } catch { return []; } })();
+
+  function applyPreset(p) {
+    setAccount(p.account); setPackaging(p.packaging); setTone(p.tone); setDetails(p.details || []);
+    setSlides(p.slides ?? "auto"); setStyle(p.style); setFont(p.font); setAudience(p.audience); setObjective(p.objective); setExtraNotes(p.extraNotes || "");
+    setFeedback("Preset \"" + p.name + "\" diterapkan.");
+  }
+  function savePreset() {
+    const name = presetName.trim().slice(0, 40);
+    if (!name) { setFeedback("Beri nama preset dulu."); return; }
+    const preset = {id: "u-" + name.toLowerCase().replace(/[^a-z0-9]+/g, "-"), name, account, packaging, tone, details, slides, style, font, audience, objective, extraNotes};
+    const next = [preset, ...userPresets.filter((p) => p.name !== name)].slice(0, 20);
+    setFeedback(writePresets(next) ? "Preset \"" + name + "\" disimpan di browser ini." : "Browser menolak menyimpan preset.");
+    setPresetName("");
+  }
+  function deletePreset(id) { writePresets(userPresets.filter((p) => p.id !== id)); }
 
   const prompt = makeRemixPrompt({source, sourceName, packaging, details, tone, audience, objective, slides, account, style, font, extraNotes});
   const toggle = (key) => setDetails((list) => (list.includes(key) ? list.filter((k) => k !== key) : [...list, key]));
@@ -54,6 +83,24 @@ export default function RemixClient() {
         </header>
 
         <section className="mt-8 rounded-[28px] border border-black/10 bg-white p-5 shadow-sm sm:p-8">
+          <h2 className="font-display text-lg font-bold">Preset template</h2>
+          <p className="mt-1 text-sm text-zinc-600">Satu klik mengisi akun, kemasan, nada, detail, gaya, dan font.</p>
+          <div className="mt-3 flex flex-wrap gap-2">
+            {BUILTIN.map((p) => <button key={p.id} type="button" onClick={() => applyPreset(p)} className={chip(false)}>{p.name}</button>)}
+            {userPresets.map((p) => (
+              <span key={p.id} className="inline-flex items-center overflow-hidden rounded-full bg-red-50">
+                <button type="button" onClick={() => applyPreset(p)} className="min-h-11 px-4 py-2 text-sm font-semibold text-red-800">{p.name}</button>
+                <button type="button" aria-label={"Hapus preset " + p.name} onClick={() => deletePreset(p.id)} className="min-h-11 px-3 text-sm font-bold text-red-700 hover:bg-red-100">×</button>
+              </span>
+            ))}
+          </div>
+          <div className="mt-4 flex flex-wrap items-center gap-2">
+            <input value={presetName} onChange={(e) => setPresetName(e.target.value)} maxLength={40} placeholder="Nama preset dari pengaturan saat ini" aria-label="Nama preset" className="min-w-0 flex-1 rounded-xl border border-black/15 bg-[#f9f7f3] px-4 py-3 text-sm outline-none focus:border-red-400" />
+            <button type="button" onClick={savePreset} className="rounded-full border border-black/15 px-5 py-3 text-sm font-semibold hover:bg-zinc-50">Simpan preset</button>
+          </div>
+        </section>
+
+        <section className="mt-5 rounded-[28px] border border-black/10 bg-white p-5 shadow-sm sm:p-8">
           <h2 className="font-display text-lg font-bold">1. Konten sumber</h2>
           <label className="mt-4 block">
             <span className="text-sm font-semibold">Tempel konten</span>
