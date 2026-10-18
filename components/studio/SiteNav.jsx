@@ -5,6 +5,7 @@ const sections=[
   {href:"/",label:"Beranda"},
   {href:"/studio",label:"Carousel Studio"},
   {href:"/studio/template",label:"Template AI"},
+  {href:"/studio/components",label:"Komponen"},
   {href:"/studio/assets",label:"Asset Library"},
   {href:"/carousel/demo",label:"Demo JSX"},
 ];

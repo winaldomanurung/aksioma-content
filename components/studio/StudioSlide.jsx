@@ -1,3 +1,5 @@
+"use client";
+
 import {backgroundThemes} from "@/lib/studio/assets";
 import {
   HeroSlide, StatementSlide, BulletSlide, CompareSlide, CauseEffectSlide,
@@ -8,6 +10,7 @@ import {
 } from "@/components/carousel";
 import {AssetIcon,AssetShape} from "./AssetPrimitives";
 import AccountBookend from "./AccountBookend";
+import {SlideImagesContext} from "./slide-images-context";
 
 function Primitive({ node, dark = false }) {
   const children=node.children?.map((child,i)=><Primitive key={i} node={child} dark={dark}/>);
@@ -36,6 +39,9 @@ function Primitive({ node, dark = false }) {
   }
 }
 export function StudioSlide({data,number,account="journey",total=10}){
+  return <SlideImagesContext.Provider value={data?.images||null}><StudioSlideBody data={data} number={number} account={account} total={total}/></SlideImagesContext.Provider>;
+}
+function StudioSlideBody({data,number,account="journey",total=10}){
   const slide=number;
   const s=data;
   switch(s.type){

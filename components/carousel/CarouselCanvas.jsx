@@ -1,3 +1,5 @@
+import SlideImageLayer from "@/components/studio/SlideImageLayer";
+
 export default function CarouselCanvas({
   children,
   className = "",
@@ -20,6 +22,7 @@ export default function CarouselCanvas({
       className={["carousel-slide", className].join(" ")}
     >
       {children}
+      <SlideImageLayer />
       <div className="tiktok-safe-overlay" aria-hidden="true" />
     </section>
   );

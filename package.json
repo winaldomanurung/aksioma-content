@@ -11,6 +11,7 @@
     "carousel:export:instagram": "node scripts/export-carousel.mjs --platform=instagram",
     "carousel:export:tiktok": "node scripts/export-carousel.mjs --platform=tiktok",
     "carousel:export:all": "node scripts/export-carousel.mjs --platform=all",
+    "measure:capacity": "node scripts/measure-capacity.mjs",
     "setup:browser": "playwright install chromium"
   },
   "dependencies": {

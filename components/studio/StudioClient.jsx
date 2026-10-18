@@ -7,6 +7,10 @@ import {slideToJpeg} from "@/lib/studio/export-browser";
 import {makeZip} from "@/lib/studio/zip";
 import {StudioSlide} from "./StudioSlide";
 import PreviewBoundary from "./PreviewBoundary";
+import ImageEditorOverlay from "./ImageEditorOverlay";
+import ImageToolbar from "./ImageToolbar";
+import {updateSlideInSource} from "@/lib/studio/source-edit";
+import {fitWarnings} from "@/lib/studio/component-specs";
 import PostMetaPanel from "@/components/carousel/PostMetaPanel";
 import Link from "next/link";
 
@@ -26,7 +30,7 @@ const subscribeDraft=callback=>{
 };
 const notifyDraft=()=>draftListeners.forEach(callback=>callback());
 
-function SlidePreview({data,number,account,total}){
+function SlidePreview({data,number,account,total,editor}){
   const wrap=useRef(null);
   const [scale,setScale]=useState(1);
   useEffect(()=>{
@@ -39,7 +43,11 @@ function SlidePreview({data,number,account,total}){
   return(
     <div ref={wrap} className="w-full" style={{height:1350*scale}}>
       <div style={{width:1080,height:1350,transformOrigin:"top left",transform:"scale("+scale+")"}}>
-        <StudioSlide data={data} number={number} account={account} total={total}/>
+        <div style={{position:"relative",width:1080,height:1350}}>
+          <StudioSlide data={data} number={number} account={account} total={total}/>
+          {editor&&data.images?.length?<ImageEditorOverlay images={data.images} scale={scale} selectedId={editor.selectedId}
+            onSelect={editor.onSelect} onLive={editor.onLive} onCommit={editor.onCommit}/>:null}
+        </div>
       </div>
     </div>
   );
@@ -57,6 +65,8 @@ export default function StudioClient(){
   const [working,setWorking]=useState(false);
   const [selected,setSelected]=useState(0);
   const [allVisible,setAllVisible]=useState(false);
+  const [selectedImage,setSelectedImage]=useState(null);
+  const [liveImages,setLiveImages]=useState(null);
   const [download,setDownload]=useState(null);
   const downloadUrl=useRef(null);
   const exportStage=useRef(null);
@@ -135,7 +145,26 @@ export default function StudioClient(){
     finally{setWorking(false);}
   }
 
-  const current=carousel.slides[selected]||carousel.slides[0];
+  const baseSlide=carousel.slides[selected]||carousel.slides[0];
+  const currentImages=baseSlide.images||[];
+  const current=liveImages?{...baseSlide,images:liveImages}:baseSlide;
+  const warnings=fitWarnings(baseSlide);
+
+  // Commit a finished drag/resize/upload: update the preview AND the source text.
+  function applyImages(list){
+    setLiveImages(null);
+    const index=Math.min(selected,carousel.slides.length-1);
+    const nextCarousel={...carousel,slides:carousel.slides.map((slide,i)=>{
+      if(i!==index)return slide;
+      const next={...slide};
+      if(list.length)next.images=list;else delete next.images;
+      return next;
+    })};
+    setRendered(nextCarousel);
+    clearDownload();
+    try{setEdited(updateSlideInSource(source,index,{images:list}));}
+    catch(e){setError("Posisi gambar berubah di preview, tetapi source tidak bisa diperbarui otomatis: "+(e?.message||e));}
+  }
   return (
     <main className="min-h-screen bg-[#ebe8e1] px-4 py-8 text-zinc-900 sm:px-7 lg:py-12">
       <div className="mx-auto max-w-[1500px]">
@@ -225,18 +254,24 @@ export default function StudioClient(){
             ) : null}
             <div className="mb-4 overflow-x-auto pb-2">
               <div className="flex gap-2">
-                {carousel.slides.map((slide,i)=><button key={i} type="button" onClick={()=>{setSelected(i);setAllVisible(false);clearDownload();}} className={["min-w-10 rounded-xl px-3 py-3 text-xs font-bold",selected===i?"bg-red-500 text-white":"bg-white text-zinc-600"].join(" ")}>{String(i+1).padStart(2,"0")}</button>)}
+                {carousel.slides.map((slide,i)=><button key={i} type="button" onClick={()=>{setSelected(i);setAllVisible(false);setSelectedImage(null);setLiveImages(null);clearDownload();}} className={["min-w-10 rounded-xl px-3 py-3 text-xs font-bold",selected===i?"bg-red-500 text-white":"bg-white text-zinc-600"].join(" ")}>{String(i+1).padStart(2,"0")}</button>)}
               </div>
             </div>
             <PreviewBoundary resetKey={carousel}>
             <div className="rounded-[26px] bg-zinc-200 p-2 sm:p-5">
               <div className="w-full" data-platform={platform} data-safe-area={safe&&platform==="tiktok"?"true":"false"}>
                 <div className="carousel-stage !min-h-0 !gap-0 !p-0" data-platform={platform} data-safe-area={safe&&platform==="tiktok"?"true":"false"} style={{display:"block",overflow:"visible"}}>
-                  {allVisible?carousel.slides.map((s,i)=><div className="mb-5" key={i}><SlidePreview data={s} number={i+1} account={account} total={carousel.slides.length}/></div>):<SlidePreview data={current} number={selected+1} account={account} total={carousel.slides.length}/>}
+                  {allVisible?carousel.slides.map((s,i)=><div className="mb-5" key={i}><SlidePreview data={s} number={i+1} account={account} total={carousel.slides.length}/></div>):<SlidePreview data={current} number={selected+1} account={account} total={carousel.slides.length}
+                    editor={{selectedId:selectedImage,onSelect:setSelectedImage,onLive:setLiveImages,onCommit:applyImages}}/>}
                 </div>
               </div>
             </div>
             </PreviewBoundary>
+            {warnings.length?<div role="status" className="mt-3 rounded-xl border border-amber-300 bg-amber-50 p-3 text-xs leading-5 text-amber-900">
+              <p className="font-bold">Perkiraan konten terlalu padat (berdasarkan pengukuran layout)</p>
+              <ul className="mt-1 list-disc pl-5">{warnings.map((w,i)=><li key={i}>{w}</li>)}</ul>
+            </div>:null}
+            {!allVisible?<div className="mt-4"><ImageToolbar images={currentImages} selectedId={selectedImage} onSelect={setSelectedImage} onChange={applyImages}/></div>:null}
             <p className="mt-3 text-xs leading-5 text-zinc-500">Safe area adalah panduan konservatif. Sebelum posting, periksa hasil di TikTok. Export browser mungkin berbeda sedikit dari Playwright untuk font/efek tertentu.</p>
           </section>
         </div>
