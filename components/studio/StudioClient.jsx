@@ -308,9 +308,9 @@ export default function StudioClient(){
                   ) : null}
                 </div>
                 <p className="mt-3 text-xs leading-5 text-emerald-900">Di iPhone, bila gambar terbuka alih-alih terunduh, tahan gambar lalu pilih Simpan ke Foto. Untuk ZIP, gunakan menu Bagikan → Simpan ke File. ZIP juga berisi captions.txt.</p>
-                {exported?<SharePanel files={exported.files} meta={carousel.meta} platform={exported.platform}/>:null}
               </div>
             ) : null}
+            <SharePanel files={exported?.files||null} meta={carousel.meta} platform={exported?.platform||platform} working={working} onPrepare={()=>exportImages(true)}/>
             <QualityPanel result={check} checking={checking} onCheck={checkNow} onSelect={openSlide} title={carousel.meta.title}/>
             </div>
             <div data-panel="preview">
