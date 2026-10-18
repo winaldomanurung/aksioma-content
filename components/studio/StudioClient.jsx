@@ -16,6 +16,10 @@ import {useImageLibrary} from "@/lib/studio/image-store";
 import {updateSlideInSource} from "@/lib/studio/source-edit";
 import {fitWarnings} from "@/lib/studio/component-specs";
 import FillHint from "./FillHint";
+import QualityPanel from "./QualityPanel";
+import SharePanel from "./SharePanel";
+import {measureSlides,buildIssues} from "@/lib/studio/slide-metrics";
+import {captionsFile} from "@/lib/studio/post-kit";
 import PostMetaPanel from "@/components/carousel/PostMetaPanel";
 import Link from "next/link";
 
@@ -73,6 +77,11 @@ export default function StudioClient(){
   const [selectedImage,setSelectedImage]=useState(null);
   const [liveImages,setLiveImages]=useState(null);
   const [download,setDownload]=useState(null);
+  const [mobileTab,setMobileTab]=useState("source"); // phones show one panel at a time
+  const [check,setCheck]=useState(null);
+  const [checking,setChecking]=useState(false);
+  const [preflight,setPreflight]=useState(null);
+  const [exported,setExported]=useState(null);
   const downloadUrl=useRef(null);
   const exportStage=useRef(null);
 
@@ -99,12 +108,14 @@ export default function StudioClient(){
     if(downloadUrl.current)URL.revokeObjectURL(downloadUrl.current);
     downloadUrl.current=null;
     setDownload(null);
+    setExported(null);
+    setPreflight(null);
   }
 
   function render(){
     try{
       const value=parseCarouselSource(source);
-      setRendered(value);setSelected(0);setError("");clearDownload();
+      setRendered(value);setSelected(0);setError("");clearDownload();setCheck(null);goTab("preview");
       if(value.meta.account==="journey"||value.meta.account==="trader")setAccountChoice(null);
       setStatus(value.slides.length+" slide valid. Preview diperbarui untuk Aksioma "+(value.meta.account==="trader"?"Trader":"Journey")+".");
     }catch(e){setError(e.message);setStatus("");}
@@ -125,14 +136,38 @@ export default function StudioClient(){
     setStatus("Editor dikosongkan. Preview terakhir tetap terlihat sampai carousel baru dirender.");
   }
 
-  async function exportImages(all=false){
+  async function runCheck(){
+    try{await document.fonts?.ready;}catch{/* fonts API unavailable */}
+    await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));
+    const metrics=measureSlides(exportStage.current);
+    return {issues:buildIssues(carousel.slides,metrics,platform),metrics,platform};
+  }
+  async function checkNow(){
+    setChecking(true);
+    try{setCheck(await runCheck());}finally{setChecking(false);}
+  }
+  function goTab(id){
+    if(id!==mobileTab&&typeof window!=="undefined"&&window.innerWidth<1024)window.scrollTo({top:0});
+    setMobileTab(id);
+  }
+  function openSlide(index){setSelected(index);setAllVisible(false);setSelectedImage(null);setLiveImages(null);goTab("preview");}
+
+  async function exportImages(all=false,force=false,only=null){
     if(working)return;
     setWorking(true);setError("");setStatus("Menyiapkan font dan asset…");clearDownload();
     try{
       // Snapshot is always rendered in a real offscreen 1080x1350 frame.
       const nodes=exportStage.current?.querySelectorAll("[data-carousel-slide]");
       if(!nodes?.length)throw Error("Preview belum dirender.");
-      const indexes=all?Array.from({length:nodes.length},(_,i)=>i):[Math.min(selected,nodes.length-1)];
+      const indexes=only!==null?[Math.min(only,nodes.length-1)]:all?Array.from({length:nodes.length},(_,i)=>i):[Math.min(selected,nodes.length-1)];
+      if(!force){
+        // Preflight: stop when content would be clipped in the exported image.
+        const result=await runCheck();
+        setCheck(result);
+        const blocking=result.issues.filter(i=>i.severity==="overflow"&&indexes.includes(i.index));
+        if(blocking.length){setPreflight({all,only,issues:blocking});setStatus("");goTab("export");return;}
+      }
+      setPreflight(null);
       const files=[];
       for(const i of indexes){
         setStatus("Export slide "+(i+1)+"/"+nodes.length+"…");
@@ -140,11 +175,12 @@ export default function StudioClient(){
         const name=String(i+1).padStart(2,"0")+".jpg";
         files.push({name:platform+"/"+name,blob});
       }
-      const output=all?await makeZip(files):files[0].blob;
+      const output=all?await makeZip([...files,{name:"captions.txt",blob:new Blob([captionsFile(carousel.meta)],{type:"text/plain;charset=utf-8"})}]):files[0].blob;
       const filename="aksioma-"+account+"-"+slugify(carousel.meta.title)+"-"+platform+(all?".zip":"-"+files[0].name.split("/").pop());
       const url=URL.createObjectURL(output);
       downloadUrl.current=url;
       setDownload({url,filename,kind:all?"zip":"jpeg",size:output.size});
+      setExported({files,platform});goTab("export");
       setStatus(all?"ZIP "+files.length+" JPEG selesai. Ketuk Simpan file di bawah.":"JPEG selesai. Ketuk Simpan file di bawah.");
     }catch(e){setError((e?.message || String(e))+" Jika export browser gagal, coba Chrome/Edge desktop atau gunakan Playwright lokal.");setStatus("");}
     finally{setWorking(false);}
@@ -184,7 +220,7 @@ export default function StudioClient(){
   const missing=library.loaded?collectImageIds(baseSlide).filter(id=>!library.rows.some(r=>r.id===id)):[];
 
   return (
-    <main className="min-h-screen bg-[#ebe8e1] px-4 py-8 text-zinc-900 sm:px-7 lg:py-12">
+    <main className="min-h-screen bg-[#ebe8e1] px-3 py-6 pb-28 text-zinc-900 sm:px-7 lg:py-12 lg:pb-12">
       <div className="mx-auto max-w-[1500px]">
         <header className="mb-7 flex flex-wrap items-center justify-between gap-4">
           <div>
@@ -208,7 +244,7 @@ export default function StudioClient(){
           </div>
         </section>
         <div className="grid items-start gap-6 lg:grid-cols-[minmax(320px,500px)_minmax(0,1fr)]">
-          <section className="min-w-0 rounded-[28px] border border-black/10 bg-white p-5 shadow-sm sm:p-6">
+          <section className={"min-w-0 rounded-[28px] border border-black/10 bg-white p-4 shadow-sm sm:p-6 "+(mobileTab==="source"?"":"hidden lg:block")} data-mobile-panel="source">
             <div className="flex items-center justify-between gap-3">
               <h2 className="font-display text-lg font-bold">Carousel source</h2>
               <span className="rounded-full bg-zinc-100 px-3 py-1 text-xs font-medium">JSON v1</span>
@@ -216,7 +252,7 @@ export default function StudioClient(){
             <p className="mt-2 text-sm leading-6 text-zinc-500">AI dapat mengembalikan satu JSON dengan <code>meta</code> dan <code>slides</code>. Source tidak dikirim ke server.</p>
             <label className="mt-5 block text-xs font-semibold uppercase tracking-wider text-zinc-500" htmlFor="studio-source">Paste definisi carousel</label>
             <textarea id="studio-source" spellCheck={false} value={source} onChange={e=>editSource(e.target.value)}
-              className="mt-2 h-[360px] w-full resize-y rounded-xl border border-black/15 bg-zinc-950 p-4 font-mono text-[12px] leading-5 text-zinc-100 outline-none focus:border-red-400 sm:h-[480px]"
+              className="mt-2 h-[46vh] min-h-[260px] w-full resize-y rounded-xl border border-black/15 bg-zinc-950 p-4 font-mono text-[12px] leading-5 text-zinc-100 outline-none focus:border-red-400 sm:h-[480px]"
               placeholder={'{"version":1,"meta":{"title":"..."},"slides":[...]}'}/>
             <div className="mt-4 flex flex-wrap gap-2">
               <button type="button" onClick={render} disabled={working} className="rounded-full bg-red-500 px-5 py-3 text-sm font-bold text-white hover:bg-red-600 disabled:opacity-50">Render carousel</button>
@@ -236,7 +272,7 @@ export default function StudioClient(){
             </div>
           </section>
 
-          <section className="min-w-0">
+          <section className={"min-w-0 "+(mobileTab==="source"?"hidden lg:block":"")} data-mobile-panel="result">
             <div className="mb-4 rounded-[24px] border border-black/10 bg-white p-4 shadow-sm sm:p-5">
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <div>
@@ -244,17 +280,26 @@ export default function StudioClient(){
                   <p className="mt-1 text-xs text-zinc-500">{carousel.slides.length} slide · Aksioma {account==="trader"?"Trader":"Journey"} · 1080×1350 · {platform==="tiktok"?"TikTok Photo":"Instagram"}</p>
                 </div>
                 <div className="flex flex-wrap gap-2">
-                  <button type="button" aria-pressed={platform==="instagram"} onClick={()=>{setPlatform("instagram");setSafe(false);clearDownload();}} className={["rounded-full px-4 py-2 text-xs font-bold",platform==="instagram"?"bg-zinc-950 text-white":"bg-zinc-100 text-zinc-700"].join(" ")}>Instagram</button>
-                  <button type="button" aria-pressed={platform==="tiktok"} onClick={()=>{setPlatform("tiktok");clearDownload();}} className={["rounded-full px-4 py-2 text-xs font-bold",platform==="tiktok"?"bg-zinc-950 text-white":"bg-zinc-100 text-zinc-700"].join(" ")}>TikTok photo</button>
+                  <button type="button" aria-pressed={platform==="instagram"} onClick={()=>{setPlatform("instagram");setSafe(false);clearDownload();}} className={["min-h-11 rounded-full px-4 py-2 text-xs font-bold",platform==="instagram"?"bg-zinc-950 text-white":"bg-zinc-100 text-zinc-700"].join(" ")}>Instagram</button>
+                  <button type="button" aria-pressed={platform==="tiktok"} onClick={()=>{setPlatform("tiktok");clearDownload();}} className={["min-h-11 rounded-full px-4 py-2 text-xs font-bold",platform==="tiktok"?"bg-zinc-950 text-white":"bg-zinc-100 text-zinc-700"].join(" ")}>TikTok photo</button>
                   <button type="button" disabled={platform!=="tiktok"} aria-pressed={safe} onClick={()=>setSafe(v=>!v)} className="rounded-full border border-black/10 px-4 py-2 text-xs font-bold disabled:opacity-40">Safe area {safe?"ON":"OFF"}</button>
                 </div>
               </div>
               <div className="mt-4 flex flex-wrap items-center gap-2 border-t border-black/10 pt-4">
-                <button type="button" disabled={working} onClick={()=>exportImages(false)} className="rounded-full border border-zinc-300 px-4 py-2.5 text-xs font-semibold hover:bg-zinc-50 disabled:opacity-50">Generate JPEG</button>
-                <button type="button" disabled={working} onClick={()=>exportImages(true)} className="rounded-full bg-zinc-950 px-4 py-2.5 text-xs font-semibold text-white hover:bg-zinc-800 disabled:opacity-50">{working?"Generating…":"Generate all ZIP"}</button>
-                <button type="button" onClick={()=>setAllVisible(v=>!v)} className="rounded-full border border-zinc-300 px-4 py-2.5 text-xs font-semibold hover:bg-zinc-50">{allVisible?"Single slide":"Show all slides"}</button>
+                <button type="button" disabled={working} onClick={()=>exportImages(false)} className="min-h-11 rounded-full border border-zinc-300 px-4 py-2.5 text-xs font-semibold hover:bg-zinc-50 disabled:opacity-50">Generate JPEG</button>
+                <button type="button" disabled={working} onClick={()=>exportImages(true)} className="min-h-11 rounded-full bg-zinc-950 px-4 py-2.5 text-xs font-semibold text-white hover:bg-zinc-800 disabled:opacity-50">{working?"Generating…":"Generate all ZIP"}</button>
+                <button type="button" onClick={()=>setAllVisible(v=>!v)} className="min-h-11 rounded-full border border-zinc-300 px-4 py-2.5 text-xs font-semibold hover:bg-zinc-50">{allVisible?"Single slide":"Show all slides"}</button>
               </div>
             </div>
+            <div className={mobileTab==="export"?"":"hidden lg:block"} data-mobile-panel="export">
+            {preflight?<div role="alert" className="mt-4 rounded-[24px] border border-amber-300 bg-amber-50 p-4" data-preflight="true">
+              <p className="font-display text-sm font-bold text-amber-900">Export ditahan: {preflight.issues.length} slide terpotong</p>
+              <ul className="mt-2 list-disc space-y-1 pl-5 text-xs leading-5 text-amber-900">{preflight.issues.map((issue,i)=><li key={i}>{issue.message}</li>)}</ul>
+              <div className="mt-3 flex flex-wrap gap-2">
+                <button type="button" onClick={()=>openSlide(preflight.issues[0].index)} className="min-h-11 rounded-full bg-amber-700 px-5 py-2.5 text-xs font-bold text-white">Perbaiki dulu</button>
+                <button type="button" onClick={()=>exportImages(preflight.all,true,preflight.only)} className="min-h-11 rounded-full border border-amber-700 px-5 py-2.5 text-xs font-semibold text-amber-900">Tetap export</button>
+              </div>
+            </div>:null}
             {download ? (
               <div role="status" className="mt-4 rounded-[24px] border border-emerald-300 bg-emerald-50 p-4">
                 <p className="font-display text-sm font-bold text-emerald-900">File sudah selesai dibuat</p>
@@ -267,19 +312,27 @@ export default function StudioClient(){
                       className="inline-flex rounded-full border border-emerald-700 px-5 py-3 text-sm font-semibold text-emerald-900">Buka gambar ↗</a>
                   ) : null}
                 </div>
-                <p className="mt-3 text-xs leading-5 text-emerald-900">Di iPhone, bila gambar terbuka alih-alih terunduh, tahan gambar lalu pilih Simpan ke Foto. Untuk ZIP, gunakan menu Bagikan → Simpan ke File.</p>
+                <p className="mt-3 text-xs leading-5 text-emerald-900">Di iPhone, bila gambar terbuka alih-alih terunduh, tahan gambar lalu pilih Simpan ke Foto. Untuk ZIP, gunakan menu Bagikan → Simpan ke File. ZIP juga berisi captions.txt.</p>
+                {exported?<SharePanel files={exported.files} meta={carousel.meta} platform={exported.platform}/>:null}
               </div>
             ) : null}
-            <div className="mb-4 overflow-x-auto pb-2">
-              <div className="flex gap-2">
-                {carousel.slides.map((slide,i)=><button key={i} type="button" onClick={()=>{setSelected(i);setAllVisible(false);setSelectedImage(null);setLiveImages(null);clearDownload();}} className={["min-w-10 rounded-xl px-3 py-3 text-xs font-bold",selected===i?"bg-red-500 text-white":"bg-white text-zinc-600"].join(" ")}>{String(i+1).padStart(2,"0")}</button>)}
+            <QualityPanel result={check} checking={checking} onCheck={checkNow} onSelect={openSlide} title={carousel.meta.title}/>
+            </div>
+            <div className={mobileTab==="preview"?"":"hidden lg:block"} data-mobile-panel="preview">
+            <div className="mb-4 flex items-center gap-2">
+              <button type="button" aria-label="Slide sebelumnya" disabled={selected<=0} onClick={()=>openSlide(Math.max(0,selected-1))} className="min-h-11 min-w-11 flex-none rounded-full bg-white text-lg font-bold text-zinc-700 disabled:opacity-30">‹</button>
+              <div className="min-w-0 flex-1 overflow-x-auto pb-1">
+                <div className="flex snap-x gap-2">
+                  {carousel.slides.map((slide,i)=><button key={i} type="button" aria-label={"Slide "+(i+1)} aria-current={selected===i} onClick={()=>{openSlide(i);clearDownload();}} className={["min-h-11 min-w-11 snap-start rounded-xl px-3 py-3 text-xs font-bold",selected===i?"bg-red-500 text-white":"bg-white text-zinc-600"].join(" ")}>{String(i+1).padStart(2,"0")}</button>)}
+                </div>
               </div>
+              <button type="button" aria-label="Slide berikutnya" disabled={selected>=carousel.slides.length-1} onClick={()=>openSlide(Math.min(carousel.slides.length-1,selected+1))} className="min-h-11 min-w-11 flex-none rounded-full bg-white text-lg font-bold text-zinc-700 disabled:opacity-30">›</button>
             </div>
             <PreviewBoundary resetKey={carousel}>
             <div ref={previewBox} className="rounded-[26px] bg-zinc-200 p-2 sm:p-5">
               <div className="w-full" data-platform={platform} data-safe-area={safe&&platform==="tiktok"?"true":"false"}>
                 <div className="carousel-stage !min-h-0 !gap-0 !p-0" data-platform={platform} data-safe-area={safe&&platform==="tiktok"?"true":"false"} style={{display:"block",overflow:"visible"}}>
-                  {allVisible?carousel.slides.map((s,i)=><div className="mb-5" key={i}><SlidePreview data={s} number={i+1} account={account} total={carousel.slides.length}/></div>):<SlidePreview data={current} number={selected+1} account={account} total={carousel.slides.length}
+                  {allVisible?carousel.slides.map((s,i)=><div className="mb-5" key={i}><div className="mb-2 flex items-center justify-between gap-2"><span className="text-xs font-bold text-zinc-600">Slide {String(i+1).padStart(2,"0")}</span><button type="button" disabled={working} onClick={()=>exportImages(false,false,i)} className="min-h-11 rounded-full bg-white px-4 py-2 text-xs font-semibold text-zinc-800 disabled:opacity-50">Simpan gambar slide ini</button></div><SlidePreview data={s} number={i+1} account={account} total={carousel.slides.length}/></div>):<SlidePreview data={current} number={selected+1} account={account} total={carousel.slides.length}
                     editor={{selectedId:selectedImage,onSelect:setSelectedImage,onLive:setLiveImages,onCommit:applyImages}}/>}
                 </div>
               </div>
@@ -305,6 +358,7 @@ export default function StudioClient(){
             </section>:null}
             {!allVisible?<div className="mt-4"><ImageToolbar images={currentImages} selectedId={selectedImage} onSelect={setSelectedImage} onChange={applyImages}/></div>:null}
             {!allVisible?<div className="mt-4"><ImageLibrary/></div>:null}
+            </div>
             <p className="mt-3 text-xs leading-5 text-zinc-500">Safe area adalah panduan konservatif. Sebelum posting, periksa hasil di TikTok. Export browser mungkin berbeda sedikit dari Playwright untuk font/efek tertentu.</p>
           </section>
         </div>
@@ -312,6 +366,10 @@ export default function StudioClient(){
           <PostMetaPanel {...carousel.meta}/>
         </div>
       </div>
+
+      <nav aria-label="Panel Studio" className="studio-bottom-nav lg:hidden" data-mobile-nav="true">
+        {[["source","Sumber"],["preview","Preview"],["export","Ekspor"]].map(([id,label])=><button key={id} type="button" aria-pressed={mobileTab===id} onClick={()=>goTab(id)} className={"studio-bottom-nav-btn"+(mobileTab===id?" studio-bottom-nav-btn--active":"")}>{label}</button>)}
+      </nav>
 
       {/* Export source uses unscaled, offscreen DOM. Never hide with display:none. */}
       <PreviewBoundary resetKey={carousel} fallback={null}>

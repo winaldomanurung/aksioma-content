@@ -6,6 +6,7 @@ import {carouselFor,clone} from "@/lib/studio/builder";
 import ImageToolbar from "@/components/studio/ImageToolbar";
 import ImageLibrary from "@/components/studio/ImageLibrary";
 import ScaledSlide from "./ScaledSlide";
+import SaveImageButton from "./SaveImageButton";
 import JsonOutput from "./JsonOutput";
 
 // Playground for the image tool: upload, drag, resize, pick a shape, copy JSON.
@@ -46,6 +47,7 @@ export default function ImageBuilder(){
         </div>
         <ScaledSlide data={slide} number={2} total={10} account="journey" platform={platform}
           editor={{selectedId,onSelect:setSelectedId,onLive:setLive,onCommit:commit}}/>
+        <SaveImageButton data={slide} number={2} total={10} account="journey" platform={platform} name="gambar-pengguna"/>
         <JsonOutput tabs={tabs}/>
       </div>
     </div>

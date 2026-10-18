@@ -107,6 +107,11 @@ primitiveLists.funnel = { probe: 8, node: (n, c) => ({ type: "funnel", items: ra
 primitiveLists.ladder = { probe: 10, node: (n, c) => ({ type: "ladder", items: range(n).map((i) => ({ label: text(c.title, i), value: "Rp " + (1000 + i * 150), note: text(c.node, i + 1), current: i === 1 })) }) };
 primitiveLists.qaCard = { probe: 8, node: (n, c) => ({ type: "qaCard", items: range(n).map((i) => ({ q: text(c.point, i), a: text(c.text, i + 1) })) }) };
 primitiveLists.pollCard = { probe: 6, node: (n, c) => ({ type: "pollCard", question: text(70), cta: "Komentar jawabanmu", options: range(n).map((i) => text(c.point, i)) }) };
+// Batch 4 primitives.
+primitiveLists.footnote = { probe: 10, node: (n, c) => ({ type: "footnote", items: range(n).map((i) => text(c.text, i)) }) };
+primitiveLists.glossary = { probe: 8, node: (n, c) => ({ type: "glossary", items: range(n).map((i) => ({ term: text(c.chip, i), meaning: text(c.text, i + 1) })) }) };
+primitiveLists.flow = { probe: 9, node: (n, c) => ({ type: "flow", items: range(n).map((i) => ({ label: text(c.node, i), note: text(c.node, i + 1), via: i % 2 ? "jika ya" : undefined })) }) };
+primitiveLists["flow:column"] = { probe: 9, node: (n, c) => ({ type: "flow", direction: "column", items: range(n).map((i) => ({ label: text(c.node, i), note: text(c.node, i + 1) })) }) };
 for (const cols of [2, 3, 4]) {
   const kind = cols === 2 ? "point" : "node";
   primitiveLists["table:" + cols] = { probe: 14, node: (n, c) => ({ type: "table", columns: range(cols).map((i) => text(c.chip, i)), rows: range(n).map((r) => ({ cells: range(cols).map((i) => text(c[kind], r + i)) })) }) };
@@ -185,6 +190,10 @@ for (const field of ["title", "text"]) {
   addChar("photoHero." + field, (n) => freeform([{ type: "photoHero", size: "sm", title: field === "title" ? text(n) : text(30), text: field === "text" ? text(n, 1) : text(80, 1) }]));
 }
 ffSingle("phoneMockup.caption", (n) => ({ type: "phoneMockup", size: "md", caption: text(n) }));
+ffSingle("textBlock.text", (n) => ({ type: "textBlock", label: text(14), text: text(n, 1) }));
+ffSingle("glossary.meaning", (n) => ({ type: "glossary", items: [{ term: text(20), meaning: text(n, 1) }] }));
+ffSingle("flow.label", (n) => ({ type: "flow", items: [{ label: text(n), note: text(24, 1) }, { label: text(20, 2) }] }));
+ffSingle("flow.note", (n) => ({ type: "flow", items: [{ label: text(16), note: text(n, 1) }, { label: text(16, 2) }] }));
 ffSingle("pill.text", (n) => ({ type: "pill", text: text(n) }));
 
 // ---------- browser side ----------

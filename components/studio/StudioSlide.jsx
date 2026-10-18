@@ -9,7 +9,8 @@ import {
   TwoColumn, ThreeColumn, ContentGrid, Stack, Divider,
   BarChart, Matrix2x2, DataTable, MythFact, ProsCons, BeforeAfter,
   Funnel, Ladder, QACard, PollCard, SwipeHint, SourceNote, ProgressRing,
-  PhotoHero, PhoneMockup, Collage, AvatarQuote
+  PhotoHero, PhoneMockup, Collage, AvatarQuote,
+  TextBlock, Footnote, Glossary, Flow
 } from "@/components/carousel";
 import {AssetIcon,AssetShape} from "./AssetPrimitives";
 import AccountBookend from "./AccountBookend";
@@ -53,6 +54,10 @@ function Primitive({ node, dark = false }) {
     case "phoneMockup": return <PhoneMockup image={node.image} size={node.size} align={node.align} caption={node.caption} dark={dark||node.dark}/>;
     case "collage": return <Collage items={node.items} size={node.size} shape={node.shape} dark={dark||node.dark}/>;
     case "avatarQuote": return <AvatarQuote avatar={node.avatar} quote={node.quote} name={node.name} role={node.role} dark={dark||node.dark}/>;
+    case "textBlock": return <TextBlock text={node.text} label={node.label} size={node.size} dark={dark||node.dark}/>;
+    case "footnote": return <Footnote items={node.items} dark={dark||node.dark}/>;
+    case "glossary": return <Glossary items={node.items} dark={dark||node.dark}/>;
+    case "flow": return <Flow items={node.items} direction={node.direction} fork={node.fork} dark={dark||node.dark}/>;
     case "assetIcon": return <AssetIcon set={node.set} name={node.name} size={node.size} tone={node.tone|| (dark?"light":"ink")} label={node.label}/>;
     case "assetShape": return <AssetShape name={node.name} position={node.position} opacity={node.opacity}/>;
     default: return null;
@@ -61,6 +66,11 @@ function Primitive({ node, dark = false }) {
 export function StudioSlide({data,number,account="journey",total=10}){
   return <SlideImagesContext.Provider value={data?.images||null}><StudioSlideBody data={data} number={number} account={account} total={total}/></SlideImagesContext.Provider>;
 }
+function extrasNodes(s,dark){
+  const nodes=Array.isArray(s.extras)?s.extras.map((n,i)=><Primitive key={i} node={n} dark={dark}/>):[];
+  if(Array.isArray(s.sources)&&s.sources.length)nodes.push(<SourceNote key="sources" label="Sumber" text={s.sources.join("; ")} dark={dark}/>);
+  return nodes.length?nodes:undefined;
+}
 const DARK_PRESETS=new Set(["bullet","causeEffect","summary"]);
 function StudioSlideBody({data,number,account="journey",total=10}){
   const slide=number;
@@ -68,7 +78,7 @@ function StudioSlideBody({data,number,account="journey",total=10}){
   const dark=s.type==="freeform" ? (s.theme ? (backgroundThemes[s.theme]?.dark ?? !!s.dark) : !!s.dark) : DARK_PRESETS.has(s.type);
   const layout={
     vertical: s.vertical || "center",
-    extras: Array.isArray(s.extras) && s.extras.length ? s.extras.map((n,i)=><Primitive key={i} node={n} dark={dark}/>) : undefined,
+    extras: extrasNodes(s,dark),
   };
   switch(s.type){
     case "hero": return number===1 ? <AccountBookend kind="hero" account={account} data={s} number={number}/> : <HeroSlide {...s} slide={slide}/>;

@@ -19,6 +19,12 @@ export const metadata = {
   description: "React-based carousel studio and JPEG exporter for Aksioma.",
 };
 
+export const viewport = {
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
+};
+
 export default function RootLayout({ children }) {
   const rootClass = [inter.variable, lexend.variable, "h-full antialiased"].join(" ");
 

@@ -47,3 +47,7 @@ export { default as PhotoHero } from "./PhotoHero";
 export { default as PhoneMockup } from "./PhoneMockup";
 export { default as Collage } from "./Collage";
 export { default as AvatarQuote } from "./AvatarQuote";
+export { default as TextBlock } from "./TextBlock";
+export { default as Footnote } from "./Footnote";
+export { default as Glossary } from "./Glossary";
+export { default as Flow } from "./Flow";

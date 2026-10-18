@@ -7,6 +7,7 @@ import {carouselFor,clone,isSlideSpec,nodeFor,previewPosition,previewSlideFor} f
 import SpecForm from "./SpecForm";
 import ScaledSlide from "./ScaledSlide";
 import JsonOutput from "./JsonOutput";
+import SaveImageButton from "./SaveImageButton";
 
 export default function ComponentBuilder({name}){
   const spec=ALL_SPECS[name];
@@ -52,6 +53,7 @@ export default function ComponentBuilder({name}){
         {result.error
           ? <div role="alert" className="rounded-xl border border-red-200 bg-red-50 p-4 text-sm leading-6 text-red-800"><p className="font-bold">Belum valid</p><p>{result.error}</p></div>
           : <ScaledSlide data={result.slide} number={pos.number} total={pos.total} account={account} platform={platform} safe={safe}/>}
+        {!result.error?<SaveImageButton data={result.slide} number={pos.number} total={pos.total} account={account} platform={platform} name={name}/>:null}
         {result.warnings.length?<div role="status" className="rounded-xl border border-amber-300 bg-amber-50 p-3 text-xs leading-5 text-amber-900">
           <p className="font-bold">Perkiraan terlalu padat</p><ul className="list-disc pl-5">{result.warnings.map((w,i)=><li key={i}>{w}</li>)}</ul></div>:null}
         <JsonOutput tabs={tabs}/>

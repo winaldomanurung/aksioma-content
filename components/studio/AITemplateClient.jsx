@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import {useRef,useState} from "react";
-import {makeAiPrompt,starterJson} from "@/lib/studio/ai-guide";
+import {makeAiPrompt,starterJson,STYLE_PRESETS} from "@/lib/studio/ai-guide";
 import {copyText} from "@/lib/studio/clipboard";
 
 export default function AITemplateClient(){
@@ -11,10 +11,11 @@ export default function AITemplateClient(){
   const [audience,setAudience]=useState("Young professionals");
   const [objective,setObjective]=useState("Save, share dan follow");
   const [slides,setSlides]=useState(10);
+  const [style,setStyle]=useState("seimbang");
   const [feedback,setFeedback]=useState("");
   const [tab,setTab]=useState("prompt");
   const textRef=useRef(null);
-  const prompt=makeAiPrompt({topic,audience,objective,slides,account});
+  const prompt=makeAiPrompt({topic,audience,objective,slides,account,style});
   const content=tab==="prompt"?prompt:JSON.stringify({...JSON.parse(starterJson),meta:{...JSON.parse(starterJson).meta,account}},null,2);
 
   async function copy(value){
@@ -75,6 +76,13 @@ export default function AITemplateClient(){
               <select value={slides} onChange={event=>setSlides(Number(event.target.value))} className="mt-2 w-full rounded-xl border border-black/15 bg-[#f9f7f3] px-4 py-3 text-base outline-none focus:border-red-400">
                 {[6,7,8,9,10,11,12].map(count=><option key={count} value={count}>{count} slide</option>)}
               </select>
+            </label>
+            <label className="sm:col-span-2">
+              <span className="text-sm font-semibold">Gaya hasil</span>
+              <div className="mt-2 flex flex-wrap gap-2">
+                {Object.entries(STYLE_PRESETS).map(([key,preset])=><button key={key} type="button" aria-pressed={style===key} onClick={()=>setStyle(key)} className={["min-h-11 rounded-full px-4 py-2 text-sm font-semibold",style===key?"bg-zinc-950 text-white":"bg-zinc-100 text-zinc-700"].join(" ")}>{preset.label}</button>)}
+              </div>
+              <span className="mt-2 block text-xs text-zinc-500">Mengatur kepadatan, jumlah extras, dan jenis komponen yang diutamakan AI.</span>
             </label>
           </div>
         </section>
