@@ -98,6 +98,14 @@ const primitiveLists = {
   keywordCluster: { probe: 40, node: (n, c) => ({ type: "keywordCluster", items: range(n).map((i) => text(c.chip, i)) }) },
   miniDiagram: { probe: 12, node: (n, c) => ({ type: "miniDiagram", items: range(n).map((i) => text(c.node, i)) }) },
 };
+// New data/structure primitives (Batch 1).
+primitiveLists.barChart = { probe: 12, node: (n, c) => ({ type: "barChart", unit: "%", items: range(n).map((i) => ({ label: text(c.title, i), value: 20 + ((i * 13) % 70), note: i % 2 ? text(c.node, i + 1) : undefined })) }) };
+primitiveLists.mythFact = { probe: 8, node: (n, c) => ({ type: "mythFact", items: range(n).map((i) => ({ myth: text(c.point, i), fact: text(c.point, i + 3) })) }) };
+primitiveLists.prosCons = { probe: 10, node: (n, c) => ({ type: "prosCons", pros: range(n).map((i) => text(c.point, i)), cons: range(n).map((i) => text(c.point, i + 5)) }) };
+for (const cols of [2, 3, 4]) {
+  const kind = cols === 2 ? "point" : "node";
+  primitiveLists["table:" + cols] = { probe: 14, node: (n, c) => ({ type: "table", columns: range(cols).map((i) => text(c.chip, i)), rows: range(n).map((r) => ({ cells: range(cols).map((i) => text(c[kind], r + i)) })) }) };
+}
 for (const container of ["stack", "contentGrid", "twoColumn", "threeColumn"]) {
   for (const child of Object.keys(childBuilders)) {
     primitiveLists[container + ":" + child] = {
@@ -140,6 +148,18 @@ ffSingle("diagramNode.body", (n) => ({ type: "diagramNode", title: text(24), bod
 ffSingle("statCard.label", (n) => ({ type: "statCard", value: "80%", label: text(n), note: text(60, 1) }));
 ffSingle("statCard.note", (n) => ({ type: "statCard", value: "80%", label: text(30), note: text(n, 1) }));
 ffSingle("bigNumber.label", (n) => ({ type: "bigNumber", value: "80%", label: text(n) }));
+for (const field of ["title", "text"]) {
+  addChar("matrix2x2." + field, (n) => freeform([{ type: "matrix2x2", xAxis: { low: "Rendah", high: "Tinggi" }, yAxis: { low: "Rendah", high: "Tinggi" },
+    quadrants: range(4).map((i) => ({ title: field === "title" ? text(n, i) : text(18, i), text: field === "text" ? text(n, i + 1) : text(60, i + 1) })) }]));
+}
+for (const field of ["title", "text"]) {
+  addChar("beforeAfter." + field, (n) => freeform([{ type: "beforeAfter", slot: "lg",
+    before: { label: "SEBELUM", title: field === "title" ? text(n) : text(24), text: field === "text" ? text(n, 1) : text(90, 1) },
+    after: { label: "SESUDAH", title: field === "title" ? text(n, 2) : text(24, 2), text: field === "text" ? text(n, 3) : text(90, 3) } }]));
+}
+ffSingle("barChart.label", (n) => ({ type: "barChart", unit: "%", items: [{ label: text(n), value: 70 }, { label: text(20, 1), value: 40 }] }));
+ffSingle("mythFact.myth", (n) => ({ type: "mythFact", items: [{ myth: text(n), fact: text(60, 1) }] }));
+ffSingle("mythFact.fact", (n) => ({ type: "mythFact", items: [{ myth: text(60), fact: text(n, 1) }] }));
 ffSingle("pill.text", (n) => ({ type: "pill", text: text(n) }));
 
 // ---------- browser side ----------

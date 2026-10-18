@@ -75,7 +75,7 @@ function Field({field,value,onChange,ctx}){
 function ListField({field,value,onChange,ctx,label}){
   const list=Array.isArray(value)?value:[];
   const limits=fieldCountLimits(field,{keywords:ctx.keywords});
-  const filled=list.filter(item=>typeof item==="string"?item.trim():Object.values(item||{}).some(v=>typeof v==="string"&&v.trim())).length;
+  const filled=list.length;
   const update=(i,item)=>onChange(list.map((x,j)=>j===i?item:x));
   const remove=i=>onChange(list.filter((_,j)=>j!==i));
   const add=()=>onChange([...list,field.item==="string"?"":blankFor(field.item)]);
@@ -148,7 +148,8 @@ function NodeList({field,value,onChange,ctx,label}){
 
 export function Fields({fields,value,onChange,ctx={}}){
   const hasKeywords=Array.isArray(value?.keywords)&&value.keywords.some(k=>String(k).trim());
-  const context={...ctx,keywords:ctx.keywords??hasKeywords};
+  const columns=ctx.columns??(Array.isArray(value?.columns)?value.columns.filter(c=>String(c).trim()).length||undefined:undefined);
+  const context={...ctx,keywords:ctx.keywords??hasKeywords,columns};
   return (
     <div className="space-y-3">
       {fields.map(field=>(

@@ -13,7 +13,9 @@ Item counts and text lengths per component are measured in a real browser by
 `npm run measure:capacity` (lib/studio/capacity-data.js) and summarised in
 lib/studio/component-specs.js. Browse them at /studio/components. Recommended
 counts: bullet 4, compare 4/side, causeEffect chain 4, framework 5, summary 5,
-timeline 5, checklist 5, miniDiagram 5, keywordCluster 8. Re-measure after any
+timeline 5, checklist 5, miniDiagram 5, keywordCluster 8,
+barChart 5, mythFact 3, prosCons 4, table 5 rows. Data primitives (barChart, table,
+matrix2x2, mythFact, prosCons, beforeAfter) exist in Studio JSON only. Re-measure after any
 CSS or component change. Slides may also carry user placed images (JSON
 `images`, Studio only); JSX pages do not need them.
 

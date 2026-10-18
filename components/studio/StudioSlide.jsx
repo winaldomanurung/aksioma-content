@@ -6,7 +6,8 @@ import {
   FrameworkSlide, SummarySlide, CTASlide, FreeformSlide, SlideHeading,
   InfoCard, StatCard, BigNumber, QuoteCard, DiagramNode, Connector,
   Timeline, Checklist, Callout, Pill, KeywordCluster, MiniDiagram,
-  TwoColumn, ThreeColumn, ContentGrid, Stack, Divider
+  TwoColumn, ThreeColumn, ContentGrid, Stack, Divider,
+  BarChart, Matrix2x2, DataTable, MythFact, ProsCons, BeforeAfter
 } from "@/components/carousel";
 import {AssetIcon,AssetShape} from "./AssetPrimitives";
 import AccountBookend from "./AccountBookend";
@@ -33,6 +34,12 @@ function Primitive({ node, dark = false }) {
     case "contentGrid": return <ContentGrid columns={node.columns}>{children}</ContentGrid>;
     case "stack": return <Stack>{children}</Stack>;
     case "divider": return <Divider dark={node.dark}/>;
+    case "barChart": return <BarChart items={node.items} unit={node.unit} max={node.max} dark={dark||node.dark}/>;
+    case "matrix2x2": return <Matrix2x2 xAxis={node.xAxis} yAxis={node.yAxis} quadrants={node.quadrants} dark={dark||node.dark}/>;
+    case "table": return <DataTable columns={node.columns} rows={node.rows} dark={dark||node.dark}/>;
+    case "mythFact": return <MythFact items={node.items} mythLabel={node.mythLabel} factLabel={node.factLabel} dark={dark||node.dark}/>;
+    case "prosCons": return <ProsCons pros={node.pros} cons={node.cons} proLabel={node.proLabel} conLabel={node.conLabel} dark={dark||node.dark}/>;
+    case "beforeAfter": return <BeforeAfter before={node.before} after={node.after} slot={node.slot} dark={dark||node.dark}/>;
     case "assetIcon": return <AssetIcon set={node.set} name={node.name} size={node.size} tone={node.tone|| (dark?"light":"ink")} label={node.label}/>;
     case "assetShape": return <AssetShape name={node.name} position={node.position} opacity={node.opacity}/>;
     default: return null;
