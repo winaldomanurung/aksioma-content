@@ -26,8 +26,12 @@ export default function SharePanel({files,meta,platform,working=false,onPrepare}
   async function share(list=asFiles){
     try{
       setDetail("");
+      // Caption goes to the clipboard (best effort, needs this click's user gesture);
+      // the share itself carries only the images so TikTok stays in the share sheet.
+      let copied=false;
+      try{await copyText(caption);copied=true;}catch{}
       const outcome=await shareCarousel({files:list,title:meta.title,text:caption});
-      setMessage(outcome==="shared"?"Dibagikan. Bila caption tidak ikut terisi, tempel dari tombol Salin caption.":"Dibatalkan.");
+      setMessage(outcome==="shared"?(copied?"Dibagikan. Caption sudah disalin: tempel di kolom caption.":"Dibagikan. Tempel caption dari tombol Salin caption."):"Dibatalkan.");
     }catch(e){
       setMessage(e.message);
       const env=shareEnvironment();
