@@ -51,3 +51,4 @@ export { default as TextBlock } from "./TextBlock";
 export { default as Footnote } from "./Footnote";
 export { default as Glossary } from "./Glossary";
 export { default as Flow } from "./Flow";
+export { default as StockList } from "./StockList";

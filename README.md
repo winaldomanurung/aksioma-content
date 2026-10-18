@@ -2,6 +2,61 @@
 
 Aksioma Content Studio membuat carousel dari satu source JSX lalu mengekspornya menjadi JPEG untuk Instagram dan TikTok.
 
+## Fitur utama
+
+| Halaman | Fungsi |
+| --- | --- |
+| `/studio` | Paste JSON carousel (atau `page.jsx` dengan blok JSON), pilih akun, font, platform, lalu render, cek kualitas, dan unduh JPEG/ZIP. Semua berjalan di browser. |
+| `/studio/template` | Isi topik, salin prompt lengkap ke ChatGPT/Claude, paste JSON hasilnya ke Studio. |
+| `/studio/remix` | **Adaptasi konten**: tempel konten orang lain, pilih kemasan baru (mitos vs fakta, FAQ, checklist, Top N, dll.) dan detail tambahan, lalu salin prompt adaptasi. |
+| `/studio/components` | Katalog komponen dan batas kapasitasnya. |
+| `/studio/assets` | Ikon, bentuk dekorasi, dan tema latar. |
+| `/carousel/demo` | Demo JSX dan kontrak penulisan AI (AI AUTHORING CONTRACT). |
+
+### Alur Studio (JSON v1)
+
+1. Buat konten lewat `/studio/template` atau `/studio/remix`, atau tulis sendiri.
+2. Paste JSON (`{"version":1,"meta":{...},"slides":[...]}`) di `/studio`, tekan **Render carousel**.
+3. Jalankan **Cek kualitas** (menandai slide yang tidak muat), lalu unduh.
+
+### Font lokal dan pilihan font
+
+Font dimuat lokal lewat `next/font/local` (`app/fonts.js`, berkas di `app/fonts/*.woff2`), tanpa permintaan ke Google Fonts sehingga build dan export berjalan offline. Lisensi (SIL OFL) ada di `app/fonts/LICENSES.md`, yang juga menjelaskan cara menambah font.
+
+Preset font konten ada di `lib/studio/fonts.js`, dipilih di Studio dan disimpan di `meta.font` (atau `font` per slide):
+
+| id | Nama | Heading / body |
+| --- | --- | --- |
+| `aksioma` (default) | Aksioma | Lexend / Inter |
+| `jakarta` | Modern | Plus Jakarta Sans |
+| `editorial` | Editorial | Playfair Display / Inter |
+| `grotesk` | Teknis | Space Grotesk / Inter |
+
+Logo cover/CTA tetap memakai font Aksioma. Font yang lebih lebar bisa memotong slide padat, jadi jalankan **Cek kualitas** setelah mengganti font.
+
+### Stock List (daftar saham)
+
+Komponen `stockList` menampilkan 1–8 saham sesuai input: ticker, nama, sinyal (`buy`/`accumulate`/`hold`/`watch`/`sell` atau `action` sendiri), `entry`, `target`, `stop`, dan `note`. Tampilan menyesuaikan jumlah: 1–3 kartu besar (catatan ≤90 karakter), 4–5 kartu sedang (catatan ≤56), 6–8 baris ringkas tanpa catatan. Disclaimer tampil secara default. Gunakan hanya data dari sumber atau analisis sendiri.
+
+```json
+{"type":"freeform","nodes":[
+  {"type":"slideHeading","title":"Saham pilihan minggu ini"},
+  {"type":"stockList","items":[{"ticker":"ABCD","name":"Contoh Bank Tbk","signal":"accumulate","entry":"1.000","target":"1.250","stop":"950"}]}
+]}
+```
+
+### Skrip
+
+| Perintah | Fungsi |
+| --- | --- |
+| `npm run dev` / `build` / `start` | Next.js |
+| `npm run lint` | ESLint |
+| `npm run carousel:export -- /carousel/demo --platform=all` | Export JPEG lewat Playwright |
+| `npm run measure:capacity` | Ukur ulang kapasitas komponen (menghasilkan `lib/studio/capacity-data.js`, jangan diedit manual) |
+| `npm run setup:browser` | Pasang Chromium untuk Playwright |
+
+Jalankan `measure:capacity` setelah mengubah CSS komponen yang memengaruhi tinggi slide. `stockList` tidak termasuk karena tinggi barisnya tetap.
+
 ## Ukuran output
 
 - Instagram: **1080 × 1350 px (4:5)**
@@ -100,9 +155,7 @@ Safe-area overlay hanya tampil saat URL memakai `safe=1`; overlay tersebut tidak
 
 Konten tetap satu. Jangan membuat versi copy terpisah untuk Instagram dan TikTok. Platform hanya mengubah canvas dan composition.
 
-Font mengikuti Aksioma Trader:
-- Inter untuk body;
-- Lexend untuk heading/display.
+Font bawaan mengikuti Aksioma Trader (Inter untuk body, Lexend untuk heading/display) dan dapat diganti per konten, lihat "Font lokal dan pilihan font".
 
 Branding dan footer memakai komponen bersama agar alignment konsisten.
 

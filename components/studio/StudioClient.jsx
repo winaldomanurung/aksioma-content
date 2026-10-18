@@ -13,7 +13,8 @@ import ImageLibrary from "./ImageLibrary";
 import ImagePicker from "./ImagePicker";
 import {collectImageIds,listImageSlots,setAtPath} from "@/lib/studio/images";
 import {useImageLibrary} from "@/lib/studio/image-store";
-import {updateSlideInSource,locateInSource} from "@/lib/studio/source-edit";
+import {updateSlideInSource,updateMetaInSource,locateInSource} from "@/lib/studio/source-edit";
+import {FONT_PRESETS,FONT_IDS,DEFAULT_FONT,fontOf} from "@/lib/studio/fonts";
 import {buildTextMap} from "@/lib/studio/text-map";
 import SourceEditor from "@/components/studio/SourceEditor";
 import {fitWarnings} from "@/lib/studio/component-specs";
@@ -41,7 +42,7 @@ const subscribeDraft=callback=>{
 };
 const notifyDraft=()=>draftListeners.forEach(callback=>callback());
 
-function SlidePreview({data,number,account,total,editor,textMode,index,onTextHover,onTextCommit}){
+function SlidePreview({data,number,account,total,font,editor,textMode,index,onTextHover,onTextCommit}){
   const wrap=useRef(null);
   const root=useRef(null);
   const map=useRef(new Map());
@@ -119,7 +120,7 @@ function SlidePreview({data,number,account,total,editor,textMode,index,onTextHov
       <div style={{width:1080,height:1350,transformOrigin:"top left",transform:"scale("+scale+")"}}>
         <div ref={root} data-text-edit={textOn?"on":"off"} style={{position:"relative",width:1080,height:1350,cursor:textOn?"pointer":undefined}}
           onPointerMove={textOn?hover:undefined} onPointerLeave={textOn?leave:undefined} onClick={textOn?start:undefined}>
-          <StudioSlide key={rev} data={data} number={number} account={account} total={total}/>
+          <StudioSlide key={rev} data={data} number={number} account={account} total={total} font={font}/>
           {box?<div data-text-highlight={box.editing?"editing":"hover"} style={{position:"absolute",left:box.x-6,top:box.y-4,width:box.w+12,height:box.h+8,borderRadius:8,pointerEvents:"none",zIndex:60,
             outline:(box.editing?"4px solid #ef4444":"3px dashed #ef4444"),background:box.editing?"rgba(239,68,68,.10)":"rgba(239,68,68,.14)"}}/>:null}
           {editor&&data.images?.length?<ImageEditorOverlay images={data.images} scale={scale} selectedId={editor.selectedId}
@@ -163,6 +164,7 @@ export default function StudioClient(){
   },[savedDraft]);
   const carousel=rendered??draftPreview;
   const account=accountChoice??(carousel.meta.account==="trader"?"trader":"journey");
+  const font=fontOf(carousel.meta.font);
 
   useEffect(()=>()=>{if(downloadUrl.current)URL.revokeObjectURL(downloadUrl.current);},[]);
 
@@ -258,6 +260,15 @@ export default function StudioClient(){
   const current=liveImages?{...baseSlide,images:liveImages}:baseSlide;
   const warnings=fitWarnings(baseSlide);
 
+  // Change carousel-level meta (for example the font) in the preview AND the
+  // source text, the same way applySlidePatch does for one slide.
+  function applyMeta(patch){
+    setRendered({...carousel,meta:{...carousel.meta,...patch}});
+    clearDownload();setCheck(null);
+    try{setEdited(updateMetaInSource(source,patch));}
+    catch(e){setError("Perubahan tampil di preview, tetapi source tidak bisa diperbarui otomatis: "+(e?.message||e));}
+  }
+
   // Commit a change to one slide (image overlay edit, slot assignment): update
   // the preview AND the source text.
   function applySlidePatch(patch,at=selected){
@@ -315,6 +326,22 @@ export default function StudioClient(){
             </div>
           </div>
         </section>
+        <section className="mb-6 rounded-[24px] border border-black/10 bg-white p-4 sm:p-5" data-panel="font">
+          <div className="flex flex-wrap items-center justify-between gap-4">
+            <div className="min-w-0 max-w-xl">
+              <p className="font-display text-sm font-bold">Pilih font konten</p>
+              <p className="mt-1 text-xs text-zinc-500">{FONT_PRESETS[font].hint} Disimpan di <code>meta.font</code>. Logo cover/CTA tetap memakai font Aksioma. Font lebar bisa memotong slide padat: jalankan Cek kualitas.</p>
+            </div>
+            <div className="flex flex-wrap gap-2" role="group" aria-label="Font konten">
+              {FONT_IDS.map(id=><button key={id} type="button" aria-pressed={font===id}
+                onClick={()=>{if(id!==font)applyMeta({font:id===DEFAULT_FONT?undefined:id});}}
+                title={FONT_PRESETS[id].display+(FONT_PRESETS[id].body!==FONT_PRESETS[id].display?" + "+FONT_PRESETS[id].body:"")}
+                className={["min-h-11 rounded-full px-5 py-3 text-sm font-bold",font===id?"bg-zinc-950 text-white":"bg-zinc-100 text-zinc-700"].join(" ")}>
+                {FONT_PRESETS[id].label}
+              </button>)}
+            </div>
+          </div>
+        </section>
         <div className="grid items-start gap-6 lg:grid-cols-[minmax(320px,500px)_minmax(0,1fr)]">
           <section className="min-w-0 rounded-[28px] border border-black/10 bg-white p-4 shadow-sm sm:p-6" data-panel="source">
             <div className="flex items-center justify-between gap-3">
@@ -339,6 +366,7 @@ export default function StudioClient(){
               <p className="mt-2 leading-6">Tak perlu copy source dari GitHub. Isi topik di halaman Template AI, lalu salin prompt lengkap dengan satu tombol.</p>
               <div className="mt-3 flex flex-wrap gap-2">
                 <Link href="/studio/template" className="inline-flex rounded-full bg-zinc-950 px-5 py-3 font-semibold text-white hover:bg-zinc-800">Buka Template AI →</Link>
+                <Link href="/studio/remix" className="inline-flex rounded-full border border-black/15 bg-white px-5 py-3 font-semibold text-zinc-900 hover:bg-zinc-50">Adaptasi konten orang lain ↗</Link>
                 <Link href="/studio/assets" className="inline-flex rounded-full border border-black/15 bg-white px-5 py-3 font-semibold text-zinc-900 hover:bg-zinc-50">Lihat Asset Library ↗</Link>
               </div>
             </div>
@@ -410,7 +438,7 @@ export default function StudioClient(){
             <div ref={previewBox} className="rounded-[26px] bg-zinc-200 p-2 sm:p-5">
               <div className="w-full" data-platform={platform} data-safe-area={safe&&platform==="tiktok"?"true":"false"}>
                 <div className="carousel-stage !min-h-0 !gap-0 !p-0" data-platform={platform} data-safe-area={safe&&platform==="tiktok"?"true":"false"} style={{display:"block",overflow:"visible"}}>
-                  {allVisible?carousel.slides.map((s,i)=><div className="mb-5" key={i}><div className="mb-2 flex items-center justify-between gap-2"><span className="text-xs font-bold text-zinc-600">Slide {String(i+1).padStart(2,"0")}</span><button type="button" disabled={working} onClick={()=>exportImages(false,false,i)} className="min-h-11 rounded-full bg-white px-4 py-2 text-xs font-semibold text-zinc-800 disabled:opacity-50">Simpan gambar slide ini</button></div><SlidePreview data={s} number={i+1} account={account} total={carousel.slides.length} textMode={textMode} index={i} onTextHover={hoverText} onTextCommit={commitText}/></div>):<SlidePreview data={current} number={selected+1} account={account} total={carousel.slides.length} textMode={textMode} index={selected} onTextHover={hoverText} onTextCommit={commitText}
+                  {allVisible?carousel.slides.map((s,i)=><div className="mb-5" key={i}><div className="mb-2 flex items-center justify-between gap-2"><span className="text-xs font-bold text-zinc-600">Slide {String(i+1).padStart(2,"0")}</span><button type="button" disabled={working} onClick={()=>exportImages(false,false,i)} className="min-h-11 rounded-full bg-white px-4 py-2 text-xs font-semibold text-zinc-800 disabled:opacity-50">Simpan gambar slide ini</button></div><SlidePreview data={s} number={i+1} account={account} total={carousel.slides.length} font={font} textMode={textMode} index={i} onTextHover={hoverText} onTextCommit={commitText}/></div>):<SlidePreview data={current} number={selected+1} account={account} total={carousel.slides.length} font={font} textMode={textMode} index={selected} onTextHover={hoverText} onTextCommit={commitText}
                     editor={{selectedId:selectedImage,onSelect:setSelectedImage,onLive:setLiveImages,onCommit:applyImages}}/>}
                 </div>
               </div>
@@ -449,7 +477,7 @@ export default function StudioClient(){
       <PreviewBoundary resetKey={carousel} fallback={null}>
       <div ref={exportStage} className="carousel-stage" data-platform={platform} data-safe-area="false" aria-hidden="true"
         style={{position:"fixed",left:"-100000px",top:0,width:1080,display:"flex",gap:0,padding:0,pointerEvents:"none"}}>
-        {carousel.slides.map((s,i)=><StudioSlide key={i} data={s} number={i+1} account={account} total={carousel.slides.length}/>)}
+        {carousel.slides.map((s,i)=><StudioSlide key={i} data={s} number={i+1} account={account} total={carousel.slides.length} font={font}/>)}
       </div>
       </PreviewBoundary>
     </main>

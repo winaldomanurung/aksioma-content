@@ -1,18 +1,6 @@
-import { Inter, Lexend } from "next/font/google";
 import "./globals.css";
+import {fontVariableClasses} from "./fonts";
 import SiteNav from "@/components/studio/SiteNav";
-
-const inter = Inter({
-  subsets: ["latin"],
-  display: "swap",
-  variable: "--font-inter",
-});
-
-const lexend = Lexend({
-  subsets: ["latin"],
-  display: "swap",
-  variable: "--font-lexend",
-});
 
 export const metadata = {
   title: "Aksioma Content Studio",
@@ -26,7 +14,7 @@ export const viewport = {
 };
 
 export default function RootLayout({ children }) {
-  const rootClass = [inter.variable, lexend.variable, "h-full antialiased"].join(" ");
+  const rootClass = [fontVariableClasses, "h-full antialiased"].join(" ");
 
   return (
     <html lang="id" className={rootClass}>

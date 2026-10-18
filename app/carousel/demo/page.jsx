@@ -16,7 +16,7 @@ counts: bullet 4, compare 4/side, causeEffect chain 4, framework 5, summary 5,
 timeline 5, checklist 5, miniDiagram 5, keywordCluster 8,
 barChart 5, mythFact 3, prosCons 4, table 5 rows. All data and new primitives
 (BarChart, DataTable, Matrix2x2, MythFact, ProsCons, BeforeAfter, Funnel, Ladder, QACard,
-PollCard, SwipeHint, SourceNote, ProgressRing, TextBlock, Footnote, Glossary, Flow) are
+PollCard, SwipeHint, SourceNote, ProgressRing, TextBlock, Footnote, Glossary, Flow, StockList) are
 exported and usable in JSX. Measured: flow row 5 / column 8 items (hard ceiling 5),
 glossary 3, footnote 10 (editorial 3), textBlock ~280 chars. Re-measure after any CSS or
 component change. Image slots (PhotoHero, PhoneMockup, Collage, AvatarQuote, BeforeAfter
@@ -223,6 +223,7 @@ TEXT PRIMITIVES (new)
 TextBlock({ text, label?, size?: sm|md|lg, dark? })       // short explanatory paragraph
 Footnote({ items: [string], dark? })                       // notes; keep to 1–3
 Glossary({ items: [{ term, meaning }], dark? })            // 2–3 terms
+StockList({ items: [{ ticker, name?, signal?, action?, entry?, target?, stop?, note? }], numbered?, disclaimer?, disclaimerText?, dark? }) // 1–8 stocks; user-supplied data only; 6–8 = no notes
 Flow({ items: [{ label, note?, via? }], direction?: row|column,
        fork?: [{ via?, label }, { via?, label }], dark? })  // labelled flow, optional 2-way fork
 
@@ -305,7 +306,7 @@ import {
   Glossary, HeroSlide, InfoCard, KeywordCluster, Ladder, Matrix2x2, MiniDiagram, MythFact,
   PhoneMockup, PhotoHero, Pill, PlatformSwitcher, PollCard, PostMetaPanel, ProgressRing,
   ProsCons, QACard, QuoteCard, SlideHeading, SourceNote, Stack, StatCard, StatementSlide,
-  SummarySlide, SwipeHint, TextBlock, ThreeColumn, Timeline, TwoColumn,
+  StockList, SummarySlide, SwipeHint, TextBlock, ThreeColumn, Timeline, TwoColumn,
 } from "@/components/carousel";
 import { AssetIcon, AssetShape } from "@/components/studio/AssetPrimitives";
 

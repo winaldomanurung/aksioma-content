@@ -10,11 +10,13 @@ import {
   BarChart, Matrix2x2, DataTable, MythFact, ProsCons, BeforeAfter,
   Funnel, Ladder, QACard, PollCard, SwipeHint, SourceNote, ProgressRing,
   PhotoHero, PhoneMockup, Collage, AvatarQuote,
-  TextBlock, Footnote, Glossary, Flow
+  TextBlock, Footnote, Glossary, Flow, StockList
 } from "@/components/carousel";
 import {AssetIcon,AssetShape} from "./AssetPrimitives";
 import AccountBookend from "./AccountBookend";
 import {SlideImagesContext} from "./slide-images-context";
+import {SlideFontContext} from "./slide-font-context";
+import {isFontId} from "@/lib/studio/fonts";
 
 function Primitive({ node, dark = false }) {
   const children=node.children?.map((child,i)=><Primitive key={i} node={child} dark={dark}/>);
@@ -58,13 +60,20 @@ function Primitive({ node, dark = false }) {
     case "footnote": return <Footnote items={node.items} dark={dark||node.dark}/>;
     case "glossary": return <Glossary items={node.items} dark={dark||node.dark}/>;
     case "flow": return <Flow items={node.items} direction={node.direction} fork={node.fork} dark={dark||node.dark}/>;
+    case "stockList": return <StockList items={node.items} numbered={node.numbered} disclaimer={node.disclaimer} disclaimerText={node.disclaimerText} dark={dark||node.dark}/>;
     case "assetIcon": return <AssetIcon set={node.set} name={node.name} size={node.size} tone={node.tone|| (dark?"light":"ink")} label={node.label}/>;
     case "assetShape": return <AssetShape name={node.name} position={node.position} opacity={node.opacity}/>;
     default: return null;
   }
 }
-export function StudioSlide({data,number,account="journey",total=10}){
-  return <SlideImagesContext.Provider value={data?.images||null}><StudioSlideBody data={data} number={number} account={account} total={total}/></SlideImagesContext.Provider>;
+// `font` is the carousel-wide preset (meta.font); a slide's own `font` wins.
+export function StudioSlide({data,number,account="journey",total=10,font}){
+  const preset=isFontId(data?.font)?data.font:(isFontId(font)?font:null);
+  return (
+    <SlideFontContext.Provider value={preset}>
+      <SlideImagesContext.Provider value={data?.images||null}><StudioSlideBody data={data} number={number} account={account} total={total}/></SlideImagesContext.Provider>
+    </SlideFontContext.Provider>
+  );
 }
 function extrasNodes(s,dark){
   const nodes=Array.isArray(s.extras)?s.extras.map((n,i)=><Primitive key={i} node={n} dark={dark}/>):[];

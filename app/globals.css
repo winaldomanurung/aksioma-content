@@ -30,6 +30,51 @@ body {
   font-family: var(--font-lexend), var(--font-inter), Arial, Helvetica, sans-serif;
 }
 
+/* ---------- Font presets (lib/studio/fonts.js) ---------- */
+
+/* Every slide styles text with --font-lexend (display) and --font-inter (body).
+   A preset only re-points those two variables for one slide (data-font is set
+   on [data-carousel-slide] by CarouselCanvas), so preview and export see the
+   same fonts. The brand pair stays available as --brand-* for the wordmark. */
+:root {
+  --brand-display: var(--font-lexend);
+  --brand-body: var(--font-inter);
+}
+
+.carousel-slide[data-font="jakarta"] {
+  --font-lexend: var(--font-jakarta);
+  --font-inter: var(--font-jakarta);
+}
+
+.carousel-slide[data-font="editorial"] {
+  --font-lexend: var(--font-playfair);
+}
+
+.carousel-slide[data-font="grotesk"] {
+  --font-lexend: var(--font-grotesk);
+}
+
+/* Cover/CTA titles are set in the body font (see "Clean editorial typography"
+   below). The editorial and grotesk presets only swap the display font, so
+   point those titles at it explicitly; letter-spacing is retuned per face. */
+.carousel-slide[data-font="editorial"] .account-bookend-display h1,
+.carousel-slide[data-font="editorial"] .account-bookend-end-title {
+  font-family: var(--font-lexend), Georgia, serif;
+  font-weight: 700;
+  letter-spacing: -.025em;
+}
+
+.carousel-slide[data-font="jakarta"] .account-bookend-display h1,
+.carousel-slide[data-font="jakarta"] .account-bookend-end-title {
+  letter-spacing: -.035em;
+}
+
+.carousel-slide[data-font="grotesk"] .account-bookend-display h1,
+.carousel-slide[data-font="grotesk"] .account-bookend-end-title {
+  font-family: var(--font-lexend), Arial, sans-serif;
+  letter-spacing: -.045em;
+}
+
 ::selection { background: #ef4444; color: white; }
 
 .carousel-stage {
@@ -1404,7 +1449,7 @@ body {
 .account-bookend-grid { position:absolute;inset:0;z-index:0;opacity:.15;pointer-events:none;background-image:linear-gradient(currentColor 1px,transparent 1px),linear-gradient(90deg,currentColor 1px,transparent 1px);background-size:120px 120px;mask-image:linear-gradient(140deg,transparent 16%,#000 100%); }
 .account-bookend-inner { position:relative;z-index:1;display:flex;flex-direction:column;height:100%;padding:78px 78px 64px; }
 .account-bookend-header,.account-bookend-footer { display:flex;align-items:center;justify-content:space-between;gap:28px; }
-.account-bookend-brand { font-family:var(--font-lexend),Arial,sans-serif;font-size:37px;font-weight:800;letter-spacing:-.065em;white-space:nowrap; }
+.account-bookend-brand { font-family:var(--brand-display),Arial,sans-serif;font-size:37px;font-weight:800;letter-spacing:-.065em;white-space:nowrap; }
 .account-bookend-brand>span { color:var(--bookend-accent); }
 .account-bookend-brand strong { font-size:22px;font-weight:550;letter-spacing:.015em;margin-left:13px; }
 .account-bookend-edition { font-size:14px;letter-spacing:.22em;font-weight:750;text-align:right;opacity:.75; }
@@ -1629,3 +1674,213 @@ textarea, input[type="text"], input[type="search"], input[type="number"], input:
 
 /* decorations layer for preset slides (assetShape without a freeform body) */
 .slide-decorations { position:absolute; inset:0; z-index:2; pointer-events:none; overflow:hidden; }
+
+/* ---------- Stock list (components/carousel/StockList.jsx) ---------- */
+
+/* One row per stock. Row heights are FIXED per tier, so capacity is exact:
+   full (1-3) 196px, medium (4-5) 118px, compact (6-8) 72px. The tier is chosen
+   from the item count (lib/studio/stock.js). The cards, fonts and spacing are
+   sized for a 1080px canvas on both Instagram and TikTok Photo. */
+.stock-list {
+  --sl-ink: #18181b;
+  --sl-muted: #71717a;
+  --sl-card: rgba(255, 255, 255, .62);
+  --sl-line: rgba(0, 0, 0, .1);
+  --sl-up: #047857;
+  --sl-down: #b91c1c;
+  --sl-rank: #ef4444;
+  --sl-rank-ink: #fff;
+  --sl-pill-bg: #e4e4e7;
+  --sl-pill-ink: #3f3f46;
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  color: var(--sl-ink);
+}
+.stock-list[data-dark="true"] {
+  --sl-ink: #fff;
+  --sl-muted: #a1a1aa;
+  --sl-card: rgba(255, 255, 255, .06);
+  --sl-line: rgba(255, 255, 255, .13);
+  --sl-up: #6ee7b7;
+  --sl-down: #fca5a5;
+  --sl-rank: #f87171;
+  --sl-rank-ink: #18181b;
+  --sl-pill-bg: rgba(255, 255, 255, .12);
+  --sl-pill-ink: #e4e4e7;
+}
+
+.stock-row[data-signal="buy"], .stock-row[data-signal="accumulate"] { --sl-pill-bg: #d1fae5; --sl-pill-ink: #065f46; }
+.stock-row[data-signal="hold"] { --sl-pill-bg: #fef3c7; --sl-pill-ink: #92400e; }
+.stock-row[data-signal="watch"] { --sl-pill-bg: #e0f2fe; --sl-pill-ink: #075985; }
+.stock-row[data-signal="sell"] { --sl-pill-bg: #fee2e2; --sl-pill-ink: #991b1b; }
+.stock-list[data-dark="true"] .stock-row[data-signal="buy"],
+.stock-list[data-dark="true"] .stock-row[data-signal="accumulate"] { --sl-pill-bg: rgba(52, 211, 153, .18); --sl-pill-ink: #6ee7b7; }
+.stock-list[data-dark="true"] .stock-row[data-signal="hold"] { --sl-pill-bg: rgba(251, 191, 36, .18); --sl-pill-ink: #fcd34d; }
+.stock-list[data-dark="true"] .stock-row[data-signal="watch"] { --sl-pill-bg: rgba(56, 189, 248, .18); --sl-pill-ink: #7dd3fc; }
+.stock-list[data-dark="true"] .stock-row[data-signal="sell"] { --sl-pill-bg: rgba(248, 113, 113, .18); --sl-pill-ink: #fca5a5; }
+
+.stock-row {
+  --stock-gap: 14px;
+  display: grid;
+  min-width: 0;
+  box-sizing: border-box;
+  align-items: center;
+  overflow: hidden;
+  border: 1px solid var(--sl-line);
+  background: var(--sl-card);
+}
+.stock-rank { grid-area: rank; }
+.stock-id { grid-area: id; min-width: 0; }
+.stock-signal { grid-area: sig; }
+.stock-levels { grid-area: lev; margin: 0; min-width: 0; }
+.stock-note { grid-area: note; margin: 0; min-width: 0; }
+
+.stock-rank {
+  display: flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  border-radius: 9999px;
+  background: var(--sl-rank);
+  color: var(--sl-rank-ink);
+  font-family: var(--font-lexend), sans-serif;
+  font-weight: 800;
+  line-height: 1;
+}
+.stock-id { display: flex; }
+.stock-ticker {
+  flex: none;
+  font-family: var(--font-lexend), sans-serif;
+  font-weight: 800;
+  letter-spacing: .01em;
+  line-height: 1.1;
+  text-transform: uppercase;
+}
+.stock-name {
+  min-width: 0;
+  overflow: hidden;
+  color: var(--sl-muted);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.stock-signal {
+  justify-self: end;
+  border-radius: 9999px;
+  background: var(--sl-pill-bg);
+  color: var(--sl-pill-ink);
+  font-weight: 700;
+  letter-spacing: .02em;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+.stock-level dt {
+  margin: 0;
+  color: var(--sl-muted);
+  font-weight: 700;
+  letter-spacing: .08em;
+  line-height: 1.2;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+.stock-level dd {
+  margin: 0;
+  overflow: hidden;
+  font-family: var(--font-lexend), sans-serif;
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+  line-height: 1.15;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.stock-level[data-level="target"] dd { color: var(--sl-up); }
+.stock-level[data-level="stop"] dd { color: var(--sl-down); }
+.stock-note {
+  color: var(--sl-ink);
+  opacity: .74;
+  overflow: hidden;
+}
+.stock-disclaimer {
+  margin: 8px 0 0;
+  color: var(--sl-muted);
+  font-size: 15px;
+  line-height: 1.3;
+}
+/* Without a rank badge the empty first column still has a gap: cancel it. */
+.stock-list[data-numbered="false"] .stock-id { margin-left: calc(var(--stock-gap) * -1); }
+
+/* full: 1-3 stocks */
+.stock-list[data-tier="full"] { gap: 16px; }
+.stock-list[data-tier="full"] .stock-row {
+  height: 196px;
+  padding: 18px 22px;
+  border-radius: 24px;
+  column-gap: var(--stock-gap);
+  row-gap: 10px;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  grid-template-rows: 40px 50px minmax(0, 1fr);
+  grid-template-areas: "rank id sig" "lev lev lev" "note note note";
+}
+.stock-list[data-tier="full"] .stock-row[data-levels="no"] {
+  grid-template-rows: 40px minmax(0, 1fr);
+  grid-template-areas: "rank id sig" "note note note";
+}
+.stock-list[data-tier="full"] .stock-rank { width: 44px; height: 44px; font-size: 21px; }
+.stock-list[data-tier="full"] .stock-id { align-items: baseline; gap: 14px; }
+.stock-list[data-tier="full"] .stock-ticker { font-size: 40px; }
+.stock-list[data-tier="full"] .stock-name { font-size: 21px; }
+.stock-list[data-tier="full"] .stock-signal { padding: 8px 18px; font-size: 17px; }
+.stock-list[data-tier="full"] .stock-levels { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); column-gap: 12px; }
+.stock-list[data-tier="full"] .stock-level dt { font-size: 14px; }
+.stock-list[data-tier="full"] .stock-level dd { font-size: 28px; }
+.stock-list[data-tier="full"] .stock-note { align-self: start; font-size: 19px; line-height: 1.3; max-height: 50px; }
+
+/* medium: 4-5 stocks */
+.stock-list[data-tier="medium"] { gap: 12px; }
+.stock-list[data-tier="medium"] .stock-row {
+  --stock-gap: 12px;
+  height: 118px;
+  padding: 8px 18px;
+  border-radius: 20px;
+  column-gap: var(--stock-gap);
+  row-gap: 6px;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  grid-template-rows: 38px 28px minmax(0, 1fr);
+  grid-template-areas: "rank id sig" "lev lev lev" "note note note";
+}
+.stock-list[data-tier="medium"] .stock-row[data-levels="no"] {
+  grid-template-rows: 38px minmax(0, 1fr);
+  grid-template-areas: "rank id sig" "note note note";
+}
+.stock-list[data-tier="medium"] .stock-rank { width: 36px; height: 36px; font-size: 18px; }
+.stock-list[data-tier="medium"] .stock-id { align-items: baseline; gap: 12px; }
+.stock-list[data-tier="medium"] .stock-ticker { font-size: 32px; }
+.stock-list[data-tier="medium"] .stock-name { font-size: 19px; }
+.stock-list[data-tier="medium"] .stock-signal { padding: 6px 14px; font-size: 15px; }
+.stock-list[data-tier="medium"] .stock-levels { display: flex; align-items: baseline; gap: 26px; }
+.stock-list[data-tier="medium"] .stock-level { display: flex; min-width: 0; align-items: baseline; gap: 8px; }
+.stock-list[data-tier="medium"] .stock-level dt { font-size: 13px; }
+.stock-list[data-tier="medium"] .stock-level dd { font-size: 22px; }
+.stock-list[data-tier="medium"] .stock-note { align-self: start; font-size: 18px; line-height: 1.2; text-overflow: ellipsis; white-space: nowrap; }
+
+/* compact: 6-8 stocks */
+.stock-list[data-tier="compact"] { gap: 8px; }
+.stock-list[data-tier="compact"] .stock-row {
+  --stock-gap: 16px;
+  height: 72px;
+  padding: 0 18px;
+  border-radius: 18px;
+  column-gap: var(--stock-gap);
+  grid-template-columns: auto minmax(0, 1fr) 414px 112px;
+  grid-template-rows: minmax(0, 1fr);
+  grid-template-areas: "rank id lev sig";
+}
+.stock-list[data-tier="compact"] .stock-rank { width: 34px; height: 34px; font-size: 16px; }
+.stock-list[data-tier="compact"] .stock-id { flex-direction: column; gap: 2px; }
+.stock-list[data-tier="compact"] .stock-ticker { font-size: 28px; }
+.stock-list[data-tier="compact"] .stock-name { font-size: 16px; line-height: 1.15; }
+.stock-list[data-tier="compact"] .stock-signal { padding: 5px 12px; font-size: 14px; }
+.stock-list[data-tier="compact"] .stock-signal { justify-self: end; }
+.stock-list[data-tier="compact"] .stock-levels { display: grid; grid-template-columns: 150px 118px 118px; column-gap: 14px; }
+.stock-list[data-tier="compact"] .stock-level dt { font-size: 12px; }
+.stock-list[data-tier="compact"] .stock-level dd { font-size: 21px; }

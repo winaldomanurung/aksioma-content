@@ -36,6 +36,12 @@ export default function Home() {
             Template AI siap copy
           </Link>
           <Link
+            href="/studio/remix"
+            className="rounded-full border border-white/15 px-7 py-4 font-semibold text-zinc-200 transition hover:bg-white/10"
+          >
+            Adaptasi konten orang lain
+          </Link>
+          <Link
             href="/studio/assets"
             className="rounded-full border border-white/15 px-7 py-4 font-semibold text-zinc-200 transition hover:bg-white/10"
           >
