@@ -40,7 +40,7 @@ AssetIcon({ set: lucide|phosphor, name, size: sm|md|lg, tone: ink|accent|light, 
   phosphor: brain lightbulb shield-check target scales chat-circle-text check-circle sparkle
   book-open chart-line-up compass eye flag handshake stack lock-key puzzle-piece rocket
   magnifying-glass users flow-arrow lightning presentation-chart trophy
-Plan: decorations on 4–6 slides, icons on 2–4 slides, none on Hero/CTA. Never place
+Plan: in Studio JSON every content slide gets an automatic decoration when `decorations` is omitted; choose your own for meaning, or set `decorations: "none"` for a plain slide. In JSX pages, add decorations explicitly; icons on 2–4 slides. Never place
 important text on top of a decoration.
 
 VERTICAL + EXTRAS

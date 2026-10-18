@@ -71,6 +71,23 @@ function extrasNodes(s,dark){
   if(Array.isArray(s.sources)&&s.sources.length)nodes.push(<SourceNote key="sources" label="Sumber" text={s.sources.join("; ")} dark={dark}/>);
   return nodes.length?nodes:undefined;
 }
+// Every content slide gets a decoration. Omit `decorations` for an automatic one
+// (varied by slide number so neighbours never repeat), pass your own list, or
+// pass "none" to switch it off. A freeform slide that already has an assetShape
+// node keeps only that one.
+const AUTO_SHAPES=["editorial-grid","orbital-rings","dotted-field","contour-lines","soft-blobs","arc-ribbon","topographic","orbit-dots","window-frames","angular-path","gradient-orbs","sunburst","diagonal-stripes","wave-red"];
+const AUTO_POSITIONS=["topRight","bottomRight","bottomLeft"];
+export function autoDecoration(number){
+  const n=Math.max(1,Number(number)||1);
+  return {name:AUTO_SHAPES[(n*5)%AUTO_SHAPES.length],position:AUTO_POSITIONS[n%AUTO_POSITIONS.length],opacity:"soft"};
+}
+function decorationNodes(s,number){
+  if(s.decorations==="none")return undefined;
+  if(Array.isArray(s.decorations)&&s.decorations.length)return s.decorations.map((d,i)=><AssetShape key={i} name={d.name} position={d.position} opacity={d.opacity}/>);
+  if(s.type==="freeform"&&Array.isArray(s.nodes)&&s.nodes.some(n=>n?.type==="assetShape"))return undefined;
+  const d=autoDecoration(number);
+  return [<AssetShape key="auto" name={d.name} position={d.position} opacity={d.opacity}/>];
+}
 const DARK_PRESETS=new Set(["bullet","causeEffect","summary"]);
 function StudioSlideBody({data,number,account="journey",total=10}){
   const slide=number;
@@ -79,7 +96,7 @@ function StudioSlideBody({data,number,account="journey",total=10}){
   const layout={
     vertical: s.vertical || "center",
     extras: extrasNodes(s,dark),
-    decorations: Array.isArray(s.decorations)&&s.decorations.length ? s.decorations.map((d,i)=><AssetShape key={i} name={d.name} position={d.position} opacity={d.opacity}/>) : undefined,
+    decorations: decorationNodes(s,number),
     theme: s.theme,
   };
   switch(s.type){
