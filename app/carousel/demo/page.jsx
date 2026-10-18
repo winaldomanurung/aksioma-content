@@ -54,7 +54,8 @@ EXPECTED AI OUTPUT
 - Return a complete valid page.jsx, not fragments.
 - Keep the platform/searchParams plumbing intact.
 - Fill postMeta completely.
-- Default to 10 slides unless the user requests another count.
+- Slide count follows the content (about 5–7 short, 8–12 standard, 13–20 deep;
+  Instagram max 20, TikTok max 35). Do not pad or cram to hit a fixed number.
 - Usually use HeroSlide for slide 1 and CTASlide for the final slide.
 - Choose slide structures from the MEANING of the content, not by rotating
   templates mechanically.

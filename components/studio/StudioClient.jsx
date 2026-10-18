@@ -273,6 +273,7 @@ export default function StudioClient(){
                 <div>
                   <p className="font-display text-sm font-bold">{carousel.meta.title}</p>
                   <p className="mt-1 text-xs text-zinc-500">{carousel.slides.length} slide · Aksioma {account==="trader"?"Trader":"Journey"} · 1080×1350 · {platform==="tiktok"?"TikTok Photo":"Instagram"}</p>
+                  {platform==="instagram"&&carousel.slides.length>20?<p role="alert" className="mt-1 text-xs font-semibold text-amber-800">Instagram membatasi carousel maksimal 20 slide. Kurangi slide atau pilih TikTok (maks 35).</p>:null}
                 </div>
                 <div className="flex flex-wrap gap-2">
                   <button type="button" aria-pressed={platform==="instagram"} onClick={()=>{setPlatform("instagram");setSafe(false);clearDownload();}} className={["min-h-11 rounded-full px-4 py-2 text-xs font-bold",platform==="instagram"?"bg-zinc-950 text-white":"bg-zinc-100 text-zinc-700"].join(" ")}>Instagram</button>

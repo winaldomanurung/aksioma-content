@@ -50,9 +50,9 @@ export default function PostMetaPanel({
   const hashtagsText=hashtags.map(tag=>String(tag).startsWith("#")?String(tag):"#"+tag).join(" ");
   const keywordText=keywords.join(", ");
   return (
-    <aside className="studio-only w-[1080px] overflow-hidden rounded-[28px] border border-black/10 bg-[#f7f5f0] shadow-sm">
-      <div className="border-b border-black/10 bg-zinc-950 px-7 py-6 text-white">
-        <div className="flex items-center justify-between gap-8">
+    <aside className="studio-only w-full max-w-[1080px] overflow-hidden rounded-[28px] border border-black/10 bg-[#f7f5f0] shadow-sm">
+      <div className="border-b border-black/10 bg-zinc-950 px-5 py-5 text-white sm:px-7 sm:py-6">
+        <div className="flex flex-wrap items-center justify-between gap-3 sm:gap-8">
           <div>
             <p className="font-display text-xs font-semibold uppercase tracking-[0.18em] text-red-400">Publishing Brief</p>
             <h2 className="font-display mt-2 text-2xl font-semibold">{title}</h2>
@@ -60,24 +60,24 @@ export default function PostMetaPanel({
           <span className="rounded-full border border-white/15 bg-white/5 px-4 py-2 text-xs font-semibold uppercase tracking-[0.12em] text-zinc-300">Not exported</span>
         </div>
       </div>
-      <div className="grid grid-cols-12 gap-4 p-6">
-        <MetaBlock label="Objective" value={objective} className="col-span-4"/>
-        <MetaBlock label="Content pillar" value={contentPillar} className="col-span-4"/>
-        <MetaBlock label="Primary hook" value={hook} className="col-span-4"/>
-        <MetaBlock label="Instagram caption" value={instagramText} className="col-span-6"/>
-        <MetaBlock label="TikTok caption" value={tiktokText} className="col-span-6" preserveLines/>
-        <MetaBlock label="CTA" value={cta} className="col-span-5"/>
-        <MetaBlock label="Keywords" value={keywordText} className="col-span-3">
+      <div className="grid grid-cols-1 gap-3 p-3 sm:gap-4 sm:p-6 md:grid-cols-12">
+        <MetaBlock label="Objective" value={objective} className="md:col-span-4"/>
+        <MetaBlock label="Content pillar" value={contentPillar} className="md:col-span-4"/>
+        <MetaBlock label="Primary hook" value={hook} className="md:col-span-4"/>
+        <MetaBlock label="Instagram caption" value={instagramText} className="md:col-span-6"/>
+        <MetaBlock label="TikTok caption" value={tiktokText} className="md:col-span-6" preserveLines/>
+        <MetaBlock label="CTA" value={cta} className="md:col-span-5"/>
+        <MetaBlock label="Keywords" value={keywordText} className="md:col-span-3">
           <div className="flex flex-wrap gap-2">
             {keywords.map((keyword,i)=><span key={i} className="rounded-full bg-zinc-100 px-3 py-1 text-sm text-zinc-700">{keyword}</span>)}
           </div>
         </MetaBlock>
-        <MetaBlock label="Hashtags" value={hashtagsText} className="col-span-4">
+        <MetaBlock label="Hashtags" value={hashtagsText} className="md:col-span-4">
           <div className="flex flex-wrap gap-2">
             {hashtags.map((hashtag,i)=><span key={i} className="rounded-full bg-red-50 px-3 py-1 text-sm text-red-700">{String(hashtag).startsWith("#")?hashtag:"#"+hashtag}</span>)}
           </div>
         </MetaBlock>
-        {notes ? <MetaBlock label="Posting notes" value={notes} className="col-span-12"/> : null}
+        {notes ? <MetaBlock label="Posting notes" value={notes} className="md:col-span-12"/> : null}
       </div>
     </aside>
   );

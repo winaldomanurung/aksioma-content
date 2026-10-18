@@ -10,7 +10,7 @@ export default function AITemplateClient(){
   const [account,setAccount]=useState("journey");
   const [audience,setAudience]=useState("Young professionals");
   const [objective,setObjective]=useState("Save, share dan follow");
-  const [slides,setSlides]=useState(10);
+  const [slides,setSlides]=useState("auto");
   const [style,setStyle]=useState("seimbang");
   const [feedback,setFeedback]=useState("");
   const [tab,setTab]=useState("prompt");
@@ -73,8 +73,9 @@ export default function AITemplateClient(){
             </label>
             <label>
               <span className="text-sm font-semibold">Jumlah slide</span>
-              <select value={slides} onChange={event=>setSlides(Number(event.target.value))} className="mt-2 w-full rounded-xl border border-black/15 bg-[#f9f7f3] px-4 py-3 text-base outline-none focus:border-red-400">
-                {[6,7,8,9,10,11,12].map(count=><option key={count} value={count}>{count} slide</option>)}
+              <select value={slides} onChange={event=>setSlides(event.target.value==='auto'?'auto':Number(event.target.value))} className="mt-2 w-full rounded-xl border border-black/15 bg-[#f9f7f3] px-4 py-3 text-base outline-none focus:border-red-400">
+                <option value="auto">Otomatis (AI menyesuaikan materi)</option>
+                {Array.from({length:18},(_,i)=>i+3).map(count=><option key={count} value={count}>{count} slide</option>)}
               </select>
             </label>
             <label className="sm:col-span-2">

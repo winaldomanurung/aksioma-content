@@ -5,7 +5,7 @@ AI: Return a complete replacement for this page.jsx. Modify ONLY the JSON
 between AKSIOMA_STUDIO_JSON_START and AKSIOMA_STUDIO_JSON_END, unless the user
 specifically asks to change rendering code. Keep valid strict JSON: quoted
 property names, double-quoted strings, no comments or trailing commas inside.
-Usually write 10 slides with metadata and varied structure. It is safe to
+Choose the slide count from the content (about 5–20) with metadata and varied structure. It is safe to
 paste the COMPLETE page.jsx into /studio: the app extracts the JSON block,
 never compiles or executes pasted JavaScript/JSX.
 

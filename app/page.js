@@ -45,7 +45,7 @@ export default function Home() {
             href="/carousel/demo"
             className="rounded-full border border-white/15 px-7 py-4 font-semibold text-zinc-200 transition hover:bg-white/10"
           >
-            Buka demo 10 slide
+            Buka demo lengkap
           </Link>
           <a
             href="https://github.com/winaldomanurung/aksioma-content"
