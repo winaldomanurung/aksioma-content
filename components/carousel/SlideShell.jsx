@@ -1,4 +1,5 @@
 import AccentLine from "./AccentLine";
+import AutoFit from "./AutoFit";
 import BackgroundWord from "./BackgroundWord";
 import CarouselCanvas from "./CarouselCanvas";
 import CornerLabel from "./CornerLabel";
@@ -40,6 +41,8 @@ export default function SlideShell({
       isDark={resolvedDark}
       className={canvasClass}
     >
+      <AutoFit />
+
       {backgroundWord ? (
         <BackgroundWord
           dark={resolvedDark}

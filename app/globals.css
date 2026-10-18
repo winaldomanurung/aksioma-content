@@ -1573,9 +1573,15 @@ body {
   min-width: 0;
 }
 .slide-body[data-vertical="top"] { justify-content: flex-start; }
-.slide-body[data-vertical="center"] { justify-content: center; }
+/* center uses auto margins instead of justify-content:center, so content taller than the
+   area overflows downward (clipped + reported) and never rises over the eyebrow label. */
+.slide-body[data-vertical="center"] { justify-content: flex-start; }
+.slide-body[data-vertical="center"] > :first-child { margin-top: auto; }
+.slide-body[data-vertical="center"] > :last-child { margin-bottom: auto; }
 .slide-body[data-vertical="spread"] { justify-content: space-between; }
-.slide-body[data-vertical="stretch"] > .slide-main { flex: 1 1 auto; }
+/* stretch grows into free height but never shrinks below its content, otherwise the main
+   block collapses onto the extras below it and the text overlaps. */
+.slide-body[data-vertical="stretch"] > .slide-main { flex: 1 0 auto; }
 
 /* stretch: let each layout grow into the free height */
 .slide-body[data-vertical="stretch"] .bullet-wrap { flex: 1 1 auto; display: flex; flex-direction: column; }

@@ -14,7 +14,7 @@ export default function MeasurePage(){
     return()=>{delete window.__showSlide;delete window.__measureReady;};
   },[]);
   return (
-    <main className="carousel-stage" data-platform={job?.platform||"instagram"} data-safe-area="false"
+    <main className="carousel-stage" data-platform={job?.platform||"instagram"} data-safe-area="false" data-autofit={job?.autofit?"on":"off"}
       style={{minHeight:0,padding:0,gap:0,display:"block"}}>
       {job?<StudioSlide data={job.slide} number={job.number||2} total={job.total||10} account={job.account||"journey"}/>:null}
     </main>
