@@ -7,7 +7,8 @@ import {
   InfoCard, StatCard, BigNumber, QuoteCard, DiagramNode, Connector,
   Timeline, Checklist, Callout, Pill, KeywordCluster, MiniDiagram,
   TwoColumn, ThreeColumn, ContentGrid, Stack, Divider,
-  BarChart, Matrix2x2, DataTable, MythFact, ProsCons, BeforeAfter
+  BarChart, Matrix2x2, DataTable, MythFact, ProsCons, BeforeAfter,
+  Funnel, Ladder, QACard, PollCard, SwipeHint, SourceNote, ProgressRing
 } from "@/components/carousel";
 import {AssetIcon,AssetShape} from "./AssetPrimitives";
 import AccountBookend from "./AccountBookend";
@@ -40,6 +41,13 @@ function Primitive({ node, dark = false }) {
     case "mythFact": return <MythFact items={node.items} mythLabel={node.mythLabel} factLabel={node.factLabel} dark={dark||node.dark}/>;
     case "prosCons": return <ProsCons pros={node.pros} cons={node.cons} proLabel={node.proLabel} conLabel={node.conLabel} dark={dark||node.dark}/>;
     case "beforeAfter": return <BeforeAfter before={node.before} after={node.after} slot={node.slot} dark={dark||node.dark}/>;
+    case "funnel": return <Funnel items={node.items} shape={node.shape} dark={dark||node.dark}/>;
+    case "ladder": return <Ladder items={node.items} dark={dark||node.dark}/>;
+    case "qaCard": return <QACard items={node.items} dark={dark||node.dark}/>;
+    case "pollCard": return <PollCard question={node.question} options={node.options} cta={node.cta} dark={dark||node.dark}/>;
+    case "swipeHint": return <SwipeHint text={node.text} align={node.align} dark={dark||node.dark}/>;
+    case "sourceNote": return <SourceNote text={node.text} label={node.label} dark={dark||node.dark}/>;
+    case "progressRing": return <ProgressRing value={node.value} label={node.label} note={node.note} dark={dark||node.dark}/>;
     case "assetIcon": return <AssetIcon set={node.set} name={node.name} size={node.size} tone={node.tone|| (dark?"light":"ink")} label={node.label}/>;
     case "assetShape": return <AssetShape name={node.name} position={node.position} opacity={node.opacity}/>;
     default: return null;

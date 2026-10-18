@@ -102,6 +102,11 @@ const primitiveLists = {
 primitiveLists.barChart = { probe: 12, node: (n, c) => ({ type: "barChart", unit: "%", items: range(n).map((i) => ({ label: text(c.title, i), value: 20 + ((i * 13) % 70), note: i % 2 ? text(c.node, i + 1) : undefined })) }) };
 primitiveLists.mythFact = { probe: 8, node: (n, c) => ({ type: "mythFact", items: range(n).map((i) => ({ myth: text(c.point, i), fact: text(c.point, i + 3) })) }) };
 primitiveLists.prosCons = { probe: 10, node: (n, c) => ({ type: "prosCons", pros: range(n).map((i) => text(c.point, i)), cons: range(n).map((i) => text(c.point, i + 5)) }) };
+// Batch 2 primitives.
+primitiveLists.funnel = { probe: 8, node: (n, c) => ({ type: "funnel", items: range(n).map((i) => ({ label: text(c.title, i), note: text(c.node, i + 1) })) }) };
+primitiveLists.ladder = { probe: 10, node: (n, c) => ({ type: "ladder", items: range(n).map((i) => ({ label: text(c.title, i), value: "Rp " + (1000 + i * 150), note: text(c.node, i + 1), current: i === 1 })) }) };
+primitiveLists.qaCard = { probe: 8, node: (n, c) => ({ type: "qaCard", items: range(n).map((i) => ({ q: text(c.point, i), a: text(c.text, i + 1) })) }) };
+primitiveLists.pollCard = { probe: 6, node: (n, c) => ({ type: "pollCard", question: text(70), cta: "Komentar jawabanmu", options: range(n).map((i) => text(c.point, i)) }) };
 for (const cols of [2, 3, 4]) {
   const kind = cols === 2 ? "point" : "node";
   primitiveLists["table:" + cols] = { probe: 14, node: (n, c) => ({ type: "table", columns: range(cols).map((i) => text(c.chip, i)), rows: range(n).map((r) => ({ cells: range(cols).map((i) => text(c[kind], r + i)) })) }) };
@@ -160,6 +165,10 @@ for (const field of ["title", "text"]) {
 ffSingle("barChart.label", (n) => ({ type: "barChart", unit: "%", items: [{ label: text(n), value: 70 }, { label: text(20, 1), value: 40 }] }));
 ffSingle("mythFact.myth", (n) => ({ type: "mythFact", items: [{ myth: text(n), fact: text(60, 1) }] }));
 ffSingle("mythFact.fact", (n) => ({ type: "mythFact", items: [{ myth: text(60), fact: text(n, 1) }] }));
+ffSingle("pollCard.question", (n) => ({ type: "pollCard", question: text(n), options: [text(30), text(30, 1), text(30, 2)], cta: text(30, 3) }));
+ffSingle("sourceNote.text", (n) => ({ type: "sourceNote", text: text(n) }));
+ffSingle("progressRing.label", (n) => ({ type: "progressRing", value: 64, label: text(n), note: text(60, 1) }));
+ffSingle("progressRing.note", (n) => ({ type: "progressRing", value: 64, label: text(24), note: text(n, 1) }));
 ffSingle("pill.text", (n) => ({ type: "pill", text: text(n) }));
 
 // ---------- browser side ----------
