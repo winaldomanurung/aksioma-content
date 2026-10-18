@@ -14,6 +14,8 @@ export default function CauseEffectSlide({
   cornerLabel,
   vertical,
   extras,
+  decorations,
+  theme,
 }) {
 
   return (
@@ -27,6 +29,8 @@ export default function CauseEffectSlide({
       cornerLabel={cornerLabel}
       vertical={vertical}
       extras={extras}
+      decorations={decorations}
+      theme={theme}
     >
       <div className="cause-effect-wrap">
         <div className="cause-effect-card border-white/10 bg-white/[0.045]">

@@ -31,6 +31,8 @@ export default function CompareSlide({
   cornerLabel,
   vertical,
   extras,
+  decorations,
+  theme,
   keywords = [],
 }) {
   return (
@@ -43,6 +45,8 @@ export default function CompareSlide({
       cornerLabel={cornerLabel}
       vertical={vertical}
       extras={extras}
+      decorations={decorations}
+      theme={theme}
     >
       <h2 className="compare-title">{title}</h2>
 

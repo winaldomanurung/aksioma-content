@@ -11,6 +11,8 @@ export default function StatementSlide({
   cornerLabel,
   vertical,
   extras,
+  decorations,
+  theme,
 }) {
   return (
     <SlideShell
@@ -22,6 +24,8 @@ export default function StatementSlide({
       cornerLabel={cornerLabel}
       vertical={vertical}
       extras={extras}
+      decorations={decorations}
+      theme={theme}
     >
       <div className="statement-layout">
         <div className="statement-copy">

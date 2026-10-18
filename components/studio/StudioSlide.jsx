@@ -75,10 +75,12 @@ const DARK_PRESETS=new Set(["bullet","causeEffect","summary"]);
 function StudioSlideBody({data,number,account="journey",total=10}){
   const slide=number;
   const s=data;
-  const dark=s.type==="freeform" ? (s.theme ? (backgroundThemes[s.theme]?.dark ?? !!s.dark) : !!s.dark) : DARK_PRESETS.has(s.type);
+  const dark=s.type==="freeform" ? (s.theme ? (backgroundThemes[s.theme]?.dark ?? !!s.dark) : !!s.dark) : (s.theme ? !!backgroundThemes[s.theme]?.dark : DARK_PRESETS.has(s.type));
   const layout={
     vertical: s.vertical || "center",
     extras: extrasNodes(s,dark),
+    decorations: Array.isArray(s.decorations)&&s.decorations.length ? s.decorations.map((d,i)=><AssetShape key={i} name={d.name} position={d.position} opacity={d.opacity}/>) : undefined,
+    theme: s.theme,
   };
   switch(s.type){
     case "hero": return number===1 ? <AccountBookend kind="hero" account={account} data={s} number={number}/> : <HeroSlide {...s} slide={slide}/>;

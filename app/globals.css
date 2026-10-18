@@ -1594,16 +1594,6 @@ body {
 .slide-body[data-vertical="stretch"] .summary-wrap { margin-top: 40px; }
 
 /* ---------- Mobile Studio shell ---------- */
-.studio-bottom-nav {
-  position: fixed; left: 0; right: 0; bottom: 0; z-index: 90;
-  display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px;
-  padding: 8px 10px calc(8px + env(safe-area-inset-bottom));
-  background: rgba(15,15,17,.96); border-top: 1px solid rgba(255,255,255,.14); backdrop-filter: blur(12px);
-}
-.studio-bottom-nav-btn {
-  min-height: 48px; border-radius: 14px; font-size: 14px; font-weight: 700; color: #e4e4e7; background: rgba(255,255,255,.08);
-}
-.studio-bottom-nav-btn--active { background: #ef4444; color: #fff; }
 @media (max-width: 760px) {
   .studio-site-nav-inner { display: flex; align-items: center; gap: 8px; padding: 6px 10px; padding-left: max(10px, env(safe-area-inset-left)); padding-right: max(10px, env(safe-area-inset-right)); }
   .studio-nav-brand { display: block; flex: none; margin: 0; font-size: 16px; }
@@ -1615,3 +1605,15 @@ body {
   button, a, select, input { touch-action: manipulation; }
 }
 @media (pointer: coarse) { input, select { font-size: max(16px, 1em); } }
+
+/* ---------- Cursors that say what a control does ---------- */
+button:not(:disabled), [role="button"]:not([aria-disabled="true"]), a[href], summary, select,
+label[for], input[type="file"], input[type="checkbox"], input[type="radio"], input[type="range"] { cursor: pointer; }
+button:disabled, [aria-disabled="true"], select:disabled, input:disabled { cursor: not-allowed; }
+button[aria-busy="true"]:disabled { cursor: progress; }
+textarea, input[type="text"], input[type="search"], input[type="number"], input:not([type]) { cursor: text; }
+[data-image-box]:active { cursor: grabbing !important; }
+[data-handle] { touch-action: none; }
+
+/* decorations layer for preset slides (assetShape without a freeform body) */
+.slide-decorations { position:absolute; inset:0; z-index:2; pointer-events:none; overflow:hidden; }

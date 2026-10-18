@@ -11,6 +11,7 @@ export default function FreeformSlide({
   cornerLabel,
   vertical,
   extras,
+  decorations,
   className = "",
 }) {
   return (
@@ -25,6 +26,7 @@ export default function FreeformSlide({
       cornerLabel={cornerLabel}
       vertical={vertical}
       extras={extras}
+      decorations={decorations}
       className={className}
     >
       {children}

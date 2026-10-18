@@ -10,6 +10,8 @@ export default function SummarySlide({
   cornerLabel,
   vertical,
   extras,
+  decorations,
+  theme,
   keywords = [],
 }) {
   return (
@@ -23,6 +25,8 @@ export default function SummarySlide({
       cornerLabel={cornerLabel}
       vertical={vertical}
       extras={extras}
+      decorations={decorations}
+      theme={theme}
     >
       <div className="summary-wrap">
         <h2 className="summary-title">{title}</h2>

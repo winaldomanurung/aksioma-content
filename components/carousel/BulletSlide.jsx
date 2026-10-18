@@ -10,6 +10,8 @@ export default function BulletSlide({
   cornerLabel,
   vertical,
   extras,
+  decorations,
+  theme,
 }) {
   return (
     <SlideShell
@@ -22,6 +24,8 @@ export default function BulletSlide({
       cornerLabel={cornerLabel}
       vertical={vertical}
       extras={extras}
+      decorations={decorations}
+      theme={theme}
     >
       <div className="bullet-wrap">
         <h2 className="bullet-title">{title}</h2>

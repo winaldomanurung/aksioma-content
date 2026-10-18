@@ -30,7 +30,7 @@ export default function SaveImageButton({data,number=2,total=10,account="journey
   return (
     <div>
       <div className="flex flex-wrap items-center gap-2">
-        <button type="button" onClick={save} disabled={busy} className="min-h-11 rounded-full bg-zinc-950 px-5 py-2.5 text-xs font-bold text-white hover:bg-zinc-800 disabled:opacity-50">{busy?"Membuat gambar…":"Simpan sebagai gambar (JPEG)"}</button>
+        <button type="button" onClick={save} disabled={busy} aria-busy={busy} className="min-h-11 rounded-full bg-zinc-950 px-5 py-2.5 text-xs font-bold text-white hover:bg-zinc-800 disabled:opacity-50">{busy?"Membuat gambar…":"Simpan sebagai gambar (JPEG)"}</button>
         {result?<a href={result.url} target="_blank" rel="noreferrer" className="inline-flex min-h-11 items-center rounded-full border border-black/15 px-4 py-2 text-xs font-semibold">Buka gambar ↗</a>:null}
       </div>
       {error?<p role="alert" className="mt-2 text-xs text-red-800">{error}</p>:null}

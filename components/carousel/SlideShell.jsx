@@ -18,6 +18,7 @@ export default function SlideShell({
   theme,
   vertical = "top",
   extras,
+  decorations,
 }) {
   const resolvedDark = theme ? (backgroundThemes[theme]?.dark ?? dark) : dark;
   const canvasClass = [
@@ -47,6 +48,8 @@ export default function SlideShell({
           {backgroundWord}
         </BackgroundWord>
       ) : null}
+
+      {decorations ? <div className="slide-decorations" aria-hidden="true">{decorations}</div> : null}
 
       <AccentLine
         dark={resolvedDark}

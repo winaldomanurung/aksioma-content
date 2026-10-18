@@ -83,7 +83,7 @@ export default function ImageEditorOverlay({images,scale,selectedId,onSelect,onL
         return (
           <div key={image.id} data-image-box={image.id} onPointerDown={event=>begin(event,image,"move")}
             style={{position:"absolute",left:image.x,top:image.y,width:image.width,height:image.height,
-              pointerEvents:"auto",cursor:"move",touchAction:"none",boxSizing:"border-box",
+              pointerEvents:"auto",cursor:"grab",touchAction:"none",boxSizing:"border-box",
               outline:(active?3:2)/Math.max(scale,.1)+"px "+(active?"solid":"dashed")+" "+(active?"#ef4444":"rgba(239,68,68,.55)"),
               borderRadius:image.shape==="circle"?"50%":image.shape==="rounded"?Math.round(Math.min(image.width,image.height)*.14):0}}>
             {active?HANDLES.map(h=>(

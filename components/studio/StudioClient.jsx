@@ -77,7 +77,6 @@ export default function StudioClient(){
   const [selectedImage,setSelectedImage]=useState(null);
   const [liveImages,setLiveImages]=useState(null);
   const [download,setDownload]=useState(null);
-  const [mobileTab,setMobileTab]=useState("source"); // phones show one panel at a time
   const [check,setCheck]=useState(null);
   const [checking,setChecking]=useState(false);
   const [preflight,setPreflight]=useState(null);
@@ -115,7 +114,7 @@ export default function StudioClient(){
   function render(){
     try{
       const value=parseCarouselSource(source);
-      setRendered(value);setSelected(0);setError("");clearDownload();setCheck(null);goTab("preview");
+      setRendered(value);setSelected(0);setError("");clearDownload();setCheck(null);
       if(value.meta.account==="journey"||value.meta.account==="trader")setAccountChoice(null);
       setStatus(value.slides.length+" slide valid. Preview diperbarui untuk Aksioma "+(value.meta.account==="trader"?"Trader":"Journey")+".");
     }catch(e){setError(e.message);setStatus("");}
@@ -146,11 +145,7 @@ export default function StudioClient(){
     setChecking(true);
     try{setCheck(await runCheck());}finally{setChecking(false);}
   }
-  function goTab(id){
-    if(id!==mobileTab&&typeof window!=="undefined"&&window.innerWidth<1024)window.scrollTo({top:0});
-    setMobileTab(id);
-  }
-  function openSlide(index){setSelected(index);setAllVisible(false);setSelectedImage(null);setLiveImages(null);goTab("preview");}
+  function openSlide(index){setSelected(index);setAllVisible(false);setSelectedImage(null);setLiveImages(null);}
 
   async function exportImages(all=false,force=false,only=null){
     if(working)return;
@@ -165,7 +160,7 @@ export default function StudioClient(){
         const result=await runCheck();
         setCheck(result);
         const blocking=result.issues.filter(i=>i.severity==="overflow"&&indexes.includes(i.index));
-        if(blocking.length){setPreflight({all,only,issues:blocking});setStatus("");goTab("export");return;}
+        if(blocking.length){setPreflight({all,only,issues:blocking});setStatus("");return;}
       }
       setPreflight(null);
       const files=[];
@@ -180,7 +175,7 @@ export default function StudioClient(){
       const url=URL.createObjectURL(output);
       downloadUrl.current=url;
       setDownload({url,filename,kind:all?"zip":"jpeg",size:output.size});
-      setExported({files,platform});goTab("export");
+      setExported({files,platform});
       setStatus(all?"ZIP "+files.length+" JPEG selesai. Ketuk Simpan file di bawah.":"JPEG selesai. Ketuk Simpan file di bawah.");
     }catch(e){setError((e?.message || String(e))+" Jika export browser gagal, coba Chrome/Edge desktop atau gunakan Playwright lokal.");setStatus("");}
     finally{setWorking(false);}
@@ -220,7 +215,7 @@ export default function StudioClient(){
   const missing=library.loaded?collectImageIds(baseSlide).filter(id=>!library.rows.some(r=>r.id===id)):[];
 
   return (
-    <main className="min-h-screen bg-[#ebe8e1] px-3 py-6 pb-28 text-zinc-900 sm:px-7 lg:py-12 lg:pb-12">
+    <main className="min-h-screen bg-[#ebe8e1] px-4 py-6 text-zinc-900 sm:px-7 lg:py-12">
       <div className="mx-auto max-w-[1500px]">
         <header className="mb-7 flex flex-wrap items-center justify-between gap-4">
           <div>
@@ -244,7 +239,7 @@ export default function StudioClient(){
           </div>
         </section>
         <div className="grid items-start gap-6 lg:grid-cols-[minmax(320px,500px)_minmax(0,1fr)]">
-          <section className={"min-w-0 rounded-[28px] border border-black/10 bg-white p-4 shadow-sm sm:p-6 "+(mobileTab==="source"?"":"hidden lg:block")} data-mobile-panel="source">
+          <section className="min-w-0 rounded-[28px] border border-black/10 bg-white p-4 shadow-sm sm:p-6" data-panel="source">
             <div className="flex items-center justify-between gap-3">
               <h2 className="font-display text-lg font-bold">Carousel source</h2>
               <span className="rounded-full bg-zinc-100 px-3 py-1 text-xs font-medium">JSON v1</span>
@@ -272,7 +267,7 @@ export default function StudioClient(){
             </div>
           </section>
 
-          <section className={"min-w-0 "+(mobileTab==="source"?"hidden lg:block":"")} data-mobile-panel="result">
+          <section className="min-w-0" data-panel="result">
             <div className="mb-4 rounded-[24px] border border-black/10 bg-white p-4 shadow-sm sm:p-5">
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <div>
@@ -286,12 +281,12 @@ export default function StudioClient(){
                 </div>
               </div>
               <div className="mt-4 flex flex-wrap items-center gap-2 border-t border-black/10 pt-4">
-                <button type="button" disabled={working} onClick={()=>exportImages(false)} className="min-h-11 rounded-full border border-zinc-300 px-4 py-2.5 text-xs font-semibold hover:bg-zinc-50 disabled:opacity-50">Generate JPEG</button>
-                <button type="button" disabled={working} onClick={()=>exportImages(true)} className="min-h-11 rounded-full bg-zinc-950 px-4 py-2.5 text-xs font-semibold text-white hover:bg-zinc-800 disabled:opacity-50">{working?"Generating…":"Generate all ZIP"}</button>
+                <button type="button" disabled={working} aria-busy={working} onClick={()=>exportImages(false)} className="min-h-11 rounded-full border border-zinc-300 px-4 py-2.5 text-xs font-semibold hover:bg-zinc-50 disabled:opacity-50">Generate JPEG</button>
+                <button type="button" disabled={working} aria-busy={working} onClick={()=>exportImages(true)} className="min-h-11 rounded-full bg-zinc-950 px-4 py-2.5 text-xs font-semibold text-white hover:bg-zinc-800 disabled:opacity-50">{working?"Generating…":"Generate all ZIP"}</button>
                 <button type="button" onClick={()=>setAllVisible(v=>!v)} className="min-h-11 rounded-full border border-zinc-300 px-4 py-2.5 text-xs font-semibold hover:bg-zinc-50">{allVisible?"Single slide":"Show all slides"}</button>
               </div>
             </div>
-            <div className={mobileTab==="export"?"":"hidden lg:block"} data-mobile-panel="export">
+            <div className="mb-4" data-panel="export">
             {preflight?<div role="alert" className="mt-4 rounded-[24px] border border-amber-300 bg-amber-50 p-4" data-preflight="true">
               <p className="font-display text-sm font-bold text-amber-900">Export ditahan: {preflight.issues.length} slide terpotong</p>
               <ul className="mt-2 list-disc space-y-1 pl-5 text-xs leading-5 text-amber-900">{preflight.issues.map((issue,i)=><li key={i}>{issue.message}</li>)}</ul>
@@ -318,7 +313,7 @@ export default function StudioClient(){
             ) : null}
             <QualityPanel result={check} checking={checking} onCheck={checkNow} onSelect={openSlide} title={carousel.meta.title}/>
             </div>
-            <div className={mobileTab==="preview"?"":"hidden lg:block"} data-mobile-panel="preview">
+            <div data-panel="preview">
             <div className="mb-4 flex items-center gap-2">
               <button type="button" aria-label="Slide sebelumnya" disabled={selected<=0} onClick={()=>openSlide(Math.max(0,selected-1))} className="min-h-11 min-w-11 flex-none rounded-full bg-white text-lg font-bold text-zinc-700 disabled:opacity-30">‹</button>
               <div className="min-w-0 flex-1 overflow-x-auto pb-1">
@@ -362,14 +357,10 @@ export default function StudioClient(){
             <p className="mt-3 text-xs leading-5 text-zinc-500">Safe area adalah panduan konservatif. Sebelum posting, periksa hasil di TikTok. Export browser mungkin berbeda sedikit dari Playwright untuk font/efek tertentu.</p>
           </section>
         </div>
-        <div className="mt-8 max-w-[1080px] overflow-x-auto rounded-[28px]">
+        <div className="mx-auto mt-8 w-full max-w-[1080px]">
           <PostMetaPanel {...carousel.meta}/>
         </div>
       </div>
-
-      <nav aria-label="Panel Studio" className="studio-bottom-nav lg:hidden" data-mobile-nav="true">
-        {[["source","Sumber"],["preview","Preview"],["export","Ekspor"]].map(([id,label])=><button key={id} type="button" aria-pressed={mobileTab===id} onClick={()=>goTab(id)} className={"studio-bottom-nav-btn"+(mobileTab===id?" studio-bottom-nav-btn--active":"")}>{label}</button>)}
-      </nav>
 
       {/* Export source uses unscaled, offscreen DOM. Never hide with display:none. */}
       <PreviewBoundary resetKey={carousel} fallback={null}>

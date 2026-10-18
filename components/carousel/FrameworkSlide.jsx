@@ -11,6 +11,8 @@ export default function FrameworkSlide({
   cornerLabel,
   vertical,
   extras,
+  decorations,
+  theme,
   keywords = [],
 }) {
   return (
@@ -23,6 +25,8 @@ export default function FrameworkSlide({
       cornerLabel={cornerLabel}
       vertical={vertical}
       extras={extras}
+      decorations={decorations}
+      theme={theme}
     >
       <h2 className="framework-title">{title}</h2>
 

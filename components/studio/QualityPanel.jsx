@@ -22,7 +22,7 @@ export default function QualityPanel({result,checking,onCheck,onSelect,title}){
           <p className="font-display text-sm font-bold">Periksa layout semua slide</p>
           <p className="mt-1 text-xs leading-5 text-zinc-500">Mengukur tata letak nyata: slide yang terpotong atau terlalu kosong.</p>
         </div>
-        <button type="button" onClick={onCheck} disabled={checking} className="min-h-11 rounded-full bg-zinc-950 px-5 py-2.5 text-xs font-bold text-white hover:bg-zinc-800 disabled:opacity-50">{checking?"Memeriksa…":"Periksa sekarang"}</button>
+        <button type="button" onClick={onCheck} disabled={checking} aria-busy={checking} className="min-h-11 rounded-full bg-zinc-950 px-5 py-2.5 text-xs font-bold text-white hover:bg-zinc-800 disabled:opacity-50">{checking?"Memeriksa…":"Periksa sekarang"}</button>
       </div>
       {result?(issues.length?<div className="mt-3">
         <ul className="space-y-2">
