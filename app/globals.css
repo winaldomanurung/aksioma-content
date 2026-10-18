@@ -1559,6 +1559,7 @@ body {
 }
 .slide-main {
   display: flex;
+  flex: none; /* never squeeze: overflow must show up as measurable spill, not hidden overlap */
   min-height: 0;
   min-width: 0;
   flex-direction: column;
