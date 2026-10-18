@@ -15,6 +15,7 @@ import {collectImageIds,listImageSlots,setAtPath} from "@/lib/studio/images";
 import {useImageLibrary} from "@/lib/studio/image-store";
 import {updateSlideInSource} from "@/lib/studio/source-edit";
 import {fitWarnings} from "@/lib/studio/component-specs";
+import FillHint from "./FillHint";
 import PostMetaPanel from "@/components/carousel/PostMetaPanel";
 import Link from "next/link";
 
@@ -149,6 +150,7 @@ export default function StudioClient(){
     finally{setWorking(false);}
   }
 
+  const previewBox=useRef(null);
   const library=useImageLibrary();
   const baseSlide=carousel.slides[selected]||carousel.slides[0];
   const currentImages=baseSlide.images||[];
@@ -274,7 +276,7 @@ export default function StudioClient(){
               </div>
             </div>
             <PreviewBoundary resetKey={carousel}>
-            <div className="rounded-[26px] bg-zinc-200 p-2 sm:p-5">
+            <div ref={previewBox} className="rounded-[26px] bg-zinc-200 p-2 sm:p-5">
               <div className="w-full" data-platform={platform} data-safe-area={safe&&platform==="tiktok"?"true":"false"}>
                 <div className="carousel-stage !min-h-0 !gap-0 !p-0" data-platform={platform} data-safe-area={safe&&platform==="tiktok"?"true":"false"} style={{display:"block",overflow:"visible"}}>
                   {allVisible?carousel.slides.map((s,i)=><div className="mb-5" key={i}><SlidePreview data={s} number={i+1} account={account} total={carousel.slides.length}/></div>):<SlidePreview data={current} number={selected+1} account={account} total={carousel.slides.length}
@@ -283,6 +285,7 @@ export default function StudioClient(){
               </div>
             </div>
             </PreviewBoundary>
+            {!allVisible?<FillHint containerRef={previewBox} slide={baseSlide} watch={JSON.stringify(baseSlide)+platform+safe+selected}/>:null}
             {warnings.length?<div role="status" className="mt-3 rounded-xl border border-amber-300 bg-amber-50 p-3 text-xs leading-5 text-amber-900">
               <p className="font-bold">Perkiraan konten terlalu padat (berdasarkan pengukuran layout)</p>
               <ul className="mt-1 list-disc pl-5">{warnings.map((w,i)=><li key={i}>{w}</li>)}</ul>

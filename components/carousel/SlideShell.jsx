@@ -16,6 +16,8 @@ export default function SlideShell({
   backgroundWord,
   cornerLabel,
   theme,
+  vertical = "top",
+  extras,
 }) {
   const resolvedDark = theme ? (backgroundThemes[theme]?.dark ?? dark) : dark;
   const canvasClass = [
@@ -40,7 +42,7 @@ export default function SlideShell({
       {backgroundWord ? (
         <BackgroundWord
           dark={resolvedDark}
-          className="bottom-[170px] right-[-28px] rotate-[-7deg]"
+          className="bottom-[170px] right-[28px] rotate-[-7deg]"
         >
           {backgroundWord}
         </BackgroundWord>
@@ -69,7 +71,10 @@ export default function SlideShell({
             </div>
           ) : null}
 
-          {children}
+          <div className="slide-body" data-vertical={vertical}>
+            <div className="slide-main">{children}</div>
+            {extras ? <div className="slide-extras" data-slide-extras>{extras}</div> : null}
+          </div>
         </div>
 
         <SlideFooter slide={slide} dark={resolvedDark} />

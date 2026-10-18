@@ -19,6 +19,13 @@ matrix2x2, mythFact, prosCons, beforeAfter) exist in Studio JSON only. Re-measur
 CSS or component change. Slides may also carry user placed images (JSON
 `images`, Studio only); JSX pages do not need them.
 
+VERTICAL + EXTRAS
+SlideShell and every preset (except Hero/CTA) accept `vertical` ("top" default in
+JSX, "center", "spread", "stretch") and `extras` (a ReactNode rendered below the
+main content, in layout flow). Use extras for NEW supporting information (a
+Callout, SourceNote, MiniDiagram), never to repeat the main content. In Studio JSON
+the same fields exist as slide.vertical (default "center") and slide.extras.
+
 EXPECTED AI OUTPUT
 - Return a complete valid page.jsx, not fragments.
 - Keep the platform/searchParams plumbing intact.

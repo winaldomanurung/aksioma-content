@@ -12,6 +12,8 @@ export default function CauseEffectSlide({
   chainCaption = "",
   backgroundWord,
   cornerLabel,
+  vertical,
+  extras,
 }) {
 
   return (
@@ -23,6 +25,8 @@ export default function CauseEffectSlide({
       density={density}
       backgroundWord={backgroundWord}
       cornerLabel={cornerLabel}
+      vertical={vertical}
+      extras={extras}
     >
       <div className="cause-effect-wrap">
         <div className="cause-effect-card border-white/10 bg-white/[0.045]">

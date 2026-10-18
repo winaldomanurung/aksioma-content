@@ -22,20 +22,20 @@ function Primitive({ node, dark = false }) {
     case "infoCard": return <InfoCard title={node.title} eyebrow={node.eyebrow} variant={dark ? (node.variant==="glass"?"glass":"dark") : (["dark","glass"].includes(node.variant)?"soft":node.variant)}><>{node.text}</></InfoCard>;
     case "statCard": return <StatCard value={node.value} label={node.label} note={node.note} variant={dark?"dark":"light"}/>;
     case "bigNumber": return <BigNumber value={node.value} label={node.label} dark={dark}/>;
-    case "quoteCard": return <QuoteCard quote={node.quote} source={node.source} dark={node.dark}/>;
-    case "diagramNode": return <DiagramNode title={node.title} body={node.body} accent={node.accent} dark={node.dark}/>;
-    case "connector": return <Connector direction={node.direction} label={node.label} dark={node.dark}/>;
-    case "timeline": return <Timeline items={node.items} dark={node.dark}/>;
-    case "checklist": return <Checklist items={node.items} dark={node.dark}/>;
-    case "callout": return <Callout label={node.label} dark={node.dark}>{node.text}</Callout>;
-    case "pill": return <Pill dark={node.dark}>{node.text}</Pill>;
-    case "keywordCluster": return <KeywordCluster items={node.items} dark={node.dark}/>;
-    case "miniDiagram": return <MiniDiagram items={node.items} dark={node.dark}/>;
+    case "quoteCard": return <QuoteCard quote={node.quote} source={node.source} dark={dark||node.dark}/>;
+    case "diagramNode": return <DiagramNode title={node.title} body={node.body} accent={node.accent} dark={dark||node.dark}/>;
+    case "connector": return <Connector direction={node.direction} label={node.label} dark={dark||node.dark}/>;
+    case "timeline": return <Timeline items={node.items} dark={dark||node.dark}/>;
+    case "checklist": return <Checklist items={node.items} dark={dark||node.dark}/>;
+    case "callout": return <Callout label={node.label} dark={dark||node.dark}>{node.text}</Callout>;
+    case "pill": return <Pill dark={dark||node.dark}>{node.text}</Pill>;
+    case "keywordCluster": return <KeywordCluster items={node.items} dark={dark||node.dark}/>;
+    case "miniDiagram": return <MiniDiagram items={node.items} dark={dark||node.dark}/>;
     case "twoColumn": return <TwoColumn>{children}</TwoColumn>;
     case "threeColumn": return <ThreeColumn>{children}</ThreeColumn>;
     case "contentGrid": return <ContentGrid columns={node.columns}>{children}</ContentGrid>;
     case "stack": return <Stack>{children}</Stack>;
-    case "divider": return <Divider dark={node.dark}/>;
+    case "divider": return <Divider dark={dark||node.dark}/>;
     case "barChart": return <BarChart items={node.items} unit={node.unit} max={node.max} dark={dark||node.dark}/>;
     case "matrix2x2": return <Matrix2x2 xAxis={node.xAxis} yAxis={node.yAxis} quadrants={node.quadrants} dark={dark||node.dark}/>;
     case "table": return <DataTable columns={node.columns} rows={node.rows} dark={dark||node.dark}/>;
@@ -61,23 +61,28 @@ function Primitive({ node, dark = false }) {
 export function StudioSlide({data,number,account="journey",total=10}){
   return <SlideImagesContext.Provider value={data?.images||null}><StudioSlideBody data={data} number={number} account={account} total={total}/></SlideImagesContext.Provider>;
 }
+const DARK_PRESETS=new Set(["bullet","causeEffect","summary"]);
 function StudioSlideBody({data,number,account="journey",total=10}){
   const slide=number;
   const s=data;
+  const dark=s.type==="freeform" ? (s.theme ? (backgroundThemes[s.theme]?.dark ?? !!s.dark) : !!s.dark) : DARK_PRESETS.has(s.type);
+  const layout={
+    vertical: s.vertical || "center",
+    extras: Array.isArray(s.extras) && s.extras.length ? s.extras.map((n,i)=><Primitive key={i} node={n} dark={dark}/>) : undefined,
+  };
   switch(s.type){
     case "hero": return number===1 ? <AccountBookend kind="hero" account={account} data={s} number={number}/> : <HeroSlide {...s} slide={slide}/>;
-    case "statement": return <StatementSlide {...s} slide={slide}/>;
-    case "bullet": return <BulletSlide {...s} slide={slide}/>;
-    case "compare": return <CompareSlide {...s} slide={slide}/>;
-    case "causeEffect": return <CauseEffectSlide {...s} slide={slide}/>;
-    case "framework": return <FrameworkSlide {...s} slide={slide}/>;
-    case "summary": return <SummarySlide {...s} slide={slide}/>;
+    case "statement": return <StatementSlide {...s} {...layout} slide={slide}/>;
+    case "bullet": return <BulletSlide {...s} {...layout} slide={slide}/>;
+    case "compare": return <CompareSlide {...s} {...layout} slide={slide}/>;
+    case "causeEffect": return <CauseEffectSlide {...s} {...layout} slide={slide}/>;
+    case "framework": return <FrameworkSlide {...s} {...layout} slide={slide}/>;
+    case "summary": return <SummarySlide {...s} {...layout} slide={slide}/>;
     case "cta": return number===total ? <AccountBookend kind="cta" account={account} data={s} number={number}/> : <CTASlide {...s} slide={slide}/>;
     case "freeform": {
-      const dark=s.theme ? (backgroundThemes[s.theme]?.dark ?? !!s.dark) : !!s.dark;
       return (
       <FreeformSlide slide={slide} eyebrow={s.eyebrow} dark={dark} theme={s.theme} density={s.density}
-        backgroundWord={s.backgroundWord} cornerLabel={s.cornerLabel}>
+        backgroundWord={s.backgroundWord} cornerLabel={s.cornerLabel} {...layout}>
         <div className="studio-freeform-body">
           {s.nodes.map((n,i)=><Primitive key={i} node={n} dark={dark}/>)}
         </div>

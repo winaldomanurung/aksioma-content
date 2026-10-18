@@ -29,6 +29,8 @@ export default function CompareSlide({
   density = "balanced",
   backgroundWord,
   cornerLabel,
+  vertical,
+  extras,
   keywords = [],
 }) {
   return (
@@ -39,6 +41,8 @@ export default function CompareSlide({
       density={density}
       backgroundWord={backgroundWord}
       cornerLabel={cornerLabel}
+      vertical={vertical}
+      extras={extras}
     >
       <h2 className="compare-title">{title}</h2>
 

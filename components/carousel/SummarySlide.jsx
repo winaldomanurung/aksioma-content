@@ -8,6 +8,8 @@ export default function SummarySlide({
   density = "balanced",
   backgroundWord,
   cornerLabel,
+  vertical,
+  extras,
   keywords = [],
 }) {
   return (
@@ -19,6 +21,8 @@ export default function SummarySlide({
       density={density}
       backgroundWord={backgroundWord}
       cornerLabel={cornerLabel}
+      vertical={vertical}
+      extras={extras}
     >
       <div className="summary-wrap">
         <h2 className="summary-title">{title}</h2>

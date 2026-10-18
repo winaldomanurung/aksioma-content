@@ -9,6 +9,8 @@ export default function FreeformSlide({
   backgroundWord,
   theme,
   cornerLabel,
+  vertical,
+  extras,
   className = "",
 }) {
   return (
@@ -21,6 +23,8 @@ export default function FreeformSlide({
       density={density}
       backgroundWord={backgroundWord}
       cornerLabel={cornerLabel}
+      vertical={vertical}
+      extras={extras}
       className={className}
     >
       {children}

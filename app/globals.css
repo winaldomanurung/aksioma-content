@@ -1536,3 +1536,59 @@ body {
 .account-bookend-number {
   font-family:var(--font-inter),Arial,sans-serif;
 }
+
+/* ---------- Vertical distribution + extras (all non-bookend slides) ---------- */
+.slide-body {
+  display: flex;
+  min-height: 0;
+  min-width: 0;
+  flex: 1 1 auto;
+  flex-direction: column;
+}
+.slide-main {
+  display: flex;
+  min-height: 0;
+  min-width: 0;
+  flex-direction: column;
+}
+.slide-extras {
+  display: flex;
+  flex: none;
+  flex-direction: column;
+  gap: 22px;
+  margin-top: 34px;
+  min-width: 0;
+}
+.slide-body[data-vertical="top"] { justify-content: flex-start; }
+.slide-body[data-vertical="center"] { justify-content: center; }
+.slide-body[data-vertical="spread"] { justify-content: space-between; }
+.slide-body[data-vertical="stretch"] > .slide-main { flex: 1 1 auto; }
+
+/* stretch: let each layout grow into the free height */
+.slide-body[data-vertical="stretch"] .bullet-wrap { flex: 1 1 auto; display: flex; flex-direction: column; }
+.slide-body[data-vertical="stretch"] .bullet-grid { flex: 1 1 auto; grid-auto-rows: 1fr; }
+.slide-body[data-vertical="stretch"] .bullet-card { align-items: center; }
+.slide-body[data-vertical="stretch"] .compare-grid { flex: 1 1 auto; }
+.slide-body[data-vertical="stretch"] .compare-card { min-height: 0; }
+.slide-body[data-vertical="stretch"] .compare-card--muted { transform: none; }
+.slide-body[data-vertical="stretch"] .cause-effect-wrap { flex: 1 1 auto; margin: 0; }
+.slide-body[data-vertical="stretch"] .framework-list { flex: 1 1 auto; display: flex; flex-direction: column; }
+.slide-body[data-vertical="stretch"] .framework-items { flex: 1 1 auto; grid-auto-rows: 1fr; }
+.slide-body[data-vertical="stretch"] .summary-wrap { flex: 1 1 auto; margin: 0; display: flex; flex-direction: column; }
+.slide-body[data-vertical="stretch"] .summary-grid { flex: 1 1 auto; grid-auto-rows: 1fr; }
+.slide-body[data-vertical="stretch"] .summary-card:nth-child(2),
+.slide-body[data-vertical="stretch"] .summary-card:nth-child(4) { transform: none; }
+.slide-body[data-vertical="stretch"] .studio-freeform-body > :not(.studio-asset-decoration):nth-child(n+2) { flex-grow: 1; }
+.slide-body[data-vertical="stretch"] .studio-freeform-body { margin-top: 42px; }
+
+/* extras: the mini diagram becomes a compact left-to-right flow */
+.slide-extras .mini-diagram { display: flex; flex-direction: row; align-items: stretch; gap: 0; }
+.slide-extras .mini-diagram > div { display: flex; flex: 1 1 0; min-width: 0; align-items: center; }
+.slide-extras .mini-diagram-node { flex: 1 1 auto; min-width: 0; text-align: center; padding: 16px 12px; }
+.slide-extras .mini-diagram-arrow { flex: none; margin: 0 8px; transform: rotate(-90deg); }
+
+/* stretch: keep text vertically centred inside the grown cards */
+.slide-body[data-vertical="stretch"] .summary-card,
+.slide-body[data-vertical="stretch"] .cause-effect-card { display: flex; flex-direction: column; justify-content: center; }
+.slide-body[data-vertical="stretch"] .compare-card { display: flex; flex-direction: column; justify-content: center; }
+.slide-body[data-vertical="stretch"] .summary-wrap { margin-top: 40px; }

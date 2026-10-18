@@ -9,6 +9,8 @@ export default function FrameworkSlide({
   density = "compact",
   backgroundWord,
   cornerLabel,
+  vertical,
+  extras,
   keywords = [],
 }) {
   return (
@@ -19,6 +21,8 @@ export default function FrameworkSlide({
       density={density}
       backgroundWord={backgroundWord}
       cornerLabel={cornerLabel}
+      vertical={vertical}
+      extras={extras}
     >
       <h2 className="framework-title">{title}</h2>
 

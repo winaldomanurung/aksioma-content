@@ -9,6 +9,8 @@ export default function StatementSlide({
   density = "bold",
   backgroundWord,
   cornerLabel,
+  vertical,
+  extras,
 }) {
   return (
     <SlideShell
@@ -18,6 +20,8 @@ export default function StatementSlide({
       density={density}
       backgroundWord={backgroundWord}
       cornerLabel={cornerLabel}
+      vertical={vertical}
+      extras={extras}
     >
       <div className="statement-layout">
         <div className="statement-copy">

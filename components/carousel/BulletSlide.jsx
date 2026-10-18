@@ -8,6 +8,8 @@ export default function BulletSlide({
   density = "balanced",
   backgroundWord,
   cornerLabel,
+  vertical,
+  extras,
 }) {
   return (
     <SlideShell
@@ -18,6 +20,8 @@ export default function BulletSlide({
       density={density}
       backgroundWord={backgroundWord}
       cornerLabel={cornerLabel}
+      vertical={vertical}
+      extras={extras}
     >
       <div className="bullet-wrap">
         <h2 className="bullet-title">{title}</h2>
