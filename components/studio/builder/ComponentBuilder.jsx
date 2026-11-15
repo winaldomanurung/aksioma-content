@@ -7,13 +7,14 @@ import {carouselFor,clone,isSlideSpec,nodeFor,previewPosition,previewSlideFor} f
 import SpecForm from "./SpecForm";
 import ScaledSlide from "./ScaledSlide";
 import JsonOutput from "./JsonOutput";
+import {useAccount} from "@/lib/studio/account-store";
 import SaveImageButton from "./SaveImageButton";
 
 export default function ComponentBuilder({name}){
   const spec=ALL_SPECS[name];
   const [data,setData]=useState(()=>clone(spec.sample));
   const [platform,setPlatform]=useState("instagram");
-  const [account,setAccount]=useState("journey");
+  const account=useAccount();
   const [safe,setSafe]=useState(false);
   const slideKind=isSlideSpec(name);
 
@@ -46,8 +47,6 @@ export default function ComponentBuilder({name}){
         <div className="flex flex-wrap items-center gap-2">
           {["instagram","tiktok"].map(p=><button key={p} type="button" aria-pressed={platform===p} onClick={()=>setPlatform(p)}
             className={"rounded-full px-4 py-2 text-xs font-bold "+(platform===p?"bg-zinc-950 text-white":"bg-white text-zinc-700")}>{p==="tiktok"?"TikTok photo":"Instagram"}</button>)}
-          {["journey","trader"].map(a=><button key={a} type="button" aria-pressed={account===a} onClick={()=>setAccount(a)}
-            className={"rounded-full px-4 py-2 text-xs font-bold "+(account===a?"bg-red-500 text-white":"bg-white text-zinc-700")}>{a==="trader"?"Trader":"Journey"}</button>)}
           <button type="button" disabled={platform!=="tiktok"} aria-pressed={safe} onClick={()=>setSafe(v=>!v)} className="rounded-full border border-black/10 bg-white px-4 py-2 text-xs font-bold disabled:opacity-40">Safe area {safe?"ON":"OFF"}</button>
         </div>
         {result.error

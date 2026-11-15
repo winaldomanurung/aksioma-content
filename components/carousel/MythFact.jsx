@@ -5,7 +5,7 @@ export default function MythFact({ items = [], mythLabel = "MITOS", factLabel = 
   return (
     <div className={["grid gap-4", className].join(" ")}>
       {items.map((item, index) => (
-        <div key={index} className={["rounded-[26px] border p-6", card].join(" ")}>
+        <div key={index} className={["lk-card studio-fill-card rounded-[26px] border p-6", card].join(" ")}>
           <div className="flex items-start gap-4">
             <span className={chip("myth")}>{mythLabel}</span>
             <p className="text-[22px] leading-[1.35] opacity-70 line-through decoration-red-400/70">{item.myth}</p>

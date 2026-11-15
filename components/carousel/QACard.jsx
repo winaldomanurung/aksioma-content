@@ -3,7 +3,7 @@ export default function QACard({ items = [], dark = false, className = "" }) {
   return (
     <div className={["grid gap-4", className].join(" ")}>
       {items.map((item, index) => (
-        <div key={index} className={["rounded-[26px] border p-6", card].join(" ")}>
+        <div key={index} className={["lk-card studio-fill-card rounded-[26px] border p-6", card].join(" ")}>
           <div className="flex items-start gap-4">
             <span className={["font-display flex h-9 w-9 flex-none items-center justify-center rounded-full text-[18px] font-bold", dark ? "bg-red-400 text-zinc-950" : "bg-red-500 text-white"].join(" ")}>?</span>
             <p className="font-display text-[26px] font-bold leading-[1.25]">{item.q}</p>

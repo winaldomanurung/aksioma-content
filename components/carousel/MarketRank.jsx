@@ -1,3 +1,5 @@
+import {FULL_BUDGET, rowFit} from "@/lib/studio/market";
+
 // Ranked market list: rank, ticker, proportional bar, optional value and % change.
 // items: [{ticker, value?, change?, bar?(0-100)}]. tone: up | down | neutral.
 const signOf = (text) => {
@@ -9,9 +11,9 @@ const signOf = (text) => {
   return "up";
 };
 
-export default function MarketRank({items = [], tone = "neutral", dark = false, className = ""}) {
+export default function MarketRank({items = [], tone = "neutral", budget = FULL_BUDGET, dark = false, className = ""}) {
   return (
-    <div className={["mkt mkt-rank", className].join(" ")} data-dark={dark ? "true" : "false"} data-tone={tone}>
+    <div className={["mkt mkt-rank", className].join(" ")} data-dark={dark ? "true" : "false"} data-tone={tone} style={rowFit(items.length, budget, {base: 92})}>
       {items.map((item, i) => {
         const hasValue = item.value !== undefined && item.value !== "";
         const changeSign = signOf(item.change);

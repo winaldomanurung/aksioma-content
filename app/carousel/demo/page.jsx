@@ -1,6 +1,6 @@
 /*
 ===============================================================================
-AKSIOMA CAROUSEL — AI AUTHORING CONTRACT
+STOCK ANALYSIS CAROUSEL — AI AUTHORING CONTRACT
 ===============================================================================
 
 PURPOSE
@@ -16,10 +16,10 @@ counts: bullet 4, compare 4/side, causeEffect chain 4, framework 5, summary 5,
 timeline 5, checklist 5, miniDiagram 5, keywordCluster 8,
 barChart 5, mythFact 3, prosCons 4, table 5 rows. All data and new primitives
 (BarChart, DataTable, Matrix2x2, MythFact, ProsCons, BeforeAfter, Funnel, Ladder, QACard,
-PollCard, SwipeHint, SourceNote, ProgressRing, TextBlock, Footnote, Glossary, Flow, StockList, PriceChart, StockCompare, TradePlan, EventCalendar, MarketRank) are
+SwipeHint, SourceNote, ProgressRing, TextBlock, Footnote, Glossary, Flow, StockList, PriceChart, StockCompare, TradePlan, EventCalendar, MarketRank, StatSnapshot, SignalGrid, PriceLevels, ReturnBars, VerdictCard, CompareCards) are
 exported and usable in JSX. Measured: flow row 5 / column 8 items (hard ceiling 5),
 glossary 3, footnote 10 (editorial 3), textBlock ~280 chars. Re-measure after any CSS or
-component change. Image slots (PhotoHero, PhoneMockup, Collage, AvatarQuote, BeforeAfter
+component change. Image slots (PhotoHero, PhoneMockup, BeforeAfter
 slot) render a neutral block in JSX; images are attached only in Studio JSON (`images`).
 
 THEME + DECORATIONS (ASSET LIBRARY)
@@ -40,7 +40,7 @@ AssetIcon({ set: lucide|phosphor, name, size: sm|md|lg, tone: ink|accent|light, 
   phosphor: brain lightbulb shield-check target scales chat-circle-text check-circle sparkle
   book-open chart-line-up compass eye flag handshake stack lock-key puzzle-piece rocket
   magnifying-glass users flow-arrow lightning presentation-chart trophy
-Plan: in Studio JSON every content slide gets an automatic decoration when `decorations` is omitted; choose your own for meaning, or set `decorations: "none"` for a plain slide. In JSX pages, add decorations explicitly; icons on 2–4 slides. Never place
+Plan: slides have NO automatic decoration; add `decorations` explicitly only when a shape adds meaning (never behind data cards). In JSX pages, add decorations explicitly; icons on 2–4 slides. Never place
 important text on top of a decoration.
 
 VERTICAL + EXTRAS
@@ -214,7 +214,6 @@ BeforeAfter({ before: { label?, title, text }, after: { label?, title, text }, s
 Funnel({ items: [{ label, note? }], shape?: funnel|pyramid, dark? })
 Ladder({ items: [{ label, note?, value?, current? }], dark? })
 QACard({ items: [{ q, a }], dark? })
-PollCard({ question, options: [], cta?, dark? })
 SwipeHint({ text?, align?: left|center|right, dark? })
 SourceNote({ text, label?, dark? })
 ProgressRing({ value: 0-100, label, note?, dark? })
@@ -229,14 +228,19 @@ StockCompare({ left: { ticker, name?, signal? }, right: { ... }, rows: [{ label,
 TradePlan({ ticker?, scenarios: [{ kind: "bull"|"base"|"bear", trigger, target?, note? }], risk?, dark? }) // 1–3 scenarios
 EventCalendar({ items: [{ date, title, tag?, note? }], dark? }) // 1–6 agenda items
 MarketRank({ items: [{ ticker, value?, change?, bar? }], tone?: "up"|"down"|"neutral", dark? }) // 1–6 ranked rows; bar is 0–100
+ADAPTIVE SIZING: StockCompare, TradePlan, EventCalendar, MarketRank, StatSnapshot, SignalGrid, PriceLevels, ReturnBars and VerdictCard accept budget?: number (px; default 590 = the body height under a slideHeading). Rows grow to fill it, so a data slide is full with >=3 items (StatSnapshot >=4, ReturnBars >=4 bars). Beside ONE companion (callout / textBlock / extras) use <=4 items (ReturnBars <=6 bars); the Studio computes the budget from the slide automatically.
+StatSnapshot({ items: [{ label, value, sub?, tone?: "up"|"down"|"neutral" }], dark? }) // 1–6 key metrics; value <=12 chars; 1–4 cards render taller
+SignalGrid({ items: [{ name, reading, signal: "up"|"down"|"flat" }], dark? }) // 1–6 indicator read-outs
+CompareCards({ left: { label, heading, points?: string[1-3] }, right: { ... }, delta?: "VS", budget?, dark? }) // two contrast cards whose height FOLLOWS content (~220 + 80 per point px); never stretches, so always pair it with one more block (SignalGrid / StatSnapshot / callout) below
+PriceLevels({ items: [{ kind: "entry"|"target"|"stop"|"support"|"resistance", value, label?, current? }], dark? }) // 2–6 levels, written highest to lowest; one item may be current
+ReturnBars({ groups: [{ label, bars: [{ name, value: number, highlight? }] }], unit?, signed?, dark? }) // 1–3 groups, 1–4 bars each, <=10 bars total; negative values turn red
+VerdictCard({ verdict: "buy"|"accumulate"|"hold"|"watch"|"sell", title, text?, reasons?: [string] (<=3), caution?, dark? }) // closing view, not a trade call
 Flow({ items: [{ label, note?, via? }], direction?: row|column,
        fork?: [{ via?, label }, { via?, label }], dark? })  // labelled flow, optional 2-way fork
 
 IMAGE PRIMITIVES (slots stay empty in JSX; images are attached in Studio)
 PhotoHero({ image?, size?, shape?, fit?, title?, text?, overlay?, dark? })
 PhoneMockup({ image?, size?, align?, caption?, dark? })
-Collage({ items: [{ image?, caption? }] (2–4), size?, shape?, dark? })
-AvatarQuote({ avatar?, quote, name, role?, dark? })
 
 LAYOUT NOTE
 TwoColumn, ThreeColumn and ContentGrid remain available in TikTok photo mode
@@ -257,7 +261,12 @@ INFORMATION -> VISUAL MAPPING
 - Change over time / levels             -> FreeformSlide + BeforeAfter / Ladder / Funnel
 - Terms, notes, sources                 -> Glossary / Footnote / SourceNote (usually as extras)
 - Branching decision                    -> FreeformSlide + Flow with fork
-- Audience interaction                  -> QACard / PollCard / SwipeHint
+- Audience interaction                  -> QACard / SwipeHint
+- Key metrics at a glance               -> StatSnapshot
+- Indicator read-outs                   -> SignalGrid
+- Returns across periods / peers        -> ReturnBars
+- Entry / target / stop plan            -> PriceLevels (or TradePlan for if-then scenarios)
+- Closing assessment                    -> VerdictCard
 - Quote / mental model                  -> FreeformSlide + QuoteCard
 - Process over time                     -> FreeformSlide + Timeline
 - Conceptual relationship / mechanism   -> FreeformSlide + DiagramNode/Connector
@@ -305,34 +314,34 @@ data-carousel-slide and are exported.
 */
 
 import {
-  AccentLine, AvatarQuote, BarChart, BeforeAfter, BigNumber, BulletSlide, Callout,
-  CauseEffectSlide, Checklist, Collage, CompareSlide, Connector, ContentGrid, CTASlide,
+  AccentLine, BarChart, BeforeAfter, BigNumber, BulletSlide, Callout,
+  CauseEffectSlide, Checklist, CompareSlide, Connector, ContentGrid, CTASlide,
   DataTable, DiagramNode, Divider, Flow, Footnote, FrameworkSlide, FreeformSlide, Funnel,
   Glossary, HeroSlide, InfoCard, KeywordCluster, Ladder, Matrix2x2, MiniDiagram, MythFact,
-  PhoneMockup, PhotoHero, Pill, PlatformSwitcher, PollCard, PostMetaPanel, ProgressRing,
+  PhoneMockup, PhotoHero, Pill, PlatformSwitcher, PostMetaPanel, ProgressRing,
   ProsCons, QACard, QuoteCard, SlideHeading, SourceNote, Stack, StatCard, StatementSlide,
-  StockList, StockCompare, SummarySlide, SwipeHint, TextBlock, TradePlan, EventCalendar, PriceChart, MarketRank, ThreeColumn, Timeline, TwoColumn,
+  StockList, StockCompare, SummarySlide, SwipeHint, TextBlock, TradePlan, EventCalendar, PriceChart, MarketRank, StatSnapshot, SignalGrid, PriceLevels, ReturnBars, VerdictCard, ThreeColumn, Timeline, TwoColumn,
 } from "@/components/carousel";
 import { AssetIcon, AssetShape } from "@/components/studio/AssetPrimitives";
 
 export const metadata = {
-  title: "Demo Carousel | Aksioma Content Studio",
+  title: "Demo Carousel | Aksioma Content",
 };
 
 const postMeta = {
-  title: "Critical Thinking — Jangan Buru-buru Yakin",
+  title: "Stock Analysis — Komponen Laporan Saham",
   objective: "Save + share",
-  contentPillar: "Critical Thinking",
-  hook: "Pendapat yang terdengar yakin belum tentu benar.",
+  contentPillar: "Analisis Saham",
+  hook: "Satu laporan saham, dipecah menjadi komponen yang tepat.",
   instagramCaption:
-    "Kita sering merasa sebuah pendapat benar hanya karena penjelasannya terdengar masuk akal. Padahal rasa yakin bukan bukti.\n\nCarousel ini membedah cara sederhana untuk memisahkan fakta, interpretasi, asumsi, dan kesimpulan agar kita tidak terlalu cepat percaya pada pikiran sendiri.",
+    "Demo komponen untuk konten analisis saham: angka kunci, sinyal, kinerja, level harga, dan kesimpulan. Semua angka adalah ilustrasi.\n\nGanti dengan data dari sumber sendiri sebelum dipublikasikan.",
   tiktokCaption:
-    "Merasa yakin ≠ sudah benar. Coba 5 pertanyaan ini sebelum menerima sebuah klaim.",
-  cta: "Simpan framework-nya dan pakai saat membaca berita, rapat, mengambil keputusan, atau berdebat.",
-  hashtags: ["CriticalThinking", "BerpikirKritis", "SelfDevelopment", "Aksioma"],
-  keywords: ["critical thinking", "logic", "bias", "decision making", "argument"],
+    "Angka kunci, sinyal, kinerja, level risiko, dan verdict dalam satu carousel.",
+  cta: "Simpan sebagai referensi dan cek ulang data sebelum bertindak.",
+  hashtags: ["Saham", "AnalisisSaham", "IHSG", "Investasi"],
+  keywords: ["saham", "teknikal", "level harga", "return", "verdict"],
   notes:
-    "Prioritaskan cover dengan hook kuat. Untuk TikTok, cek mode safe area sebelum posting. Hindari caption yang hanya mengulang seluruh isi carousel.",
+    "Prioritaskan cover dengan hook kuat. Untuk TikTok, cek mode safe area sebelum posting. Semua angka pada demo adalah ilustrasi.",
 };
 
 export default async function DemoCarouselPage({ searchParams }) {
@@ -353,7 +362,7 @@ export default async function DemoCarouselPage({ searchParams }) {
       {/* 1. Cover — tanpa theme/decorations/extras. */}
       <HeroSlide
         slide={1}
-        eyebrow="Critical Thinking"
+        eyebrow="Analisis Saham"
         title="Pendapat yang terdengar yakin belum tentu benar."
         subtitle="Masalahnya sering bukan kurang informasi, tetapi kita berhenti menguji begitu sebuah penjelasan terasa masuk akal."
         density="bold"
@@ -447,7 +456,7 @@ export default async function DemoCarouselPage({ searchParams }) {
       <StatementSlide
         slide={6}
         eyebrow="Reframe"
-        lead="Tujuan critical thinking bukan menjadi orang yang selalu skeptis. Tujuannya adalah"
+        lead="Tujuan analisis bukan menjadi orang yang selalu skeptis. Tujuannya adalah"
         highlight="memberi tingkat keyakinan sesuai kualitas bukti."
         note="Kita tetap boleh mengambil keputusan, tetapi dengan sadar membedakan apa yang kita tahu, duga, dan belum tahu."
         density="bold"
@@ -616,7 +625,6 @@ export default async function DemoCarouselPage({ searchParams }) {
         <PhotoHero size="sm" shape="rounded" title="Judul foto" text="Caption singkat." />
         <ThreeColumn className="mt-6 items-start">
           <PhoneMockup size="sm" caption="Layar A" />
-          <Collage size="sm" items={[{ caption: "A" }, { caption: "B" }]} />
           <InfoCard variant="outline" title="Slot">Isi gambar lewat Studio.</InfoCard>
         </ThreeColumn>
       </FreeformSlide>
@@ -637,7 +645,7 @@ export default async function DemoCarouselPage({ searchParams }) {
         <AccentLine className="mt-6" />
       </FreeformSlide>
 
-      {/* 17. Tanya-jawab + polling + petunjuk geser. */}
+      {/* 17. Tanya-jawab + petunjuk geser. */}
       <FreeformSlide slide={17} eyebrow="Interaksi" theme="sand" density="balanced" backgroundWord="ASK" vertical="spread">
         <QACard
           items={[
@@ -645,8 +653,6 @@ export default async function DemoCarouselPage({ searchParams }) {
             { q: "Bagaimana kalau salah?", a: "Catat alasannya, evaluasi, dan perbaiki langkah berikutnya." },
           ]}
         />
-        <PollCard className="mt-8" question="Kamu paling sering memutuskan dengan…" options={["Firasat", "Data", "Saran orang lain"]} cta="Komentar A, B, atau C" />
-        <AvatarQuote className="mt-8" quote="Saya baru sadar saya membela kesimpulan, bukan menguji." name="Rina" role="Analis" />
         <SwipeHint className="mt-6" text="Geser" align="right" />
       </FreeformSlide>
 
@@ -667,9 +673,76 @@ export default async function DemoCarouselPage({ searchParams }) {
         ]}
       />
 
-      {/* 19. Penutup — tanpa theme/decorations/extras. */}
+      {/* 19–23. Komponen laporan saham: satu komponen per slide di bawah SlideHeading. Angka ilustrasi. */}
+      <FreeformSlide slide={19} eyebrow="Snapshot" theme="navy" density="balanced" vertical="spread">
+        <SlideHeading title="Angka kunci per penutupan." />
+        <StatSnapshot
+          dark
+          items={[
+            { label: "Harga", value: "$34,35", sub: "+0,73% hari ini", tone: "up" },
+            { label: "Yield 12 bulan", value: "3,09%", sub: "Kuartalan" },
+            { label: "YTD", value: "+25,2%", sub: "Total return +28,3%", tone: "up" },
+            { label: "Jarak dari high", value: "−2,7%", sub: "High 52 minggu", tone: "down" },
+            { label: "Expense ratio", value: "0,06%" },
+            { label: "Aset kelolaan", value: "$94,9 M" },
+          ]}
+        />
+      </FreeformSlide>
+
+      <FreeformSlide slide={20} eyebrow="Teknikal" theme="ice" density="balanced" vertical="spread">
+        <SlideHeading title="Konfluensi teknikal: 4 dari 6 bullish." />
+        <SignalGrid
+          items={[
+            { name: "Harga vs EMA", reading: "+2,8% EMA50 · +8,8% EMA200", signal: "up" },
+            { name: "ADX mingguan", reading: "44,6, turun dari 55,0", signal: "up" },
+            { name: "RSI harian", reading: "67,2, belum jenuh beli", signal: "up" },
+            { name: "Kinerja relatif", reading: "Unggul dari indeks 1 tahun", signal: "up" },
+            { name: "Bollinger harian", reading: "Di atas band atas", signal: "down" },
+            { name: "Stochastic harian", reading: "%K 94,3, jenuh beli", signal: "flat" },
+          ]}
+        />
+      </FreeformSlide>
+
+      <FreeformSlide slide={21} eyebrow="Kinerja" theme="paper" density="balanced" vertical="spread">
+        <SlideHeading title="Satu tahun unggul, tiga tahun tertinggal." />
+        <ReturnBars
+          unit="%"
+          groups={[
+            { label: "1 tahun", bars: [{ name: "SCHD", value: 29.3, highlight: true }, { name: "SPY", value: 15.5 }] },
+            { label: "3 tahun", bars: [{ name: "SCHD", value: 44.8, highlight: true }, { name: "SPY", value: 75.0 }] },
+            { label: "YTD", bars: [{ name: "SCHD", value: 25.2, highlight: true }, { name: "Obligasi", value: -2.4 }] },
+          ]}
+        />
+      </FreeformSlide>
+
+      <FreeformSlide slide={22} eyebrow="Level risiko" theme="midnight" density="balanced" vertical="spread">
+        <SlideHeading title="Rencana level, dari atas ke bawah." />
+        <PriceLevels
+          dark
+          items={[
+            { kind: "target", value: "$36,32", label: "Target 2" },
+            { kind: "resistance", value: "$35,31", label: "High 52 minggu" },
+            { kind: "entry", value: "$34,35", current: true },
+            { kind: "support", value: "$33,02", label: "Entry bertahap" },
+            { kind: "stop", value: "$31,57", label: "Invalidasi" },
+          ]}
+        />
+      </FreeformSlide>
+
+      <FreeformSlide slide={23} eyebrow="Kesimpulan" theme="ivory" density="balanced" vertical="center">
+        <SlideHeading title="Pandangan akhir." />
+        <VerdictCard
+          verdict="accumulate"
+          title="Layak dicicil, jangan dikejar sekaligus."
+          text="Tren utuh, tetapi harga ada di puncak rentang."
+          reasons={["Cicil bertahap di zona pullback", "Konfirmasi dengan close mingguan", "Patuhi level invalidasi"]}
+          caution="Ilustrasi, bukan nasihat investasi."
+        />
+      </FreeformSlide>
+
+      {/* 24. Penutup — tanpa theme/decorations/extras. */}
       <CTASlide
-        slide={19}
+        slide={24}
         title="Jangan buru-buru yakin."
         body="Pendapat yang kuat bukan pendapat yang paling keras, tetapi pendapat yang tahu mengapa ia layak dipercaya dan kapan ia harus direvisi."
         cta="Simpan framework ini. Pakai lagi saat membaca berita, rapat, mengambil keputusan, atau berdebat."

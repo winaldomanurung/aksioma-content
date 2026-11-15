@@ -106,7 +106,6 @@ primitiveLists.prosCons = { probe: 10, node: (n, c) => ({ type: "prosCons", pros
 primitiveLists.funnel = { probe: 8, node: (n, c) => ({ type: "funnel", items: range(n).map((i) => ({ label: text(c.title, i), note: text(c.node, i + 1) })) }) };
 primitiveLists.ladder = { probe: 10, node: (n, c) => ({ type: "ladder", items: range(n).map((i) => ({ label: text(c.title, i), value: "Rp " + (1000 + i * 150), note: text(c.node, i + 1), current: i === 1 })) }) };
 primitiveLists.qaCard = { probe: 8, node: (n, c) => ({ type: "qaCard", items: range(n).map((i) => ({ q: text(c.point, i), a: text(c.text, i + 1) })) }) };
-primitiveLists.pollCard = { probe: 6, node: (n, c) => ({ type: "pollCard", question: text(70), cta: "Komentar jawabanmu", options: range(n).map((i) => text(c.point, i)) }) };
 // Batch 4 primitives.
 primitiveLists.footnote = { probe: 10, node: (n, c) => ({ type: "footnote", items: range(n).map((i) => text(c.text, i)) }) };
 primitiveLists.glossary = { probe: 8, node: (n, c) => ({ type: "glossary", items: range(n).map((i) => ({ term: text(c.chip, i), meaning: text(c.text, i + 1) })) }) };
@@ -139,17 +138,16 @@ for (const size of ["sm", "md", "lg"]) {
 }
 for (const size of ["sm", "md", "lg"]) {
   fitCases.push({ key: "phoneMockup:" + size, build: () => freeform([{ type: "phoneMockup", size, caption: text(80) }], { heading: true }) });
-  for (const n of [2, 3, 4]) fitCases.push({ key: "collage:" + size + ":" + n, build: () => freeform([{ type: "collage", size, items: range(n).map((i) => ({ caption: text(20, i) })) }], { heading: true }) });
 }
 const addChar = (key, build, extra = {}) => charCases.push({ key, build, ...extra });
-addChar("hero.title", (n) => ({ type: "hero", eyebrow: text(20), title: text(n), subtitle: text(110, 2) }), { number: 1, accounts: ["journey", "trader"] });
-addChar("hero.subtitle", (n) => ({ type: "hero", eyebrow: text(20), title: text(40), subtitle: text(n, 2) }), { number: 1, accounts: ["journey", "trader"] });
+addChar("hero.title", (n) => ({ type: "hero", eyebrow: text(20), title: text(n), subtitle: text(110, 2) }), { number: 1, accounts: ["trader"] });
+addChar("hero.subtitle", (n) => ({ type: "hero", eyebrow: text(20), title: text(40), subtitle: text(n, 2) }), { number: 1, accounts: ["trader"] });
 addChar("statement.lead", (n) => ({ type: "statement", lead: text(n), highlight: text(30, 2), note: text(110, 3) }));
 addChar("statement.highlight", (n) => ({ type: "statement", lead: text(60), highlight: text(n, 2), note: text(110, 3) }));
 addChar("statement.note", (n) => ({ type: "statement", lead: text(60), highlight: text(30, 2), note: text(n, 3) }));
-addChar("cta.title", (n) => ({ type: "cta", title: text(n), body: text(110, 1), cta: text(80, 2) }), { number: 10, accounts: ["journey", "trader"] });
-addChar("cta.body", (n) => ({ type: "cta", title: text(30), body: text(n, 1), cta: text(80, 2) }), { number: 10, accounts: ["journey", "trader"] });
-addChar("cta.cta", (n) => ({ type: "cta", title: text(30), body: text(110, 1), cta: text(n, 2) }), { number: 10, accounts: ["journey", "trader"] });
+addChar("cta.title", (n) => ({ type: "cta", title: text(n), body: text(110, 1), cta: text(80, 2) }), { number: 10, accounts: ["trader"] });
+addChar("cta.body", (n) => ({ type: "cta", title: text(30), body: text(n, 1), cta: text(80, 2) }), { number: 10, accounts: ["trader"] });
+addChar("cta.cta", (n) => ({ type: "cta", title: text(30), body: text(110, 1), cta: text(n, 2) }), { number: 10, accounts: ["trader"] });
 for (const field of ["causeTitle", "causeText", "effectTitle", "effectText"]) {
   addChar("causeEffect." + field, (n) => ({
     type: "causeEffect", causeTitle: text(30), causeText: text(90, 1), effectTitle: text(30, 2), effectText: text(90, 3),
@@ -180,12 +178,9 @@ for (const field of ["title", "text"]) {
 ffSingle("barChart.label", (n) => ({ type: "barChart", unit: "%", items: [{ label: text(n), value: 70 }, { label: text(20, 1), value: 40 }] }));
 ffSingle("mythFact.myth", (n) => ({ type: "mythFact", items: [{ myth: text(n), fact: text(60, 1) }] }));
 ffSingle("mythFact.fact", (n) => ({ type: "mythFact", items: [{ myth: text(60), fact: text(n, 1) }] }));
-ffSingle("pollCard.question", (n) => ({ type: "pollCard", question: text(n), options: [text(30), text(30, 1), text(30, 2)], cta: text(30, 3) }));
 ffSingle("sourceNote.text", (n) => ({ type: "sourceNote", text: text(n) }));
 ffSingle("progressRing.label", (n) => ({ type: "progressRing", value: 64, label: text(n), note: text(60, 1) }));
 ffSingle("progressRing.note", (n) => ({ type: "progressRing", value: 64, label: text(24), note: text(n, 1) }));
-ffSingle("avatarQuote.quote", (n) => ({ type: "avatarQuote", quote: text(n), name: text(24, 1), role: text(40, 2) }));
-ffSingle("avatarQuote.role", (n) => ({ type: "avatarQuote", quote: text(90), name: text(24, 1), role: text(n, 2) }));
 for (const field of ["title", "text"]) {
   addChar("photoHero." + field, (n) => freeform([{ type: "photoHero", size: "sm", title: field === "title" ? text(n) : text(30), text: field === "text" ? text(n, 1) : text(80, 1) }]));
 }
@@ -286,7 +281,7 @@ async function main() {
   const { browser, page } = await launch();
   let renders = 0;
 
-  async function fits(slide, { platform, number = 2, total = 10, account = "journey" }) {
+  async function fits(slide, { platform, number = 2, total = 10, account = "trader" }) {
     await page.evaluate((job) => window.__showSlide(job), { slide, platform, number, total, account });
     await page.evaluate(() => new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve))));
     await page.evaluate(() => document.fonts.ready);
@@ -354,7 +349,7 @@ async function main() {
     data.chars[entry.key] = {};
     for (const platform of PLATFORMS) {
       let best = Infinity;
-      for (const account of entry.accounts || ["journey"]) {
+      for (const account of entry.accounts || ["trader"]) {
         const total = entry.number ? 10 : 10;
         const value = await largest(700, async (length) => (await fits(entry.build(length), { platform, number: entry.number || 2, total, account })).ok);
         best = Math.min(best, value);

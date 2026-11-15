@@ -1,7 +1,10 @@
 import {STOCK_SIGNALS} from "@/lib/studio/stock";
+import {FULL_BUDGET, rowFit} from "@/lib/studio/market";
 
 // Two stocks side by side. rows: [{label, left, right, better?: "left"|"right"}].
-export default function StockCompare({left = {}, right = {}, rows = [], disclaimer = true, dark = false, className = ""}) {
+export default function StockCompare({left = {}, right = {}, rows = [], disclaimer = true, budget = FULL_BUDGET, dark = false, className = ""}) {
+  // heads (124) + gap (14) + optional disclaimer (about 50) are fixed; rows take the rest.
+  const rowBudget = budget - 138 - (disclaimer ? 50 : 0);
   const head = (side, data) => (
     <div className="mkt-cmp-head" data-side={side} data-signal={STOCK_SIGNALS[data.signal] ? data.signal : "none"}>
       <span className="mkt-cmp-ticker">{data.ticker}</span>
@@ -10,7 +13,7 @@ export default function StockCompare({left = {}, right = {}, rows = [], disclaim
     </div>
   );
   return (
-    <div className={["mkt mkt-cmp", className].join(" ")} data-dark={dark ? "true" : "false"}>
+    <div className={["mkt mkt-cmp", className].join(" ")} data-dark={dark ? "true" : "false"} style={rowFit(rows.length, rowBudget, {base: 68, gap: 8, max: 1.7})}>
       <div className="mkt-cmp-heads">
         {head("left", left)}
         <span className="mkt-cmp-vs">VS</span>

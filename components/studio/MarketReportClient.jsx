@@ -2,19 +2,30 @@
 
 import Link from "next/link";
 import {useRouter} from "next/navigation";
-import {useMemo, useRef, useState} from "react";
+import {useMemo, useRef, useState, useSyncExternalStore} from "react";
 import {copyText} from "@/lib/studio/clipboard";
-import {parseMarketReport, buildReportCarousel, SAMPLE_REPORT} from "@/lib/studio/market-report";
+import {parseMarketReport, buildReportCarousel, dateFromISO, todayISO, SAMPLE_REPORT} from "@/lib/studio/market-report";
 
 const DRAFT_KEY = "aksioma-studio-draft-v1";
+const pad = (n) => String(n).padStart(2, "0");
+const noSubscribe = () => () => {};
 
 export default function MarketReportClient() {
   const [text, setText] = useState("");
   const [feedback, setFeedback] = useState("");
+  const [dateOverride, setDateOverride] = useState("");
   const outRef = useRef(null);
   const router = useRouter();
 
-  const {report, warnings} = useMemo(() => parseMarketReport(text), [text]);
+  // Today (WIB) is read in the browser only; the server snapshot is empty so the prebuilt page never bakes in a stale date.
+  const today = useSyncExternalStore(noSubscribe, todayISO, () => "");
+
+  const {report: parsed, warnings} = useMemo(() => parseMarketReport(text), [text]);
+  // Date priority: the one picked by hand, then a date inside the pasted title (older format), then today.
+  const headerISO = parsed.date ? parsed.date.year + "-" + pad(parsed.date.month + 1) + "-" + pad(parsed.date.day) : "";
+  const dateISO = dateOverride || headerISO || today;
+  const date = dateFromISO(dateISO);
+  const report = useMemo(() => ({...parsed, date}), [parsed, date]);
   const ready = report.sections.length > 0;
   const json = useMemo(() => (ready ? JSON.stringify(buildReportCarousel(report), null, 2) : ""), [ready, report]);
 
@@ -32,11 +43,10 @@ export default function MarketReportClient() {
       <div className="mx-auto max-w-[1080px]">
         <header className="flex flex-wrap items-start justify-between gap-4">
           <div>
-            <p className="font-display text-xs font-bold uppercase tracking-[.22em] text-blue-800">Aksioma Trader / Laporan Pasar</p>
-            <h1 className="font-display mt-3 text-3xl font-bold tracking-tight sm:text-5xl">Laporan harian jadi 7 slide.</h1>
-            <p className="mt-4 max-w-2xl text-base leading-7 text-zinc-600">Tempel laporan Market &amp; Foreign Flow. Cover, ringkasan, Top Foreign Buy, Top Local Buy, Top Gainer, Top Loser, dan penutup langsung tersusun. Semua diproses di browser.</p>
+            <h1 className="font-display text-3xl font-bold tracking-tight sm:text-5xl">Laporan harian jadi 7 slide.</h1>
+            <p className="mt-4 max-w-2xl text-base leading-7 text-zinc-600">Tempel laporan Market Report (tanpa tanggal, tanggal terisi otomatis). Cover, ringkasan, Top Foreign Buy, Top Local Buy, Top Gainer, Top Loser, dan penutup langsung tersusun. Semua diproses di browser.</p>
           </div>
-          <Link href="/studio" className="rounded-full border border-black/15 bg-white px-5 py-3 text-sm font-bold hover:bg-zinc-50">← Studio</Link>
+          <Link href="/studio" className="rounded-full border border-black/15 bg-white px-5 py-3 text-sm font-bold hover:bg-zinc-50">Studio</Link>
         </header>
 
         <section className="mt-8 rounded-[28px] border border-black/10 bg-white p-5 shadow-sm sm:p-8">
@@ -46,7 +56,13 @@ export default function MarketReportClient() {
             <button type="button" onClick={() => setText(SAMPLE_REPORT)} className="rounded-full border border-black/15 px-4 py-2 text-sm font-semibold hover:bg-zinc-50">Pakai contoh</button>
             <button type="button" onClick={() => setText("")} disabled={!text} className="rounded-full border border-red-200 px-4 py-2 text-sm font-semibold text-red-700 disabled:opacity-40">Bersihkan</button>
           </div>
-          {text.trim() && warnings.length ? <ul role="status" className="mt-4 list-disc space-y-1 rounded-xl bg-amber-50 p-4 pl-8 text-sm text-amber-900">{warnings.map((w, i) => <li key={i}>{w}</li>)}</ul> : null}
+          <div className="mt-5 flex flex-wrap items-center gap-3 border-t border-black/10 pt-5">
+            <label htmlFor="report-date" className="text-sm font-bold">Tanggal laporan</label>
+            <input id="report-date" type="date" value={dateISO} onChange={(e) => setDateOverride(e.target.value)} className="rounded-xl border border-black/15 bg-[#f9f7f3] px-3 py-2 text-sm outline-none focus:border-blue-500" />
+            {dateOverride ? <button type="button" onClick={() => setDateOverride("")} className="rounded-full border border-black/15 px-4 py-2 text-sm font-semibold hover:bg-zinc-50">Kembali otomatis</button> : null}
+            <p className="w-full text-xs text-zinc-500">{dateOverride ? "Tanggal diatur manual." : headerISO ? "Tanggal diambil dari judul laporan." : "Otomatis memakai hari ini (WIB)."} Ubah bila laporan untuk hari lain.</p>
+          </div>
+          {text.trim() && warnings.length ?<ul role="status" className="mt-4 list-disc space-y-1 rounded-xl bg-amber-50 p-4 pl-8 text-sm text-amber-900">{warnings.map((w, i) => <li key={i}>{w}</li>)}</ul> : null}
         </section>
 
         <section className="mt-5 rounded-[28px] border border-black/10 bg-white p-5 shadow-sm sm:p-8">
@@ -65,7 +81,7 @@ export default function MarketReportClient() {
           <h2 className="font-display text-lg font-bold">3. Hasil</h2>
           <textarea ref={outRef} readOnly aria-label="JSON carousel" value={json} placeholder="JSON akan muncul setelah laporan terbaca." onFocus={(e) => e.target.select()} className="mt-4 h-[220px] w-full resize-y rounded-2xl border border-zinc-800 bg-zinc-950 p-4 font-mono text-xs text-zinc-100" />
           <div className="mt-4 flex flex-wrap gap-3">
-            <button type="button" disabled={!ready} onClick={openInStudio} className="rounded-full bg-blue-800 px-6 py-3 font-semibold text-white hover:bg-blue-900 disabled:opacity-40">Buka di Studio →</button>
+            <button type="button" disabled={!ready} onClick={openInStudio} className="rounded-full bg-blue-800 px-6 py-3 font-semibold text-white hover:bg-blue-900 disabled:opacity-40">Buka di Studio</button>
             <button type="button" disabled={!ready} onClick={copy} className="rounded-full border border-black/15 px-6 py-3 font-semibold hover:bg-zinc-50 disabled:opacity-40">Copy JSON</button>
           </div>
           {feedback ? <p role="status" className="mt-3 rounded-xl bg-zinc-100 p-3 text-sm text-zinc-700">{feedback}</p> : null}

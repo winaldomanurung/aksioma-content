@@ -18,7 +18,7 @@ export default function JsonOutput({tabs}){
       <div className="flex flex-wrap items-center gap-2">
         {tabs.map(t=><button key={t.id} type="button" aria-pressed={t.id===tab.id} onClick={()=>{setActive(t.id);setMessage("");}}
           className={"rounded-full px-3 py-1.5 text-xs font-bold "+(t.id===tab.id?"bg-zinc-950 text-white":"bg-zinc-100 text-zinc-700")}>{t.label}</button>)}
-        <button type="button" onClick={copy} className="ml-auto rounded-full bg-red-500 px-4 py-2 text-xs font-bold text-white hover:bg-red-600">Salin JSON</button>
+        <button type="button" onClick={copy} className="ml-auto rounded-full bg-red-600 px-4 py-2 text-xs font-bold text-white hover:bg-red-700">Salin JSON</button>
       </div>
       <p className="mt-2 text-xs leading-5 text-zinc-500">{tab.hint}</p>
       <textarea ref={area} readOnly spellCheck={false} value={tab.json} aria-label={"JSON "+tab.label}

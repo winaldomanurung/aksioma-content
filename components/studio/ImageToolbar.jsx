@@ -74,7 +74,7 @@ export default function ImageToolbar({images,selectedId,onSelect,onChange}){
           {images.map((image,i)=>(
             <li key={image.id}>
               <button type="button" onClick={()=>onSelect(image.id)} aria-pressed={image.id===selectedId}
-                className={"rounded-full px-3 py-1.5 text-xs font-semibold "+(image.id===selectedId?"bg-red-500 text-white":"bg-zinc-100 text-zinc-700")}>
+                className={"rounded-full px-3 py-1.5 text-xs font-semibold "+(image.id===selectedId?"bg-red-600 text-white":"bg-zinc-100 text-zinc-700")}>
                 Gambar {i+1}
               </button>
             </li>

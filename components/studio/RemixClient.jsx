@@ -5,14 +5,18 @@ import {useRef, useState, useSyncExternalStore} from "react";
 import {STYLE_PRESETS} from "@/lib/studio/ai-guide";
 import {FONT_PRESETS, FONT_IDS} from "@/lib/studio/fonts";
 import {copyText} from "@/lib/studio/clipboard";
+import {ACCOUNTS, isAccountId} from "@/lib/studio/accounts";
+import {useAccount, setAccount} from "@/lib/studio/account-store";
 import {makeRemixPrompt, PACKAGINGS, DETAILS, TONES, REMIX_MAX_CHARS} from "@/lib/studio/remix-prompt";
 
 const PRESET_KEY = "aksioma-remix-presets-v1";
 const BUILTIN = [
   {id: "b-top5", name: "Top 5 saham mingguan", builtin: true, account: "trader", packaging: "daftar", tone: "tegas", details: ["konteks", "tandingan"], slides: 7, style: "data", font: "aksioma", audience: "Investor ritel pemula", objective: "Save + Share", extraNotes: "Gunakan stockList hanya dengan data dari sumber."},
-  {id: "b-mitos", name: "Mitos vs fakta", builtin: true, account: "journey", packaging: "mitos", tone: "hangat", details: ["contoh", "kesalahan"], slides: 8, style: "edukatif", font: "aksioma", audience: "Young professionals", objective: "Save + Share", extraNotes: ""},
-  {id: "b-pemula", name: "Edukasi pemula", builtin: true, account: "journey", packaging: "edukasi", tone: "santai", details: ["analogi", "langkah", "glosarium"], slides: 10, style: "edukatif", font: "jakarta", audience: "Pemula", objective: "Save, share dan follow", extraNotes: "Hindari istilah teknis tanpa penjelasan."},
+  {id: "b-mitos", name: "Mitos vs fakta", builtin: true, account: "trader", packaging: "mitos", tone: "hangat", details: ["contoh", "kesalahan"], slides: 8, style: "edukatif", font: "aksioma", audience: "Young professionals", objective: "Save + Share", extraNotes: ""},
+  {id: "b-pemula", name: "Edukasi pemula", builtin: true, account: "trader", packaging: "edukasi", tone: "santai", details: ["analogi", "langkah", "glosarium"], slides: 10, style: "edukatif", font: "jakarta", audience: "Pemula", objective: "Save, share dan follow", extraNotes: "Hindari istilah teknis tanpa penjelasan."},
   {id: "b-checklist", name: "Checklist trading", builtin: true, account: "trader", packaging: "checklist", tone: "tegas", details: ["kesalahan", "diskusi"], slides: 8, style: "seimbang", font: "grotesk", audience: "Trader pemula", objective: "Save", extraNotes: ""},
+  {id: "j-mitos", name: "Mitos vs fakta", builtin: true, account: "journey", packaging: "mitos", tone: "hangat", details: ["contoh", "kesalahan"], slides: 8, style: "edukatif", font: "aksioma", audience: "Young professionals", objective: "Save + Share", extraNotes: ""},
+  {id: "j-pemula", name: "Edukasi pemula", builtin: true, account: "journey", packaging: "edukasi", tone: "santai", details: ["analogi", "langkah", "glosarium"], slides: 10, style: "edukatif", font: "jakarta", audience: "Pemula", objective: "Save, share dan follow", extraNotes: "Hindari istilah teknis tanpa penjelasan."},
 ];
 const presetListeners = new Set();
 const readPresets = () => { try { return localStorage.getItem(PRESET_KEY) || "[]"; } catch { return "[]"; } };
@@ -24,11 +28,12 @@ const chip = (on) => ["min-h-11 rounded-full px-4 py-2 text-sm font-semibold", o
 export default function RemixClient() {
   const [source, setSource] = useState("");
   const [sourceName, setSourceName] = useState("");
-  const [account, setAccount] = useState("journey");
+  const account = useAccount();
   const [packaging, setPackaging] = useState("edukasi");
   const [tone, setTone] = useState("hangat");
   const [details, setDetails] = useState(["contoh", "kesalahan"]);
-  const [audience, setAudience] = useState("Young professionals");
+  const [audiencePick, setAudience] = useState(null);
+  const audience = audiencePick ?? ACCOUNTS[account].audience;
   const [objective, setObjective] = useState("Save, share dan follow");
   const [slides, setSlides] = useState("auto");
   const [style, setStyle] = useState("seimbang");
@@ -41,7 +46,8 @@ export default function RemixClient() {
   const userPresets = (() => { try { const v = JSON.parse(saved); return Array.isArray(v) ? v : []; } catch { return []; } })();
 
   function applyPreset(p) {
-    setAccount(p.account); setPackaging(p.packaging); setTone(p.tone); setDetails(p.details || []);
+    if (isAccountId(p.account) && p.account !== account) setAccount(p.account);
+    setPackaging(p.packaging); setTone(p.tone); setDetails(p.details || []);
     setSlides(p.slides ?? "auto"); setStyle(p.style); setFont(p.font); setAudience(p.audience); setObjective(p.objective); setExtraNotes(p.extraNotes || "");
     setFeedback("Preset \"" + p.name + "\" diterapkan.");
   }
@@ -75,18 +81,17 @@ export default function RemixClient() {
       <div className="mx-auto max-w-[1080px]">
         <header className="flex flex-wrap items-start justify-between gap-4">
           <div>
-            <p className="font-display text-xs font-bold uppercase tracking-[.22em] text-red-600">Aksioma / Adaptasi</p>
-            <h1 className="font-display mt-3 text-3xl font-bold tracking-tight sm:text-5xl">Kemas ulang konten jadi milikmu.</h1>
+            <h1 className="font-display text-3xl font-bold tracking-tight sm:text-5xl">Kemas ulang konten jadi milikmu.</h1>
             <p className="mt-4 max-w-2xl text-base leading-7 text-zinc-600">Tempel artikel, thread, atau transkrip. Pilih kemasan baru dan detail tambahan, lalu salin prompt ke AI. Hasilnya ditulis ulang, bukan disalin.</p>
           </div>
-          <Link href="/studio" className="rounded-full border border-black/15 bg-white px-5 py-3 text-sm font-bold hover:bg-zinc-50">← Studio</Link>
+          <Link href="/studio" className="rounded-full border border-black/15 bg-white px-5 py-3 text-sm font-bold hover:bg-zinc-50">Studio</Link>
         </header>
 
         <section className="mt-8 rounded-[28px] border border-black/10 bg-white p-5 shadow-sm sm:p-8">
           <h2 className="font-display text-lg font-bold">Preset template</h2>
           <p className="mt-1 text-sm text-zinc-600">Satu klik mengisi akun, kemasan, nada, detail, gaya, dan font.</p>
           <div className="mt-3 flex flex-wrap gap-2">
-            {BUILTIN.map((p) => <button key={p.id} type="button" onClick={() => applyPreset(p)} className={chip(false)}>{p.name}</button>)}
+            {BUILTIN.filter((p) => p.account === account).map((p) => <button key={p.id} type="button" onClick={() => applyPreset(p)} className={chip(false)}>{p.name}</button>)}
             {userPresets.map((p) => (
               <span key={p.id} className="inline-flex items-center overflow-hidden rounded-full bg-red-50">
                 <button type="button" onClick={() => applyPreset(p)} className="min-h-11 px-4 py-2 text-sm font-semibold text-red-800">{p.name}</button>
@@ -116,10 +121,7 @@ export default function RemixClient() {
 
         <section className="mt-5 rounded-[28px] border border-black/10 bg-white p-5 shadow-sm sm:p-8">
           <h2 className="font-display text-lg font-bold">2. Kemasan baru</h2>
-          <div className="mt-4 flex flex-wrap gap-2">
-            {["journey", "trader"].map((v) => <button key={v} type="button" aria-pressed={account === v} onClick={() => setAccount(v)} className={chip(account === v)}>Aksioma {v === "trader" ? "Trader" : "Journey"}</button>)}
-          </div>
-          <p className="mt-5 text-sm font-semibold">Gaya kemasan</p>
+          <p className="text-sm font-semibold">Gaya kemasan</p>
           <div className="mt-2 flex flex-wrap gap-2">
             {Object.entries(PACKAGINGS).map(([k, p]) => <button key={k} type="button" aria-pressed={packaging === k} onClick={() => setPackaging(k)} className={chip(packaging === k)}>{p.label}</button>)}
           </div>
@@ -159,8 +161,8 @@ export default function RemixClient() {
           <h2 className="font-display text-lg font-bold">3. Salin prompt</h2>
           <textarea ref={textRef} aria-label="Prompt adaptasi" readOnly value={prompt} onFocus={(e) => e.target.select()} className="mt-4 h-[310px] w-full resize-y rounded-2xl border border-zinc-800 bg-zinc-950 p-4 font-mono text-xs text-zinc-100" />
           <div className="mt-4 flex flex-wrap gap-3">
-            <button type="button" onClick={copy} className="rounded-full bg-red-500 px-6 py-3 font-semibold text-white hover:bg-red-600">Copy prompt adaptasi</button>
-            <Link href="/studio" className="rounded-full bg-zinc-950 px-6 py-3 text-sm font-bold text-white hover:bg-zinc-800">Buka Studio →</Link>
+            <button type="button" onClick={copy} className="rounded-full bg-red-600 px-6 py-3 font-semibold text-white hover:bg-red-700">Copy prompt adaptasi</button>
+            <Link href="/studio" className="rounded-full bg-zinc-950 px-6 py-3 text-sm font-bold text-white hover:bg-zinc-800">Buka Studio</Link>
           </div>
           {feedback ? <p role="status" className="mt-3 rounded-xl bg-zinc-100 p-3 text-sm text-zinc-700">{feedback}</p> : null}
           <p className="mt-3 text-xs text-zinc-500">Setelah AI menjawab, salin JSON-nya, paste di kolom Carousel source Studio, lalu Render carousel.</p>

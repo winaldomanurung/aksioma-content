@@ -3,8 +3,8 @@ import {fontVariableClasses} from "./fonts";
 import SiteNav from "@/components/studio/SiteNav";
 
 export const metadata = {
-  title: "Aksioma Content Studio",
-  description: "React-based carousel studio and JPEG exporter for Aksioma.",
+  title: "Aksioma Content",
+  description: "Studio carousel Aksioma untuk akun Trader dan Journey: dari data, artikel, atau topik menjadi slide siap posting.",
 };
 
 export const viewport = {

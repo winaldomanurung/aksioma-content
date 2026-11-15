@@ -2,7 +2,7 @@
 // Top = yAxis.high, right = xAxis.high.
 export default function Matrix2x2({ xAxis = {}, yAxis = {}, quadrants = [], dark = false, className = "" }) {
   const label = ["text-[17px] font-semibold uppercase tracking-[0.12em]", dark ? "text-zinc-300" : "text-zinc-500"].join(" ");
-  const card = ["rounded-[26px] border p-6", dark ? "border-white/10 bg-white/[0.06] text-white" : "border-black/10 bg-white/60 text-zinc-900"].join(" ");
+  const card = ["lk-card rounded-[26px] border p-6", dark ? "border-white/10 bg-white/[0.06] text-white" : "border-black/10 bg-white/60 text-zinc-900"].join(" ");
   const accent = ["border-red-300", dark ? "bg-red-400/15" : "bg-red-50"].join(" ");
   return (
     <div className={["grid gap-4", className].join(" ")} style={{ gridTemplateColumns: "44px minmax(0,1fr) minmax(0,1fr)" }}>

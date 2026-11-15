@@ -3,7 +3,7 @@ export default function DataTable({ columns = [], rows = [], dark = false, class
   const template = { gridTemplateColumns: "repeat(" + columns.length + ", minmax(0, 1fr))" };
   const border = dark ? "border-white/10" : "border-black/10";
   return (
-    <div className={["overflow-hidden rounded-[26px] border", border, dark ? "text-white" : "text-zinc-900", className].join(" ")}>
+    <div className={["lk-card overflow-hidden rounded-[26px] border", border, dark ? "text-white" : "text-zinc-900", className].join(" ")}>
       <div className={["grid", dark ? "bg-red-400 text-zinc-950" : "bg-red-500 text-white"].join(" ")} style={template}>
         {columns.map((column, i) => (
           <p key={i} className="font-display px-5 py-4 text-[20px] font-bold leading-[1.2]">{column}</p>

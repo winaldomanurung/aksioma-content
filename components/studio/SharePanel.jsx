@@ -3,15 +3,18 @@
 import {useState} from "react";
 import {copyText} from "@/lib/studio/clipboard";
 import {MAX_SHARE_FILES,canShareFiles,captionFor,shareCarousel,shareEnvironment} from "@/lib/studio/post-kit";
+import {useBrand} from "@/lib/studio/brand";
+import {isAccountId} from "@/lib/studio/accounts";
 import {downloadBlob} from "@/lib/studio/export-browser";
 
 // Hands the exported JPEGs and caption to the phone's share sheet (pick
 // Instagram or TikTok there), or lets the person copy the caption and upload
 // manually. Direct API posting needs each platform's app review, so it is not
 // attempted from the browser.
-export default function SharePanel({files,meta,platform,working=false,onPrepare}){
+export default function SharePanel({files,meta,slides,platform,working=false,onPrepare}){
+  const brand=useBrand(isAccountId(meta?.account)?meta.account:undefined);
   const [message,setMessage]=useState("");
-  const caption=captionFor(meta,platform);
+  const caption=captionFor(meta,platform,slides,brand);
   const asFiles=(files||[]).map(f=>new File([f.blob],f.name.split("/").pop(),{type:"image/jpeg"}));
   const tooMany=asFiles.length>MAX_SHARE_FILES;
   const shareable=!tooMany&&canShareFiles(asFiles);
@@ -52,14 +55,14 @@ export default function SharePanel({files,meta,platform,working=false,onPrepare}
       <ol className="mt-2 list-decimal space-y-1 pl-5 text-xs leading-5 text-zinc-700">
         <li>{tooMany?"Simpan semua gambar ke ponsel, lalu pilih dari galeri di aplikasi.":"Bagikan "+(files?files.length:"semua")+" gambar langsung ke aplikasi (di ponsel), atau simpan lalu unggah manual."}</li>
         <li>Salin caption dan hashtag, lalu tempel saat membuat postingan.</li>
-        <li>{platform==="tiktok"?"Di TikTok pilih Photo Mode, lalu cek safe area sebelum publish.":"Di Instagram pilih Postingan → Pilih banyak, urutkan sesuai nomor slide."}</li>
+        <li>{platform==="tiktok"?"Di TikTok pilih Photo Mode, lalu cek safe area sebelum publish.":"Di Instagram pilih Postingan, lalu Pilih banyak, urutkan sesuai nomor slide."}</li>
       </ol>
       <div className="mt-3 flex flex-wrap gap-2">
         {!files?<button type="button" onClick={onPrepare} disabled={working} className="min-h-11 rounded-full bg-zinc-950 px-5 py-2.5 text-sm font-bold text-white hover:bg-zinc-800 disabled:opacity-50">{working?"Menyiapkan…":"1. Siapkan gambar"}</button>:null}
         <button type="button" onClick={()=>share()} disabled={!shareable||!files} className="min-h-11 rounded-full bg-emerald-700 px-5 py-2.5 text-sm font-bold text-white hover:bg-emerald-800 disabled:opacity-40">{files?"Bagikan ke aplikasi":"2. Bagikan ke aplikasi"}</button>
-        {files&&tooMany?<button type="button" onClick={saveAll} className="min-h-11 rounded-full bg-emerald-700 px-5 py-2.5 text-sm font-bold text-white hover:bg-emerald-800">Simpan semua gambar ↓</button>:null}
+        {files&&tooMany?<button type="button" onClick={saveAll} className="min-h-11 rounded-full bg-emerald-700 px-5 py-2.5 text-sm font-bold text-white hover:bg-emerald-800">Simpan semua gambar</button>:null}
         <button type="button" onClick={copy} className="min-h-11 rounded-full border border-emerald-700 px-5 py-2.5 text-sm font-semibold text-emerald-900">Salin caption</button>
-        <a href={platform==="tiktok"?"https://www.tiktok.com/upload":"https://www.instagram.com/"} target="_blank" rel="noreferrer" className="inline-flex min-h-11 items-center rounded-full border border-black/15 px-5 py-2.5 text-sm font-semibold text-zinc-800">Buka {platform==="tiktok"?"TikTok":"Instagram"} ↗</a>
+        <a href={platform==="tiktok"?"https://www.tiktok.com/upload":"https://www.instagram.com/"} target="_blank" rel="noreferrer" className="inline-flex min-h-11 items-center rounded-full border border-black/15 px-5 py-2.5 text-sm font-semibold text-zinc-800">Buka {platform==="tiktok"?"TikTok":"Instagram"}</a>
       </div>
       {!files?<p className="mt-2 text-xs leading-5 text-zinc-500">Tekan “Siapkan gambar” dulu; setelah selesai tombol Bagikan aktif.</p>:null}
       {files&&tooMany?<p className="mt-2 text-xs leading-5 text-amber-800">Menu bagikan peramban membatasi {MAX_SHARE_FILES} file sekali kirim, sedangkan carousel ini {asFiles.length} gambar. Tekan “Simpan semua gambar”, lalu di {platform==="tiktok"?"TikTok":"Instagram"} pilih semua gambar dari galeri sesuai urutan. Atau kurangi menjadi {MAX_SHARE_FILES} slide agar bisa dibagikan langsung.</p>:null}

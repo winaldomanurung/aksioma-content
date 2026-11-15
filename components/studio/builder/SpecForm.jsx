@@ -4,6 +4,7 @@ import {backgroundThemes} from "@/lib/studio/assets";
 import {ALL_SPECS,TIER_LENGTHS,charLimit,fieldCountLimits} from "@/lib/studio/component-specs";
 import {CHILD_TYPES,clone} from "@/lib/studio/builder";
 import ImagePicker from "@/components/studio/ImagePicker";
+import Icon from "@/components/studio/Icon";
 
 const inputClass="mt-1 w-full rounded-lg border border-black/15 bg-white px-3 py-2 text-sm text-zinc-900 outline-none focus:border-red-400";
 const NODE_CHOICES=Object.keys(ALL_SPECS).filter(name=>ALL_SPECS[name].kind!=="slide");
@@ -97,7 +98,7 @@ function ListField({field,value,onChange,ctx,label}){
                       <div className="mt-1">{counterFor(field,item)}</div></div>
                   : <Fields fields={field.item} value={item||{}} onChange={v=>update(i,v)} ctx={{...ctx,path:(ctx.path||"")+field.key+i+"."}}/>}
               </div>
-              <button type="button" onClick={()=>remove(i)} aria-label={"Hapus item "+(i+1)} className="rounded-full px-2 py-1 text-xs text-red-700 hover:bg-red-50">✕</button>
+              <button type="button" onClick={()=>remove(i)} aria-label={"Hapus item "+(i+1)} className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-full text-red-700 hover:bg-red-50"><Icon name="close" size={16}/></button>
             </div>
           </li>
         ))}
@@ -130,9 +131,9 @@ function NodeList({field,value,onChange,ctx,label}){
                   {choices.map(type=><option key={type} value={type}>{ALL_SPECS[type].label}</option>)}
                 </select>
                 <span className="ml-auto flex gap-1">
-                  <button type="button" onClick={()=>move(i,-1)} aria-label="Naik" className="rounded-full px-2 py-1 text-xs hover:bg-white">↑</button>
-                  <button type="button" onClick={()=>move(i,1)} aria-label="Turun" className="rounded-full px-2 py-1 text-xs hover:bg-white">↓</button>
-                  <button type="button" onClick={()=>remove(i)} aria-label="Hapus" className="rounded-full px-2 py-1 text-xs text-red-700 hover:bg-red-50">✕</button>
+                  <button type="button" onClick={()=>move(i,-1)} aria-label="Naik" className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-full hover:bg-white"><Icon name="chevron-down" size={16} className="rotate-180"/></button>
+                  <button type="button" onClick={()=>move(i,1)} aria-label="Turun" className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-full hover:bg-white"><Icon name="chevron-down" size={16}/></button>
+                  <button type="button" onClick={()=>remove(i)} aria-label="Hapus" className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-full text-red-700 hover:bg-red-50"><Icon name="close" size={16}/></button>
                 </span>
               </div>
               {spec?<Fields fields={spec.fields.filter(f=>f.type!=="nodes"&&!(field.type==="children"&&f.type==="children"))} value={node} onChange={v=>update(i,{...v,type:node.type})} ctx={{...ctx,path:(ctx.path||"")+field.key+i+"."}}/>:null}

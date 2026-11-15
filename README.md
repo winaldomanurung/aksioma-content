@@ -1,6 +1,16 @@
-# Aksioma Content Studio
+# Aksioma Content
 
-Aksioma Content Studio membuat carousel dari satu source JSX lalu mengekspornya menjadi JPEG untuk Instagram dan TikTok.
+Satu studio carousel untuk dua akun Aksioma:
+
+- **Trader**: finance, saham, dan pasar. Punya komponen saham, kerangka baku (perbandingan, scorecard, swing, broker summary, edukasi istilah), Laporan Pasar, dan Impor Saham.
+- **Journey**: topik umum seperti AI dan pengembangan diri. Slide isi mendapat dekorasi otomatis, cover dan penutup memakai identitas Journey.
+
+Ganti akun lewat tombol Trader / Journey di bar atas. Akun sebuah carousel tersimpan di `meta.account`.
+
+Repo ini adalah gabungan `stock-analysis` (basis kode) dan `aksioma-content` lama. Semua fitur keduanya ada di sini; bila ada yang bertabrakan, versi `stock-analysis` yang dipakai. Tiga komponen yang dulu hanya ada di `aksioma-content` (`pollCard`, `collage`, `avatarQuote`) sudah dipindahkan.
+
+Studio membuat carousel dari satu source JSON/JSX lalu mengekspornya menjadi JPEG untuk Instagram dan TikTok.
+
 
 ## Fitur utama
 
@@ -21,6 +31,27 @@ Aksioma Content Studio membuat carousel dari satu source JSX lalu mengekspornya 
 2. Paste JSON (`{"version":1,"meta":{...},"slides":[...]}`) di `/studio`, tekan **Render carousel**.
 3. Jalankan **Cek kualitas** (menandai slide yang tidak muat), lalu unduh.
 
+### Editor Carousel source dan daftar masalah
+
+- Editor memakai CodeMirror 6: highlight JSON, nomor baris, lipat/buka blok, cari (Ctrl/Cmd+F), undo.
+- Setiap slide diberi **header** (`SLIDE 03 · freeform · judul`) dan pita warna kiri yang berganti merah/biru, jadi batas slide 1, 2, 3 dst. langsung terlihat. Klik header untuk melipat slide itu; tombol **Lipat semua** menampilkan source sebagai daftar slide. Baris **Lompat ke slide** di atas editor membawa kursor dan preview ke slide yang dipilih; memindah kursor di source juga memindah preview.
+- Validasi berjalan otomatis saat mengetik (dan saat **Render carousel**). Semua masalah ditampilkan sekaligus, bukan satu per satu: digaris bawah di editor, ditandai di gutter, dihitung di header slide dan chip slide (⚠), dan didaftar di bawah tombol. **Klik masalah** untuk memilih teks yang salah di source dan membuka slide terkait di preview.
+- Pesan menyebut nilai yang diizinkan dan nilai sekarang (mis. `density harus salah satu dari "airy", "balanced", "compact", "bold" (sekarang "medium")`, `disclaimerText terlalu panjang (maksimal 90 karakter, sekarang 111)`). JSON rusak ditunjukkan barisnya beserta sebab umum (trailing comma, kutip tunggal/miring, komentar, pembungkus ```json).
+- Kode: `lib/studio/source-lint.js` (validasi → lokasi), `scanSource`/`slideOutline` di `lib/studio/source-edit.js`, `components/studio/SourceEditor.jsx`.
+
+### Prompt AI baku
+
+Semua prompt (Template AI, preset Scorecard/Perbandingan/Swing/Broker/Edukasi, Adaptasi) dibuat oleh `makeAiPrompt` dengan bagian bernomor §0–§8 dan urutan prioritas eksplisit (§0 format > §3 kontrak field > §4 skema > §5 kapasitas > tugas/bahasa > contoh). **§3 KONTRAK FIELD dibuat otomatis** oleh `lib/studio/prompt-contract.js` dari konstanta yang sama dengan validator (`SCHEMA_RULES`, `*_LIMITS`, `charLimit`), jadi daftar enum dan batas karakter di prompt tidak bisa berbeda dari yang diterima Studio. Saat menambah field, enum, atau batas baru: ubah konstantanya (bukan teks prompt) dan tambahkan barisnya di `prompt-contract.js` bila field itu baru.
+
+### Dari chat Claude langsung ke Studio (tanpa copy-paste)
+
+Skill Claude `jadikan-carousel-stock` mengubah materi di chat menjadi carousel lalu membalas dengan link `Buka di Studio`.
+
+- `GET /api/prompt?delivery=link[&preset=..&style=..&slides=..&look=..&font=..]` mengembalikan prompt Studio terbaru (dibuat dari konstanta yang sama dengan tombol Salin prompt) ditambah §9 cara mengirim lewat link. `GET /api/prompt?options=1` menampilkan nilai yang tersedia.
+- `POST /api/check` (body JSON carousel) menjalankan validator Render, peringatan kapasitas/angka, dan pemeriksa layout "Periksa sekarang" untuk Instagram dan TikTok di headless Chromium (`@sparticuz/chromium` di Vercel, lewat halaman `/studio/layout-check`). Respons: `ok`, `errors` (skema, teks terpotong/bertabrakan), `layoutIssues` (slide kosong/diperkecil), `warnings`, `link`. `?layout=0` melewati cek layout. `GET /api/check?c=<payload>` memberi hasil yang sama dalam teks biasa.
+- Link Studio: `/studio#c=<payload>`, dengan `payload = base64url(deflate-raw(JSON))` tanpa `=` (lihat `lib/studio/link-codec.js`). Data ada setelah `#`, jadi tidak terkirim ke server. Studio membuka link, merender, menyimpannya sebagai draft, lalu menjalankan cek layout otomatis.
+- Agar Claude bisa memanggil `/api/check` dari code execution, tambahkan domain deployment ke allowed domains code execution di Settings Claude. Tanpa itu skill memakai web fetch, lalu link langsung sebagai cadangan.
+
 ### Font lokal dan pilihan font
 
 Font dimuat lokal lewat `next/font/local` (`app/fonts.js`, berkas di `app/fonts/*.woff2`), tanpa permintaan ke Google Fonts sehingga build dan export berjalan offline. Lisensi (SIL OFL) ada di `app/fonts/LICENSES.md`, yang juga menjelaskan cara menambah font.
@@ -35,6 +66,27 @@ Preset font konten ada di `lib/studio/fonts.js`, dipilih di Studio dan disimpan 
 | `grotesk` | Teknis | Space Grotesk / Inter |
 
 Logo cover/CTA tetap memakai font Aksioma. Font yang lebih lebar bisa memotong slide padat, jadi jalankan **Cek kualitas** setelah mengganti font.
+
+## Brand Kit, disclaimer, sumber otomatis, dan Cek angka
+
+- **Brand Kit** (`/studio/brand`, menu Pustaka): handle, situs, disclaimer, hashtag tetap, serta tampilan dan font bawaan. Disimpan di `localStorage` browser ini (`aksioma-brand-kit-v1`), bukan di JSON carousel, jadi JSON tetap portabel. Ekspor/impor JSON untuk pindah perangkat. Logo cover/CTA tetap logo Aksioma.
+- Cover dan CTA memakai handle dan situs dari kit. Slide CTA akhir menampilkan disclaimer (bisa dimatikan di kit).
+- `meta.look` dan `meta.font` pada carousel menang atas bawaan kit; bila tidak ada, kit yang berlaku.
+- **Caption** (tombol Salin caption, panel Bagikan, dan `captions.txt` di ZIP) otomatis memuat: isi caption, disclaimer (bila caption belum memuat kalimat sejenis), `Sumber:` dari `sources` semua slide (nama penyedia sebelum koma, tanpa duplikat), lalu hashtag carousel + hashtag kit tanpa duplikat. Tiap bagian bisa dimatikan di kit.
+- **Cek angka** (panel Periksa layout, otomatis): angka di `meta.hook`/`meta.title` yang tidak muncul di slide, label yang sama dengan nilai berbeda antarslide, `tone` yang berlawanan dengan tanda angka, urutan `priceLevels` dan posisi stop/target terhadap entry, rentang terbalik, serta "X dari N" di judul yang tidak cocok dengan `signalGrid`. Tidak memeriksa kebenaran data terhadap sumber.
+
+## Tampilan (look)
+
+Gaya visual alternatif untuk komponen yang sama. Didefinisikan di `lib/studio/looks.js`, dipilih di Studio (panel "Pilih tampilan konten") atau Template AI, dan disimpan di `meta.look`. `CarouselCanvas` menulisnya sebagai `data-look`, jadi preview dan export memakai DOM dan CSS yang sama.
+
+| id | Nama | Ciri |
+| --- | --- | --- |
+| `classic` (default) | Classic | Tampilan Aksioma saat ini |
+| `glass` | Glass Neon | Latar mesh gradient, kartu kaca semi-transparan, aksen neon (cocok untuk tema gelap) |
+| `brutal` | Neo-brutal | Warna solid + pola titik, border tegas, shadow keras (cocok untuk tema terang) |
+| `terminal` | Terminal | Grid tipis, sudut kecil, aksen hijau fosfor dan amber, cocok untuk data dan sinyal; padukan dengan font Teknis bila mau |
+
+Aturan menambah look baru: hanya ubah warna, latar, `border-color`, `box-shadow`, dan radius di blok "Looks" `app/globals.css`. Jangan ubah width/height/padding/font-size/border-width, karena anggaran tinggi komponen dihitung dari ukuran classic. Setelah mengubah CSS look, ekspor contoh preset dan pastikan preflight tetap bersih.
 
 ### Stock List (daftar saham)
 
@@ -58,23 +110,38 @@ Semua berukuran tetap sehingga muat satu slide di bawah `slideHeading`, dan hany
 | `tradePlan` | 1–3 skenario `bull`/`base`/`bear` dengan pemicu, target, catatan, dan satu baris risiko. |
 | `marketRank` | 1–6 baris peringkat (kode, bar proporsional, nilai, perubahan %), nada warna `up`/`down`/`neutral`. Dipakai oleh Laporan Pasar. |
 | `eventCalendar` | 1–6 agenda dengan tanggal, judul, label, dan catatan. |
+| `statSnapshot` | 1–6 metrik kunci (yield, expense ratio, AUM, PER) dengan angka besar, keterangan, dan warna `up`/`down`. 1–4 kartu tampil lebih tinggi. |
+| `signalGrid` | 1–6 bacaan indikator dengan lencana arah `up`/`down`/`flat`, nama, dan bacaan singkat. |
+| `priceLevels` | 2–6 level harga (`entry`, `target`, `stop`, `support`, `resistance`) dari tertinggi ke terendah; satu item bisa `current: true`. |
+| `returnBars` | 1–3 kelompok batang horizontal (maks 4 per kelompok, 10 total) dengan nilai bertanda; negatif otomatis merah. |
+| `compareCards` | Dua kartu kontras setinggi isinya (label, angka besar, 1–3 poin, lencana tengah `delta`). Tidak melebar; pasangkan dengan `signalGrid`/`statSnapshot`/callout di bawahnya. |
+| `sparkCards` | Kartu metrik dengan angka besar dan garis tren kecil (`points` 4–30 angka nyata; warna mengikuti arah garis). 1–6 kartu. |
+| `gauge` | Cincin skor/persentase 0–100 dengan teks tengah, label, dan catatan. 1–4 gauge. |
+| `rangeBars` | Posisi nilai sekarang di antara low dan high (rentang 52 minggu, harian). 1–5 baris; `low < current ≤ high`. |
+| `heatmap` | Kotak berwarna menurut persentase perubahan (sektor atau saham). 4–12 kotak. |
+| `footballField` | Rentang nilai wajar per metode pada satu sumbu dengan garis harga sekarang. 2–5 metode; asal tiap rentang wajib ada di `sources`. |
+| `verdictCard` | Kesimpulan: sinyal (`buy`/`accumulate`/`hold`/`watch`/`sell`), judul, penjelasan, maks 3 alasan, satu peringatan. |
+
+**Ukuran adaptif.** Tinggi baris komponen di atas menyesuaikan jumlah item dan ada tidaknya blok pendamping (callout, textBlock, extras, sumber), jadi 3 baris pun mengisi slide. Aturan praktis: sendirian isi minimal 3 item (`statSnapshot` minimal 4, `returnBars` minimal 4 batang); berpasangan dengan satu callout/textBlock pakai maksimal 4 item (`returnBars` maksimal 6 batang). Pemeriksa kualitas memberi peringatan bila aturan ini dilanggar.
 
 Batas karakter lengkap ada di `lib/studio/market.js` dan `lib/studio/stock.js`; kontrak untuk AI ada di `app/carousel/demo/page.jsx`.
 
 ### Format Laporan Pasar
 
 ```text
-Market & Foreign Flow Report Penutupan Sesi Kedua | 16 Oct 2026
+Market Report akhir sesi
 
-IHSG mengalami penurunan 11.57% dimotori oleh pembelian Investor Lokal sebesar 3.39 Triliun Rupiah.
+IHSG mengalami kenaikan 5.65% yang dimotori oleh pembelian investor lokal sebesar 2.13 Triliun Rupiah.
+
+Berikut report penutupan sesi kedua:
 
 Top Foreign Buy
-GOTO, 291.5M / -7.4%
+TLKM, 255M
 Top Gainer
-TRUK, 24.8%
+TRUK, 25%
 ```
 
-Judul harus memuat `Report` dan `|` tanggal. Setiap bagian `Top ...` berisi baris `KODE, nilai / persen` atau `KODE, persen` (maks 6 baris per daftar). Angka ditampilkan persis seperti data (format Indonesia: `1.234,5`). Nilai negatif pada Local Buy ditampilkan apa adanya dengan peringatan. Logika ada di `lib/studio/market-report.js`.
+Judul diawali `Market ... Report`; laporan tidak perlu memuat tanggal. Tanggal otomatis diisi hari ini (WIB) dan bisa diubah lewat kolom "Tanggal laporan" di halaman. Judul lama dengan `| 16 Oct 2026` tetap terbaca (tanggal dari judul dipakai bila tanggal tidak diubah manual). Keterangan sumber di judul (`by www...`) dibuang otomatis dan tidak muncul di carousel. Nama sesi diambil dari kalimat "Berikut report ...". Setiap bagian `Top ...` berisi baris `KODE, nilai / persen` atau `KODE, persen` (maks 6 baris per daftar). Angka ditampilkan persis seperti data (format Indonesia: `1.234,5`). Nilai negatif pada Local Buy ditampilkan apa adanya dengan peringatan. Logika ada di `lib/studio/market-report.js`.
 
 ### Preset template
 
@@ -232,13 +299,13 @@ Contoh:
 const postMeta = {
   title: "Judul internal konten",
   objective: "Save + share",
-  contentPillar: "Critical Thinking",
+  contentPillar: "Analisis Saham",
   hook: "Hook utama yang menjadi alasan orang berhenti scroll.",
   instagramCaption: "Caption Instagram...",
   tiktokCaption: "Caption TikTok...",
   cta: "Ajakan tindakan utama.",
-  hashtags: ["Aksioma", "CriticalThinking"],
-  keywords: ["critical thinking", "logic"],
+  hashtags: ["Saham", "AnalisisSaham"],
+  keywords: ["saham", "teknikal"],
   notes: "Catatan posting atau eksperimen yang ingin diuji.",
 };
 
@@ -429,7 +496,7 @@ Every asset card explains its semantic use and provides copyable JSON.
 Background themes are restricted to freeform and automatically select
 light or dark foreground/card styles; legacy presets remain unchanged.
 
-The persistent top menu links Home, Studio, Template AI, Asset Library,
+The persistent top menu links Home, Studio, Template Bebas, Perbandingan Saham, Scorecard Saham, Asset Library,
 and Demo JSX. It is outside the slide canvas, so JPEG excludes the menu.
 
 Download first attempts locally bundled dom-to-image. If that fails,
@@ -440,3 +507,20 @@ public/vendor/dom-to-image-LICENSE.txt.
 Browser support varies, especially Safari foreignObject. A successful
 Vercel build alone cannot verify JPEG export on every device.
 Use Playwright export locally if both browser methods fail.
+
+## Preset jenis konten
+
+Tiap jenis konten punya halaman sendiri di menu bar, sehingga tidak perlu memilih jenis dan tidak bisa salah pilih:
+
+| Menu | Rute | Isi |
+| --- | --- | --- |
+| Template Bebas | `/studio/template` | AI memilih struktur sendiri sesuai topik |
+| Perbandingan Saham | `/studio/compare` | Preset 2 saham: isi dua kode saham, kerangka baku |
+| Scorecard Saham | `/studio/scorecard` | Preset 1 saham: isi satu kode saham, kerangka baku |
+| Contoh Hasil | `/studio/demo` | Galeri hasil jadi tiap preset (ganti tampilan, perbesar slide, buka di Studio) |
+| Swing Trade Plan | `/studio/swing` | Preset 1 saham: tren, level kunci, skenario, hitungan risiko, syarat entry |
+| Broker Summary | `/studio/broker` | Preset 1 saham: top beli, top jual, bacaan akumulasi/distribusi (tempel data broker di catatan) |
+| Edukasi Istilah | `/studio/edukasi` | Preset satu istilah: definisi, contoh hitungan, cara kerja, mitos dan fakta |
+| Laporan Pasar | `/studio/report` | Ringkasan pasar harian (top gainer, loser, foreign flow) tanpa AI |
+
+Preset mengunci kerangka (urutan slide, komponen, jumlah item, anggaran tinggi) sehingga AI hanya mengisi data dan interpretasi. Definisi dan rute halaman ada di `lib/studio/presets.js` (`CONTENT_PRESETS`, `PRESET_PAGES`); setiap preset punya contoh emas yang lolos pemeriksa layout (`example-nvda-amd.js`, `example.js`). Preset adalah jalan pintas, bukan template wajib.

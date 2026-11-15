@@ -1,6 +1,7 @@
 "use client";
 
 import {useEffect,useState} from "react";
+import {emptyThreshold} from "@/lib/studio/slide-metrics";
 
 // Measures how much of the content area the selected slide actually uses (real
 // layout, after fonts load) and explains how to fix a half-empty slide.
@@ -27,7 +28,7 @@ export default function FillHint({containerRef,slide,watch}){
     if(document.fonts?.ready)document.fonts.ready.then(start);else start();
     return()=>{cancelled=true;cancelAnimationFrame(frame);};
   },[containerRef,watch]);
-  if(!slide||!LAYOUT_TYPES.has(slide.type)||slide.vertical==="stretch"||fill===null||fill>=0.6)return null;
+  if(!slide||!LAYOUT_TYPES.has(slide.type)||slide.vertical==="stretch"||fill===null||fill>=emptyThreshold(slide))return null;
   const percent=Math.round(fill*100);
   return (
     <div role="status" data-fill-hint className="mt-3 rounded-xl border border-sky-300 bg-sky-50 p-3 text-xs leading-5 text-sky-900">

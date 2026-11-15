@@ -1,4 +1,11 @@
 import SlideShell from "./SlideShell";
+import { ARROW, snakeColumns, snakeLayout } from "./snake";
+
+// Chain: up to 4 steps stay on one line; 5+ wrap three per line and snake
+// (line 2 runs right-to-left) so every arrow points at the next step.
+function chainPerLine(n) {
+  return n <= 4 ? n : 3;
+}
 
 export default function CauseEffectSlide({
   slide,
@@ -17,6 +24,7 @@ export default function CauseEffectSlide({
   decorations,
   theme,
 }) {
+  const chainLayout = snakeLayout(chain.length, chainPerLine(chain.length));
 
   return (
     <SlideShell
@@ -60,21 +68,33 @@ export default function CauseEffectSlide({
           {chainCaption ? <span className="cause-effect-chain-caption">{chainCaption}</span> : null}
         </div>
 
-        <div className="cause-effect-chain-grid">
-          {chain.map((item, index) => (
-            <div key={index} className="cause-effect-step">
-              <div className="cause-effect-step-top">
-                <span className="cause-effect-step-index">{String(index + 1).padStart(2, "0")}</span>
-                <span className="cause-effect-step-dot" aria-hidden="true" />
+        <div
+          className="cause-effect-chain-grid"
+          data-count={chainLayout.cells.length}
+          style={{ gridTemplateColumns: snakeColumns(chainLayout.perLine, "var(--chain-gap, 36px)") }}
+        >
+          {chainLayout.cells.map((cell) => {
+            const item = chain[cell.index];
+            return (
+              <div key={"s" + cell.index} className="cause-effect-step" style={{ gridColumn: cell.gridColumn, gridRow: cell.gridRow }}>
+                <div className="cause-effect-step-top">
+                  <span className="cause-effect-step-index">{String(cell.index + 1).padStart(2, "0")}</span>
+                  <span className="cause-effect-step-dot" aria-hidden="true" />
+                </div>
+                <h3 className="cause-effect-step-title">{item.title}</h3>
+                {item.note ? <p className="cause-effect-step-note">{item.note}</p> : null}
               </div>
-              <h3 className="cause-effect-step-title">{item.title}</h3>
-              {item.note ? <p className="cause-effect-step-note">{item.note}</p> : null}
-
-              {index < chain.length - 1 ? (
-                <span className="cause-effect-step-connector" aria-hidden="true">
-                  →
-                </span>
-              ) : null}
+            );
+          })}
+          {chainLayout.connectors.map((conn) => (
+            <div
+              key={"a" + conn.from}
+              className="cause-effect-step-link"
+              data-kind={conn.kind}
+              style={{ gridColumn: conn.gridColumn, gridRow: conn.gridRow }}
+              aria-hidden="true"
+            >
+              <span className="cause-effect-step-connector">{ARROW[conn.kind]}</span>
             </div>
           ))}
         </div>

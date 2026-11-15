@@ -1,9 +1,11 @@
-import {PLAN_KINDS} from "@/lib/studio/market";
+import {PLAN_KINDS, FULL_BUDGET, rowFit} from "@/lib/studio/market";
 
 // Scenario plan: up / base / down cases with a trigger, optional target, and a risk line.
-export default function TradePlan({ticker, scenarios = [], risk, dark = false, className = ""}) {
+export default function TradePlan({ticker, scenarios = [], risk, budget = FULL_BUDGET, dark = false, className = ""}) {
+  // ticker line (about 44) and risk box (about 100) are fixed; the cards take the rest.
+  const cardBudget = budget - (ticker ? 56 : 0) - (risk ? 140 : 0);
   return (
-    <div className={["mkt mkt-plan", className].join(" ")} data-dark={dark ? "true" : "false"}>
+    <div className={["mkt mkt-plan", className].join(" ")} data-dark={dark ? "true" : "false"} style={rowFit(scenarios.length, cardBudget, {base: 172, gap: 14, min: 0.74, max: 1.5})}>
       {ticker ? <p className="mkt-plan-ticker">{ticker}</p> : null}
       {scenarios.map((s, i) => {
         const kind = PLAN_KINDS[s.kind] ? s.kind : "base";

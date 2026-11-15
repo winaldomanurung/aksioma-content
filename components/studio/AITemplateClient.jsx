@@ -2,21 +2,37 @@
 
 import Link from "next/link";
 import {useRef,useState} from "react";
-import {makeAiPrompt,starterJson,STYLE_PRESETS} from "@/lib/studio/ai-guide";
+import {makeAiPrompt,starterJsonFor,STYLE_PRESETS} from "@/lib/studio/ai-guide";
+import {ACCOUNTS} from "@/lib/studio/accounts";
+import {useAccount} from "@/lib/studio/account-store";
+import {CONTENT_PRESETS,PRESET_PAGES} from "@/lib/studio/presets";
+import {LOOK_PRESETS,LOOK_IDS,DEFAULT_LOOK} from "@/lib/studio/looks";
+import {useBrand} from "@/lib/studio/brand";
 import {copyText} from "@/lib/studio/clipboard";
 
-export default function AITemplateClient(){
-  const [topic,setTopic]=useState("");
-  const [account,setAccount]=useState("journey");
-  const [audience,setAudience]=useState("Young professionals");
+// `preset` mengunci jenis konten (halaman khusus di menu bar); "bebas" = Template AI umum.
+export default function AITemplateClient({preset="bebas"}){
+  const page=PRESET_PAGES[preset]||null;
+  const [topicText,setTopic]=useState("");
+  const [fields,setFields]=useState({});
+  const [notes,setNotes]=useState("");
+  const topic=page?(page.topic(fields)+(notes.trim()?"\n"+notes.trim():"")):topicText;
+  // Kerangka baku (halaman khusus) semuanya untuk konten saham, jadi selalu akun Trader.
+  const active=useAccount();
+  const account=page?"trader":active;
+  const [audiencePick,setAudience]=useState(null);
+  const audience=audiencePick??ACCOUNTS[account].audience;
   const [objective,setObjective]=useState("Save, share dan follow");
   const [slides,setSlides]=useState("auto");
   const [style,setStyle]=useState("seimbang");
+  const brand=useBrand(account);
+  const [lookPick,setLook]=useState(null);
+  const look=lookPick??brand.look;
   const [feedback,setFeedback]=useState("");
   const [tab,setTab]=useState("prompt");
   const textRef=useRef(null);
-  const prompt=makeAiPrompt({topic,audience,objective,slides,account,style});
-  const content=tab==="prompt"?prompt:JSON.stringify({...JSON.parse(starterJson),meta:{...JSON.parse(starterJson).meta,account}},null,2);
+  const prompt=makeAiPrompt({topic,audience,objective,slides,account,style,preset,look});
+  const content=tab==="prompt"?prompt:starterJsonFor(account);
 
   async function copy(value){
     try{
@@ -36,33 +52,44 @@ export default function AITemplateClient(){
       <div className="mx-auto max-w-[1080px]">
         <header className="flex flex-wrap items-start justify-between gap-4">
           <div>
-            <p className="font-display text-xs font-bold uppercase tracking-[.22em] text-red-600">Aksioma / AI Template</p>
-            <h1 className="font-display mt-3 text-3xl font-bold tracking-tight sm:text-5xl">Sekali copy, langsung buat konten.</h1>
-            <p className="mt-4 max-w-2xl text-base leading-7 text-zinc-600">Isi topik, salin prompt lengkap, lalu paste ke ChatGPT. Semua aturan komponen, struktur JSON, dan contoh sudah tergabung otomatis.</p>
+            <h1 className="font-display text-3xl font-bold tracking-tight sm:text-5xl">{page?page.title:"Sekali copy, langsung buat konten."}</h1>
+            <p className="mt-4 max-w-2xl text-base leading-7 text-zinc-600">{page?page.lead:"Isi topik, salin prompt lengkap, lalu paste ke ChatGPT. Semua aturan komponen, struktur JSON, dan contoh sudah tergabung otomatis."}</p>
           </div>
           <div className="flex flex-wrap gap-2">
-            <Link href="/studio/assets" className="rounded-full border border-black/15 bg-white px-5 py-3 text-sm font-bold hover:bg-zinc-50">Asset Library ↗</Link>
-            <Link href="/studio" className="rounded-full border border-black/15 bg-white px-5 py-3 text-sm font-bold hover:bg-zinc-50">← Kembali ke Studio</Link>
+            <Link href="/studio/assets" className="rounded-full border border-black/15 bg-white px-5 py-3 text-sm font-bold hover:bg-zinc-50">Asset Library</Link>
+            <Link href="/studio" className="rounded-full border border-black/15 bg-white px-5 py-3 text-sm font-bold hover:bg-zinc-50">Kembali ke Studio</Link>
           </div>
         </header>
 
         <section className="mt-8 rounded-[28px] border border-black/10 bg-white p-5 shadow-sm sm:p-8">
           <div className="mb-5 flex items-center gap-3">
-            <span className="font-display flex h-10 w-10 items-center justify-center rounded-xl bg-red-500 font-bold text-white">01</span>
+            <span className="font-display flex h-10 w-10 items-center justify-center rounded-xl bg-red-600 font-bold text-white">01</span>
             <div><h2 className="font-display text-lg font-bold">Brief konten</h2><p className="text-sm text-zinc-500">Cukup isi topik; lainnya bisa dibiarkan.</p></div>
           </div>
-          <div className="mb-5 flex flex-wrap gap-2">
-            {["journey","trader"].map(value=><button key={value} type="button" aria-pressed={account===value} onClick={()=>setAccount(value)}
-              className={["rounded-full px-5 py-3 text-sm font-bold",account===value?(value==="trader"?"bg-blue-800 text-white":"bg-red-500 text-white"):"bg-zinc-100 text-zinc-700"].join(" ")}>
-              Aksioma {value==="trader"?"Trader":"Journey"}
-            </button>)}
-          </div>
-          <p className="mb-5 text-xs text-zinc-600">Prompt dan identitas cover/CTA mengikuti akun yang dipilih. Pilihan akun juga dapat diubah di Studio.</p>
           <div className="grid gap-4 sm:grid-cols-2">
+            {page?(
+              <>
+                {page.fields.map(f=>(
+                  <label key={f.key}>
+                    <span className="text-sm font-semibold">{f.label}</span>
+                    <input value={fields[f.key]||""} onChange={event=>setFields(prev=>({...prev,[f.key]:event.target.value}))} placeholder={f.placeholder} autoCapitalize="characters" className="mt-2 w-full rounded-xl border border-black/15 bg-[#f9f7f3] px-4 py-3 text-base uppercase outline-none placeholder:normal-case focus:border-red-400"/>
+                  </label>
+                ))}
+                <label className="sm:col-span-2">
+                  <span className="text-sm font-semibold">Catatan atau sumber data (opsional)</span>
+                  <textarea value={notes} onChange={event=>setNotes(event.target.value)} rows={3} placeholder="Contoh: pakai data penutupan 16 Okt 2026 dari laporan kuartalan; fokus ke valuasi." className="mt-2 w-full resize-y rounded-xl border border-black/15 bg-[#f9f7f3] px-4 py-3 text-base outline-none focus:border-red-400"/>
+                </label>
+                <div className="sm:col-span-2 rounded-2xl bg-zinc-50 p-4 text-sm text-zinc-600">
+                  <p className="font-semibold text-zinc-800">Kerangka baku: {CONTENT_PRESETS[preset].summary}</p>
+                  {CONTENT_PRESETS[preset].data?<p className="mt-1 text-xs leading-5">Data yang perlu disiapkan: {CONTENT_PRESETS[preset].data.join("; ")}.</p>:null}
+                </div>
+              </>
+            ):(
             <label className="sm:col-span-2">
               <span className="text-sm font-semibold">Topik carousel</span>
-              <input value={topic} onChange={event=>setTopic(event.target.value)} placeholder="Contoh: Seni mengatakan tidak tanpa rasa bersalah" className="mt-2 w-full rounded-xl border border-black/15 bg-[#f9f7f3] px-4 py-3 text-base outline-none focus:border-red-400"/>
+              <input value={topicText} onChange={event=>setTopic(event.target.value)} placeholder={account==="journey"?"Contoh: Seni mengatakan tidak tanpa rasa bersalah":"Contoh: Apakah SCHD masih layak dibeli di harga puncak?"} className="mt-2 w-full rounded-xl border border-black/15 bg-[#f9f7f3] px-4 py-3 text-base outline-none focus:border-red-400"/>
             </label>
+            )}
             <label>
               <span className="text-sm font-semibold">Audiens</span>
               <input value={audience} onChange={event=>setAudience(event.target.value)} className="mt-2 w-full rounded-xl border border-black/15 bg-[#f9f7f3] px-4 py-3 text-base outline-none focus:border-red-400"/>
@@ -78,6 +105,13 @@ export default function AITemplateClient(){
                 {Array.from({length:18},(_,i)=>i+3).map(count=><option key={count} value={count}>{count} slide</option>)}
               </select>
             </label>
+            <div className="sm:col-span-2" role="group" aria-label="Tampilan">
+              <span className="text-sm font-semibold">Tampilan</span>
+              <div className="mt-2 flex flex-wrap gap-2">
+                {LOOK_IDS.map(id=><button key={id} type="button" aria-pressed={look===id} onClick={()=>setLook(id)} className={["min-h-11 rounded-full px-4 py-2 text-sm font-semibold",look===id?"bg-zinc-950 text-white":"bg-zinc-100 text-zinc-700"].join(" ")}>{LOOK_PRESETS[id].label}</button>)}
+              </div>
+              <span className="mt-2 block text-xs text-zinc-500">{LOOK_PRESETS[look].hint} Ditulis AI ke <code>meta.look</code>; bisa diganti lagi di Studio.</span>
+            </div>
             <label className="sm:col-span-2">
               <span className="text-sm font-semibold">Gaya hasil</span>
               <div className="mt-2 flex flex-wrap gap-2">
@@ -101,7 +135,7 @@ export default function AITemplateClient(){
 
           <textarea ref={textRef} aria-label="Template siap disalin" readOnly value={content} onFocus={event=>event.target.select()} className="mt-4 h-[310px] w-full resize-y rounded-2xl border border-zinc-800 bg-zinc-950 p-4 font-mono text-xs leading-5 text-zinc-200 outline-none focus:border-red-400 sm:h-[420px]"/>
           <div className="mt-4 flex flex-wrap gap-3">
-            <button type="button" onClick={()=>copy(content)} className="rounded-full bg-red-500 px-6 py-3 font-semibold text-white hover:bg-red-600">{tab==="prompt"?"Copy prompt lengkap":"Copy contoh JSON"}</button>
+            <button type="button" onClick={()=>copy(content)} className="rounded-full bg-red-600 px-6 py-3 font-semibold text-white hover:bg-red-700">{tab==="prompt"?"Copy prompt lengkap":"Copy contoh JSON"}</button>
             <button type="button" onClick={()=>{textRef.current?.focus();textRef.current?.select();setFeedback("Teks dipilih. Tekan Copy/Salin melalui browser jika tombol salin diblokir.");}} className="rounded-full border border-black/15 px-5 py-3 text-sm font-semibold hover:bg-zinc-50">Pilih semua teks</button>
           </div>
           {feedback?<p role="status" className="mt-3 rounded-xl bg-zinc-100 p-3 text-sm text-zinc-700">{feedback}</p>:null}
@@ -114,8 +148,8 @@ export default function AITemplateClient(){
           </div>
           <p className="mt-3 text-sm leading-6 text-zinc-600">Kirim prompt yang disalin ke ChatGPT, lalu copy JSON jawaban AI. Buka Studio, paste di kolom Carousel source, pilih Render carousel, lalu unduh JPEG/ZIP.</p>
           <div className="mt-5 flex flex-wrap gap-3">
-            <a href="https://chatgpt.com/" target="_blank" rel="noreferrer" className="inline-flex rounded-full border border-black/20 bg-white px-6 py-3 text-sm font-bold text-zinc-900 hover:bg-zinc-50">Buka ChatGPT ↗</a>
-            <Link href="/studio" className="inline-flex rounded-full bg-zinc-950 px-6 py-3 text-sm font-bold text-white hover:bg-zinc-800">Buka Carousel Studio →</Link>
+            <a href="https://chatgpt.com/" target="_blank" rel="noreferrer" className="inline-flex rounded-full border border-black/20 bg-white px-6 py-3 text-sm font-bold text-zinc-900 hover:bg-zinc-50">Buka ChatGPT</a>
+            <Link href="/studio" className="inline-flex rounded-full bg-zinc-950 px-6 py-3 text-sm font-bold text-white hover:bg-zinc-800">Buka Studio</Link>
           </div>
         </section>
       </div>

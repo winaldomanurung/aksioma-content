@@ -8,7 +8,7 @@ export default function InfoCard({ eyebrow, title, children, variant = "soft", c
   };
 
   return (
-    <div className={["rounded-[30px] border p-7", variants[variant] || variants.soft, className].join(" ")}>
+    <div className={["lk-card rounded-[30px] border p-7", variants[variant] || variants.soft, className].join(" ")}>
       {eyebrow ? <p className="font-display text-[16px] font-semibold uppercase tracking-[0.14em] opacity-60">{eyebrow}</p> : null}
       {title ? <h3 className="font-display mt-3 text-[30px] font-bold leading-[1.12]">{title}</h3> : null}
       <div className="mt-4 text-[22px] leading-[1.45] opacity-80">{children}</div>

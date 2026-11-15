@@ -1,4 +1,4 @@
-Curated SVG asset subset for Aksioma Content Studio.
+Curated SVG asset subset for Stock Analysis.
 
 Lucide icons: original SVGs from https://github.com/lucide-icons/lucide
 License: ISC. Full license at public/assets/licenses/lucide-LICENSE.txt.

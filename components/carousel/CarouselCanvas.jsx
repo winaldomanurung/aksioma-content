@@ -3,6 +3,7 @@
 import {useContext} from "react";
 import SlideImageLayer from "@/components/studio/SlideImageLayer";
 import {SlideFontContext} from "@/components/studio/slide-font-context";
+import {SlideLookContext} from "@/components/studio/slide-look-context";
 
 export default function CarouselCanvas({
   children,
@@ -16,6 +17,8 @@ export default function CarouselCanvas({
 }) {
   // Font preset chosen by the Studio (null elsewhere = the default Aksioma pair).
   const font = useContext(SlideFontContext);
+  // Look chosen by the Studio (null elsewhere = the classic look).
+  const look = useContext(SlideLookContext);
 
   return (
     <section
@@ -25,6 +28,7 @@ export default function CarouselCanvas({
       data-density={density}
       data-theme={theme || undefined}
       data-font={font || undefined}
+      data-look={look || undefined}
       data-studio-dark={isDark ? "true" : "false"}
       aria-label={label || "Carousel slide " + slide}
       className={["carousel-slide", className].join(" ")}

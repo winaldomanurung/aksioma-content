@@ -10,15 +10,19 @@ import {
   BarChart, Matrix2x2, DataTable, MythFact, ProsCons, BeforeAfter,
   Funnel, Ladder, QACard, PollCard, SwipeHint, SourceNote, ProgressRing,
   PhotoHero, PhoneMockup, Collage, AvatarQuote,
-  TextBlock, Footnote, Glossary, Flow, StockList, PriceChart, StockCompare, TradePlan, EventCalendar, MarketRank
+  TextBlock, Footnote, Glossary, Flow, StockList, PriceChart, StockCompare, TradePlan, EventCalendar, MarketRank,
+  StatSnapshot, SignalGrid, PriceLevels, ReturnBars, VerdictCard, CompareCards, SparkCards, Gauge, RangeBars, Heatmap, FootballField
 } from "@/components/carousel";
 import {AssetIcon,AssetShape} from "./AssetPrimitives";
 import AccountBookend from "./AccountBookend";
 import {SlideImagesContext} from "./slide-images-context";
 import {SlideFontContext} from "./slide-font-context";
+import {SlideLookContext} from "./slide-look-context";
 import {isFontId} from "@/lib/studio/fonts";
+import {isLookId,DEFAULT_LOOK} from "@/lib/studio/looks";
+import {nodeBudget} from "@/lib/studio/market";
 
-function Primitive({ node, dark = false }) {
+function Primitive({ node, dark = false, budget }) {
   const children=node.children?.map((child,i)=><Primitive key={i} node={child} dark={dark}/>);
   switch(node.type) {
     case "slideHeading": return <SlideHeading title={node.title} eyebrow={node.eyebrow} body={node.body} align={node.align} dark={dark}/>;
@@ -62,21 +66,36 @@ function Primitive({ node, dark = false }) {
     case "flow": return <Flow items={node.items} direction={node.direction} fork={node.fork} dark={dark||node.dark}/>;
     case "stockList": return <StockList items={node.items} numbered={node.numbered} disclaimer={node.disclaimer} disclaimerText={node.disclaimerText} dark={dark||node.dark}/>;
     case "priceChart": return <PriceChart candles={node.candles} points={node.points} levels={node.levels} title={node.title} caption={node.caption} from={node.from} to={node.to} dark={dark||node.dark}/>;
-    case "stockCompare": return <StockCompare left={node.left} right={node.right} rows={node.rows} disclaimer={node.disclaimer} dark={dark||node.dark}/>;
-    case "tradePlan": return <TradePlan ticker={node.ticker} scenarios={node.scenarios} risk={node.risk} dark={dark||node.dark}/>;
-    case "eventCalendar": return <EventCalendar items={node.items} dark={dark||node.dark}/>;
-    case "marketRank": return <MarketRank items={node.items} tone={node.tone} dark={dark||node.dark}/>;
+    case "stockCompare": return <StockCompare left={node.left} right={node.right} rows={node.rows} disclaimer={node.disclaimer} budget={budget} dark={dark||node.dark}/>;
+    case "tradePlan": return <TradePlan ticker={node.ticker} scenarios={node.scenarios} risk={node.risk} budget={budget} dark={dark||node.dark}/>;
+    case "eventCalendar": return <EventCalendar items={node.items} budget={budget} dark={dark||node.dark}/>;
+    case "marketRank": return <MarketRank items={node.items} tone={node.tone} budget={budget} dark={dark||node.dark}/>;
+    case "compareCards": return <CompareCards left={node.left} right={node.right} delta={node.delta} budget={budget} dark={dark||node.dark}/>;
+    case "sparkCards": return <SparkCards items={node.items} budget={budget} dark={dark||node.dark}/>;
+    case "gauge": return <Gauge items={node.items} budget={budget} dark={dark||node.dark}/>;
+    case "rangeBars": return <RangeBars items={node.items} unit={node.unit} budget={budget} dark={dark||node.dark}/>;
+    case "heatmap": return <Heatmap items={node.items} budget={budget} dark={dark||node.dark}/>;
+    case "footballField": return <FootballField items={node.items} current={node.current} unit={node.unit} currentLabel={node.currentLabel} budget={budget} dark={dark||node.dark}/>;
+    case "statSnapshot": return <StatSnapshot items={node.items} budget={budget} dark={dark||node.dark}/>;
+    case "signalGrid": return <SignalGrid items={node.items} budget={budget} dark={dark||node.dark}/>;
+    case "priceLevels": return <PriceLevels items={node.items} budget={budget} dark={dark||node.dark}/>;
+    case "returnBars": return <ReturnBars groups={node.groups} unit={node.unit} signed={node.signed !== false} budget={budget} dark={dark||node.dark}/>;
+    case "verdictCard": return <VerdictCard verdict={node.verdict} title={node.title} text={node.text} reasons={node.reasons} caution={node.caution} budget={budget} dark={dark||node.dark}/>;
     case "assetIcon": return <AssetIcon set={node.set} name={node.name} size={node.size} tone={node.tone|| (dark?"light":"ink")} label={node.label}/>;
     case "assetShape": return <AssetShape name={node.name} position={node.position} opacity={node.opacity}/>;
     default: return null;
   }
 }
 // `font` is the carousel-wide preset (meta.font); a slide's own `font` wins.
-export function StudioSlide({data,number,account="journey",total=10,font}){
+// `look` is the carousel-wide appearance (meta.look); classic renders no attribute.
+export function StudioSlide({data,number,account="trader",total=10,font,look}){
   const preset=isFontId(data?.font)?data.font:(isFontId(font)?font:null);
+  const lookId=isLookId(look)&&look!==DEFAULT_LOOK?look:null;
   return (
     <SlideFontContext.Provider value={preset}>
-      <SlideImagesContext.Provider value={data?.images||null}><StudioSlideBody data={data} number={number} account={account} total={total}/></SlideImagesContext.Provider>
+      <SlideLookContext.Provider value={lookId}>
+        <SlideImagesContext.Provider value={data?.images||null}><StudioSlideBody data={data} number={number} account={account} total={total}/></SlideImagesContext.Provider>
+      </SlideLookContext.Provider>
     </SlideFontContext.Provider>
   );
 }
@@ -85,32 +104,37 @@ function extrasNodes(s,dark){
   if(Array.isArray(s.sources)&&s.sources.length)nodes.push(<SourceNote key="sources" label="Sumber" text={s.sources.join("; ")} dark={dark}/>);
   return nodes.length?nodes:undefined;
 }
-// Every content slide gets a decoration. Omit `decorations` for an automatic one
-// (varied by slide number so neighbours never repeat), pass your own list, or
-// pass "none" to switch it off. A freeform slide that already has an assetShape
-// node keeps only that one.
+// Decorations differ per account.
+//   Trader : plain by default, because translucent shapes sit behind data cards
+//            and read as stray highlights. A decoration only appears when the
+//            slide lists `decorations` (or has an assetShape node).
+//   Journey: every content slide gets one. Omit `decorations` for an automatic
+//            pick (varied by slide number so neighbours never repeat), pass your
+//            own list, or pass "none" to switch it off. A freeform slide that
+//            already has an assetShape node keeps only that one.
 const AUTO_SHAPES=["editorial-grid","orbital-rings","dotted-field","contour-lines","soft-blobs","arc-ribbon","topographic","orbit-dots","window-frames","angular-path","gradient-orbs","sunburst","diagonal-stripes","wave-red"];
 const AUTO_POSITIONS=["topRight","bottomRight","bottomLeft"];
 export function autoDecoration(number){
   const n=Math.max(1,Number(number)||1);
-  return {name:AUTO_SHAPES[(n*5)%AUTO_SHAPES.length],position:AUTO_POSITIONS[n%AUTO_POSITIONS.length],opacity:"soft"};
+  return {name:AUTO_SHAPES.at((n*5)%AUTO_SHAPES.length),position:AUTO_POSITIONS.at(n%AUTO_POSITIONS.length),opacity:"soft"};
 }
-function decorationNodes(s,number){
+function decorationNodes(s,number,account){
   if(s.decorations==="none")return undefined;
   if(Array.isArray(s.decorations)&&s.decorations.length)return s.decorations.map((d,i)=><AssetShape key={i} name={d.name} position={d.position} opacity={d.opacity}/>);
+  if(account!=="journey")return undefined;
   if(s.type==="freeform"&&Array.isArray(s.nodes)&&s.nodes.some(n=>n?.type==="assetShape"))return undefined;
   const d=autoDecoration(number);
   return [<AssetShape key="auto" name={d.name} position={d.position} opacity={d.opacity}/>];
 }
 const DARK_PRESETS=new Set(["bullet","causeEffect","summary"]);
-function StudioSlideBody({data,number,account="journey",total=10}){
+function StudioSlideBody({data,number,account="trader",total=10}){
   const slide=number;
   const s=data;
   const dark=s.type==="freeform" ? (s.theme ? (backgroundThemes[s.theme]?.dark ?? !!s.dark) : !!s.dark) : (s.theme ? !!backgroundThemes[s.theme]?.dark : DARK_PRESETS.has(s.type));
   const layout={
     vertical: s.vertical || "center",
     extras: extrasNodes(s,dark),
-    decorations: decorationNodes(s,number),
+    decorations: decorationNodes(s,number,account),
     theme: s.theme,
   };
   switch(s.type){
@@ -127,7 +151,7 @@ function StudioSlideBody({data,number,account="journey",total=10}){
       <FreeformSlide slide={slide} eyebrow={s.eyebrow} dark={dark} theme={s.theme} density={s.density}
         backgroundWord={s.backgroundWord} cornerLabel={s.cornerLabel} {...layout}>
         <div className="studio-freeform-body">
-          {s.nodes.map((n,i)=><Primitive key={i} node={n} dark={dark}/>)}
+          {s.nodes.map((n,i)=><Primitive key={i} node={n} dark={dark} budget={nodeBudget(s,n)}/>)}
         </div>
       </FreeformSlide>
     );

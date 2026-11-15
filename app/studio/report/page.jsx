@@ -1,7 +1,7 @@
 import MarketReportClient from "@/components/studio/MarketReportClient";
 
 export const metadata = {
-  title: "Laporan Pasar | Aksioma Studio",
+  title: "Laporan Pasar | Aksioma Content",
   description: "Tempel laporan harian Market & Foreign Flow, langsung jadi 7 slide Aksioma Trader.",
 };
 

@@ -8,6 +8,7 @@ import ImageLibrary from "@/components/studio/ImageLibrary";
 import ScaledSlide from "./ScaledSlide";
 import SaveImageButton from "./SaveImageButton";
 import JsonOutput from "./JsonOutput";
+import {useAccount} from "@/lib/studio/account-store";
 
 // Playground for the image tool: upload, drag, resize, pick a shape, copy JSON.
 const BASE={type:"statement",eyebrow:"GAMBAR SENDIRI",lead:"Letakkan fotomu di atas desain,",highlight:"geser dan atur ukurannya.",note:"Gambar tersimpan di browser ini dan ikut ter-export ke JPEG."};
@@ -17,6 +18,7 @@ export default function ImageBuilder(){
   const [selectedId,setSelectedId]=useState(null);
   const [live,setLive]=useState(null);
   const [platform,setPlatform]=useState("instagram");
+  const account=useAccount();
   const shown=live||images;
   const slide={...clone(BASE),...(shown.length?{images:shown}:{})};
   const output=images.length?{...clone(BASE),images}:{...clone(BASE),images:IMAGE_SPEC.sample.images};
@@ -45,9 +47,9 @@ export default function ImageBuilder(){
           {["instagram","tiktok"].map(p=><button key={p} type="button" aria-pressed={platform===p} onClick={()=>setPlatform(p)}
             className={"rounded-full px-4 py-2 text-xs font-bold "+(platform===p?"bg-zinc-950 text-white":"bg-white text-zinc-700")}>{p==="tiktok"?"TikTok photo":"Instagram"}</button>)}
         </div>
-        <ScaledSlide data={slide} number={2} total={10} account="journey" platform={platform}
+        <ScaledSlide data={slide} number={2} total={10} account={account} platform={platform}
           editor={{selectedId,onSelect:setSelectedId,onLive:setLive,onCommit:commit}}/>
-        <SaveImageButton data={slide} number={2} total={10} account="journey" platform={platform} name="gambar-pengguna"/>
+        <SaveImageButton data={slide} number={2} total={10} account={account} platform={platform} name="gambar-pengguna"/>
         <JsonOutput tabs={tabs}/>
       </div>
     </div>

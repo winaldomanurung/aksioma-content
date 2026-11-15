@@ -11,7 +11,7 @@ export function generateStaticParams(){
 export async function generateMetadata({params}){
   const {type}=await params;
   const spec=type==="image"?IMAGE_SPEC:ALL_SPECS[type];
-  return {title:(spec?spec.label:"Komponen")+" | Aksioma Studio"};
+  return {title:(spec?spec.label:"Komponen")+" | Aksioma Content"};
 }
 
 function Capacity({name}){
@@ -46,8 +46,8 @@ export default async function ComponentPage({params}){
   return (
     <main className="min-h-screen bg-[#ebe8e1] px-4 py-8 text-zinc-900 sm:px-7 lg:py-12">
       <div className="mx-auto max-w-[1400px]">
-        <Link href="/studio/components" className="text-xs font-semibold text-red-700 hover:underline">← Semua komponen</Link>
-        <h1 className="font-display mt-2 text-3xl font-bold tracking-tight sm:text-4xl">{spec.label}</h1>
+        <Link href="/studio/components" className="text-xs font-semibold text-red-700 hover:underline">Semua komponen</Link>
+        <h1 className="font-display text-3xl font-bold tracking-tight sm:text-4xl">{spec.label}</h1>
         <p className="mt-2 max-w-3xl text-sm leading-6 text-zinc-600">{spec.summary} <span className="text-zinc-500">Cocok untuk: {spec.use}</span></p>
 
         <section className="mt-6 grid gap-4 lg:grid-cols-2" aria-label="Cara membuat">

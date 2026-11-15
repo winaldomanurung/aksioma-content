@@ -14,7 +14,7 @@ const chip = (on) => ["min-h-11 rounded-full px-4 py-2 text-sm font-semibold", o
 export default function StockImportClient() {
   const [text, setText] = useState("");
   const [title, setTitle] = useState("Saham pilihan minggu ini");
-  const [account, setAccount] = useState("trader");
+  const account = "trader";
   const [perSlide, setPerSlide] = useState(5);
   const [dark, setDark] = useState(false);
   const [feedback, setFeedback] = useState("");
@@ -38,11 +38,10 @@ export default function StockImportClient() {
       <div className="mx-auto max-w-[1080px]">
         <header className="flex flex-wrap items-start justify-between gap-4">
           <div>
-            <p className="font-display text-xs font-bold uppercase tracking-[.22em] text-red-600">Aksioma / Impor Saham</p>
-            <h1 className="font-display mt-3 text-3xl font-bold tracking-tight sm:text-5xl">Dari spreadsheet jadi carousel.</h1>
+            <h1 className="font-display text-3xl font-bold tracking-tight sm:text-5xl">Dari spreadsheet jadi carousel.</h1>
             <p className="mt-4 max-w-2xl text-base leading-7 text-zinc-600">Salin baris dari Excel, Google Sheets, atau CSV, lalu tempel di sini. Jumlah slide menyesuaikan jumlah saham. Semua diproses di browser.</p>
           </div>
-          <Link href="/studio" className="rounded-full border border-black/15 bg-white px-5 py-3 text-sm font-bold hover:bg-zinc-50">← Studio</Link>
+          <Link href="/studio" className="rounded-full border border-black/15 bg-white px-5 py-3 text-sm font-bold hover:bg-zinc-50">Studio</Link>
         </header>
 
         <section className="mt-8 rounded-[28px] border border-black/10 bg-white p-5 shadow-sm sm:p-8">
@@ -73,7 +72,6 @@ export default function StockImportClient() {
           <div className="mt-2 flex flex-wrap gap-2">{[1, 2, 3, 4, 5, 6, 8].map((n) => <button key={n} type="button" aria-pressed={perSlide === n} onClick={() => setPerSlide(n)} className={chip(perSlide === n)}>{n}</button>)}</div>
           <p className="mt-2 text-xs text-zinc-500">1–5 per slide menampilkan catatan; 6–8 memakai baris ringkas tanpa catatan.</p>
           <div className="mt-5 flex flex-wrap gap-2">
-            {["journey", "trader"].map((v) => <button key={v} type="button" aria-pressed={account === v} onClick={() => setAccount(v)} className={chip(account === v)}>Aksioma {v === "trader" ? "Trader" : "Journey"}</button>)}
             <button type="button" aria-pressed={dark} onClick={() => setDark((v) => !v)} className={chip(dark)}>Slide gelap</button>
           </div>
         </section>
@@ -82,7 +80,7 @@ export default function StockImportClient() {
           <h2 className="font-display text-lg font-bold">3. Hasil</h2>
           <textarea ref={outRef} readOnly aria-label="JSON carousel" value={json} placeholder="JSON akan muncul setelah ada saham terbaca." onFocus={(e) => e.target.select()} className="mt-4 h-[260px] w-full resize-y rounded-2xl border border-zinc-800 bg-zinc-950 p-4 font-mono text-xs text-zinc-100" />
           <div className="mt-4 flex flex-wrap gap-3">
-            <button type="button" disabled={!json} onClick={openInStudio} className="rounded-full bg-red-500 px-6 py-3 font-semibold text-white hover:bg-red-600 disabled:opacity-40">Buka di Studio →</button>
+            <button type="button" disabled={!json} onClick={openInStudio} className="rounded-full bg-red-600 px-6 py-3 font-semibold text-white hover:bg-red-700 disabled:opacity-40">Buka di Studio</button>
             <button type="button" disabled={!json} onClick={copy} className="rounded-full border border-black/15 px-6 py-3 font-semibold hover:bg-zinc-50 disabled:opacity-40">Copy JSON</button>
           </div>
           {feedback ? <p role="status" className="mt-3 rounded-xl bg-zinc-100 p-3 text-sm text-zinc-700">{feedback}</p> : null}

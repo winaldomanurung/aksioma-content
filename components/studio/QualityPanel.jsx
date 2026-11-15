@@ -6,7 +6,7 @@ import {buildRepairReport} from "@/lib/studio/slide-metrics";
 
 // Result of a real-layout check of every slide, with a one-tap repair report
 // the person can paste back into the AI.
-export default function QualityPanel({result,checking,onCheck,onSelect,title}){
+export default function QualityPanel({result,checking,onCheck,onSelect,title,numberIssues=[]}){
   const [message,setMessage]=useState("");
   const area=useRef(null);
   const issues=result?.issues||[];
@@ -31,9 +31,18 @@ export default function QualityPanel({result,checking,onCheck,onSelect,title}){
           </li>)}
         </ul>
         <textarea ref={area} readOnly aria-label="Laporan perbaikan untuk AI" value={report} className="mt-3 h-28 w-full resize-y rounded-xl border border-black/15 bg-zinc-950 p-3 font-mono text-[11px] leading-5 text-zinc-100"/>
-        <button type="button" onClick={copy} className="mt-2 min-h-11 rounded-full bg-red-500 px-5 py-2.5 text-xs font-bold text-white hover:bg-red-600">Salin laporan perbaikan untuk AI</button>
+        <button type="button" onClick={copy} className="mt-2 min-h-11 rounded-full bg-red-600 px-5 py-2.5 text-xs font-bold text-white hover:bg-red-700">Salin laporan perbaikan untuk AI</button>
         {message?<p role="status" className="mt-2 text-xs text-emerald-800">{message}</p>:null}
       </div>:<p role="status" className="mt-3 rounded-xl border border-emerald-200 bg-emerald-50 p-3 text-xs text-emerald-900">Semua slide muat dan terisi baik di {result.platform==="tiktok"?"TikTok Photo":"Instagram"}.</p>):null}
+      <div className="mt-4 border-t border-black/10 pt-3" data-number-check="true">
+        <p className="font-display text-sm font-bold">Cek angka</p>
+        <p className="mt-1 text-xs leading-5 text-zinc-500">Konsistensi angka antarslide, otomatis. Tidak memeriksa kebenaran data terhadap sumber.</p>
+        {numberIssues.length?<ul className="mt-2 space-y-2">
+          {numberIssues.map((issue,i)=><li key={i} className="rounded-xl border border-amber-200 bg-amber-50 p-3 text-xs leading-5 text-amber-900">
+            <button type="button" onClick={()=>onSelect(issue.index)} className="mr-2 rounded-full bg-white/80 px-2 py-1 font-bold underline">Buka</button>{issue.message}
+          </li>)}
+        </ul>:<p role="status" className="mt-2 rounded-xl border border-emerald-200 bg-emerald-50 p-3 text-xs text-emerald-900">Tidak ada angka yang janggal.</p>}
+      </div>
     </section>
   );
 }

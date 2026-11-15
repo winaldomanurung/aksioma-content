@@ -2,7 +2,7 @@ import Link from "next/link";
 import {ALL_SPECS,IMAGE_SPEC,SPEC_ORDER,specCapacityLines} from "@/lib/studio/component-specs";
 
 export const metadata={
-  title:"Komponen | Aksioma Studio",
+  title:"Komponen | Aksioma Content",
   description:"Preview, spesifikasi kapasitas terukur, dan form JSON untuk setiap komponen carousel."
 };
 
@@ -39,8 +39,7 @@ export default function ComponentsPage(){
   return (
     <main className="min-h-screen bg-[#ebe8e1] px-4 py-8 text-zinc-900 sm:px-7 lg:py-12">
       <div className="mx-auto max-w-[1300px]">
-        <p className="font-display text-sm font-semibold uppercase tracking-[.2em] text-red-600">Aksioma Content Studio</p>
-        <h1 className="font-display mt-2 text-3xl font-bold tracking-tight sm:text-4xl">Komponen carousel</h1>
+        <h1 className="font-display text-3xl font-bold tracking-tight sm:text-4xl">Komponen carousel</h1>
         <p className="mt-2 max-w-3xl text-sm leading-6 text-zinc-600">Pilih satu komponen untuk melihat preview, batas jumlah item dan karakter yang diukur dari layout nyata, cara membuatnya, dan form yang menghasilkan JSON siap tempel ke Carousel Source.</p>
         <Section title="Slide preset" names={SPEC_ORDER.slides}/>
         <Section title="Primitive untuk freeform" names={SPEC_ORDER.primitives}/>

@@ -8,7 +8,16 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 
 <!-- END:nextjs-agent-rules -->
 
-# Aksioma Content Studio rules
+# Aksioma Content rules
+
+This repo is the single carousel studio for both Aksioma accounts. It was merged from `stock-analysis` (the base; its version wins on any conflict) and the old `aksioma-content`.
+
+- Two accounts, defined once in `lib/studio/accounts.js` (pure data, safe on the server): `trader` (finance, stocks) and `journey` (general topics). `meta.account` decides a carousel's account; without it the carousel follows the active account in the navigation (`lib/studio/account-store.js`, localStorage).
+- Never hardcode `"trader"` in a client screen: read `useAccount()`. Finance-only pages (presets, Laporan Pasar, Impor Saham) stay Trader and are marked `only:"trader"` in `components/studio/SiteNav.jsx`, which also feeds the home page.
+- Account differences live in three places only: `AccountBookend.jsx` (cover/CTA copy and classes), `decorationNodes` in `StudioSlide.jsx` (Journey auto-decorates content slides, Trader stays plain), and `makeAiPrompt` in `ai-guide.js` (guide, language rules, example). Brand Kit is stored per account (`lib/studio/brand.js`).
+- `/api/prompt` and `/api/check` are a contract used by `aksioma-engine`; keep their parameters and response shape backward compatible (`account` defaults to `trader`).
+- Studio UI (not slides): icons come from `components/studio/Icon.jsx`, never Unicode glyphs; no kicker label above page headings; touch targets at least 44px; white text only on `red-600` or darker. On phones the Studio shows one pane at a time (`studio-pane`, `studio-tabs`, `studio-actionbar` in `globals.css`); do not use the `hidden` attribute for panes (Tailwind's layered rule cannot be overridden).
+
 
 - Treat JSX/React as the source of truth. JPEG files are generated artifacts and must not be hand-edited.
 - Standard Instagram carousel canvas is exactly 1080 × 1350 CSS pixels.
@@ -41,3 +50,5 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 - Use connectors only when they communicate an actual relationship.
 - Important text must remain in normal layout flow so Instagram/TikTok adaptations stay safe.
 - When adding a new reusable primitive, export it from `components/carousel/index.js` and document it in the AI contract.
+- Enum values and hard character limits live in constants (`schema.js` `SCHEMA_RULES`/`FIXED`, `market.js`, `stock.js`, `component-specs.js`). The AI prompt's §3 KONTRAK FIELD is generated from them by `lib/studio/prompt-contract.js`; never hand-type a limit or enum into prompt text.
+- Validator messages must start with a location (`Slide 08.nodes[1]: field ...` or `meta: field ...`) so the Studio can map them to the source; use `soft()` for problems that do not change the data shape so all problems are reported at once.

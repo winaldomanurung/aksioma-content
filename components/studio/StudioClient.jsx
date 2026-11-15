@@ -1,6 +1,6 @@
 "use client";
 
-import {useEffect,useMemo,useRef,useState,useSyncExternalStore} from "react";
+import {useDeferredValue,useEffect,useMemo,useRef,useState,useSyncExternalStore} from "react";
 import {exampleCarousel} from "@/lib/studio/example";
 import {parseCarouselSource} from "@/lib/studio/schema";
 import {slideToJpeg} from "@/lib/studio/export-browser";
@@ -13,8 +13,11 @@ import ImageLibrary from "./ImageLibrary";
 import ImagePicker from "./ImagePicker";
 import {collectImageIds,listImageSlots,setAtPath} from "@/lib/studio/images";
 import {useImageLibrary} from "@/lib/studio/image-store";
-import {updateSlideInSource,updateMetaInSource,locateInSource} from "@/lib/studio/source-edit";
+import {updateSlideInSource,updateMetaInSource,locateInSource,slideOutline} from "@/lib/studio/source-edit";
+import {lintSource} from "@/lib/studio/source-lint";
+import {decodePayload,payloadFrom} from "@/lib/studio/link-codec";
 import {FONT_PRESETS,FONT_IDS,DEFAULT_FONT,fontOf} from "@/lib/studio/fonts";
+import {LOOK_PRESETS,LOOK_IDS,DEFAULT_LOOK,lookOf} from "@/lib/studio/looks";
 import {buildTextMap} from "@/lib/studio/text-map";
 import SourceEditor from "@/components/studio/SourceEditor";
 import {fitWarnings} from "@/lib/studio/component-specs";
@@ -23,8 +26,13 @@ import QualityPanel from "./QualityPanel";
 import SharePanel from "./SharePanel";
 import {measureSlides,buildIssues} from "@/lib/studio/slide-metrics";
 import {captionsFile} from "@/lib/studio/post-kit";
+import {useBrand} from "@/lib/studio/brand";
+import {ACCOUNTS,accountOf,isAccountId} from "@/lib/studio/accounts";
+import {useAccount,setAccount,readAccount,ACCOUNT_EVENT} from "@/lib/studio/account-store";
+import {checkNumbers} from "@/lib/studio/number-check";
 import PostMetaPanel from "@/components/carousel/PostMetaPanel";
 import Link from "next/link";
+import Icon from "./Icon";
 
 const INITIAL=JSON.stringify(exampleCarousel,null,2);
 const DRAFT_KEY="aksioma-studio-draft-v1";
@@ -42,7 +50,7 @@ const subscribeDraft=callback=>{
 };
 const notifyDraft=()=>draftListeners.forEach(callback=>callback());
 
-function SlidePreview({data,number,account,total,font,editor,textMode,index,onTextHover,onTextCommit}){
+function SlidePreview({data,number,account,total,font,look,editor,textMode,index,onTextHover,onTextCommit}){
   const wrap=useRef(null);
   const root=useRef(null);
   const map=useRef(new Map());
@@ -120,7 +128,7 @@ function SlidePreview({data,number,account,total,font,editor,textMode,index,onTe
       <div style={{width:1080,height:1350,transformOrigin:"top left",transform:"scale("+scale+")"}}>
         <div ref={root} data-text-edit={textOn?"on":"off"} style={{position:"relative",width:1080,height:1350,cursor:textOn?"pointer":undefined}}
           onPointerMove={textOn?hover:undefined} onPointerLeave={textOn?leave:undefined} onClick={textOn?start:undefined}>
-          <StudioSlide key={rev} data={data} number={number} account={account} total={total} font={font}/>
+          <StudioSlide key={rev} data={data} number={number} account={account} total={total} font={font} look={look}/>
           {box?<div data-text-highlight={box.editing?"editing":"hover"} style={{position:"absolute",left:box.x-6,top:box.y-4,width:box.w+12,height:box.h+8,borderRadius:8,pointerEvents:"none",zIndex:60,
             outline:(box.editing?"4px solid #ef4444":"3px dashed #ef4444"),background:box.editing?"rgba(239,68,68,.10)":"rgba(239,68,68,.14)"}}/>:null}
           {editor&&data.images?.length?<ImageEditorOverlay images={data.images} scale={scale} selectedId={editor.selectedId}
@@ -135,13 +143,13 @@ export default function StudioClient(){
   const savedDraft=useSyncExternalStore(subscribeDraft,readDraft,()=>null);
   const [edited,setEdited]=useState(null);       // null until the editor is touched
   const [rendered,setRendered]=useState(null);   // null until a carousel is rendered
-  const [accountChoice,setAccountChoice]=useState(null); // null = follow meta.account
   const [platform,setPlatform]=useState("tiktok");
   const [safe,setSafe]=useState(false);
   const [error,setError]=useState("");
   const [status,setStatus]=useState("");
   const [working,setWorking]=useState(false);
   const [selected,setSelected]=useState(0);
+  const [pane,setPane]=useState("preview"); // ponsel: satu panel per tab; laptop: semua panel tampil
   const [allVisible,setAllVisible]=useState(false);
   const [selectedImage,setSelectedImage]=useState(null);
   const [textMode,setTextMode]=useState(false);
@@ -152,8 +160,18 @@ export default function StudioClient(){
   const [checking,setChecking]=useState(false);
   const [preflight,setPreflight]=useState(null);
   const [exported,setExported]=useState(null);
+  const [lint,setLint]=useState(null); // {forDoc,issues} from the last validation of the source
+  const [autoCheck,setAutoCheck]=useState(false); // run the layout check once a link-imported carousel is on screen
+  const quietAccount=useRef(false);
+  // Carousel yang dimuat menentukan akun aktif di navigasi, tanpa menulis ulang source.
+  function syncAccount(id){
+    if(!isAccountId(id))return;
+    quietAccount.current=true;
+    try{setAccount(id);}finally{quietAccount.current=false;}
+  }
   const downloadUrl=useRef(null);
   const exportStage=useRef(null);
+  const editorApi=useRef(null);
 
   const source=edited??savedDraft??INITIAL;
   // Until something is rendered, the preview shows the saved draft (so editor
@@ -163,8 +181,14 @@ export default function StudioClient(){
     try{return parseCarouselSource(savedDraft);}catch{return exampleCarousel;}
   },[savedDraft]);
   const carousel=rendered??draftPreview;
-  const account=accountChoice??(carousel.meta.account==="trader"?"trader":"journey");
-  const font=fontOf(carousel.meta.font);
+  // meta.account menang; tanpa itu carousel mengikuti akun aktif di navigasi.
+  const activeAccount=useAccount();
+  const account=accountOf(carousel.meta.account,activeAccount);
+  const brand=useBrand(account);
+  // Tampilan dan font bawaan dari Brand Kit berlaku bila carousel tidak menyebut meta.look/meta.font.
+  const font=fontOf(carousel.meta.font??brand.font);
+  const look=lookOf(carousel.meta.look??brand.look);
+  const numberIssues=useMemo(()=>checkNumbers(carousel),[carousel]);
 
   useEffect(()=>()=>{if(downloadUrl.current)URL.revokeObjectURL(downloadUrl.current);},[]);
 
@@ -184,12 +208,81 @@ export default function StudioClient(){
   }
 
   function render(){
-    try{
-      const value=parseCarouselSource(source);
+    const result=lintSource(source);
+    setLint({forDoc:source,issues:result.issues});
+    if(result.value){
+      const value=result.value;
       setRendered(value);setSelected(0);setError("");clearDownload();setCheck(null);
-      if(value.meta.account==="journey"||value.meta.account==="trader")setAccountChoice(null);
-      setStatus(value.slides.length+" slide valid. Preview diperbarui untuk Aksioma "+(value.meta.account==="trader"?"Trader":"Journey")+".");
-    }catch(e){setError(e.message);setStatus("");}
+      syncAccount(value.meta.account);
+      setStatus(value.slides.length+" slide valid. Preview diperbarui.");
+      setPane("preview");
+    }else{
+      setError("Carousel belum bisa dirender: "+result.issues.length+" masalah ditemukan. Ketuk tiap masalah di bawah untuk melompat ke lokasinya di Carousel source.");
+      setPane("source");
+      setStatus("");
+    }
+  }
+
+  // Live validation while typing (debounced) so problems are underlined in the
+  // editor before Render is pressed.
+  useEffect(()=>{
+    const timer=setTimeout(()=>{const r=lintSource(source);setLint({forDoc:source,issues:r.issues});},400);
+    return()=>clearTimeout(timer);
+  },[source]);
+  // Studio link (/studio#c=...) made by the Claude skill or /api/check: decode
+  // it, put it in the editor, render it and save it as the draft, then drop
+  // the hash so a reload keeps later edits instead of re-importing the link.
+  useEffect(()=>{
+    let cancelled=false;
+    async function openLink(){
+      const payload=payloadFrom(window.location.hash);
+      if(!payload)return;
+      try{
+        const text=await decodePayload(payload);
+        if(cancelled)return;
+        let pretty=text;
+        try{pretty=JSON.stringify(JSON.parse(text),null,2);}catch{/* invalid JSON: keep as-is so the editor marks the spot */}
+        const result=lintSource(pretty);
+        setEdited(pretty);
+        setLint({forDoc:pretty,issues:result.issues});
+        try{localStorage.setItem(DRAFT_KEY,pretty);notifyDraft();}catch{/* private browsing */}
+        if(downloadUrl.current)URL.revokeObjectURL(downloadUrl.current);
+        downloadUrl.current=null;setDownload(null);setExported(null);setPreflight(null);setCheck(null);
+        if(result.value){
+          setRendered(result.value);setSelected(0);setAllVisible(false);setError("");setAutoCheck(true);
+          syncAccount(result.value.meta.account);
+          setStatus("Carousel dari link dimuat: "+result.value.slides.length+" slide, tersimpan sebagai draft. Layout diperiksa otomatis.");
+        }else{
+          setPane("source");
+          setError("Carousel dari link dimuat ke editor, tapi "+result.issues.length+" masalah perlu diperbaiki sebelum dirender. Ketuk tiap masalah untuk melompat ke lokasinya.");
+          setStatus("");
+        }
+      }catch(e){
+        if(!cancelled)setError(e?.message||"Link carousel tidak bisa dibuka.");
+      }
+      if(!cancelled)window.history.replaceState(null,"",window.location.pathname+window.location.search);
+    }
+    openLink();
+    window.addEventListener("hashchange",openLink);
+    return()=>{cancelled=true;window.removeEventListener("hashchange",openLink);};
+  },[]);
+  const issues=useMemo(()=>lint?.issues||[],[lint]);
+  const diagnostics=useMemo(()=>lint?{forDoc:lint.forDoc,items:lint.issues}:null,[lint]);
+  const deferredSource=useDeferredValue(source);
+  const outline=useMemo(()=>slideOutline(deferredSource),[deferredSource]);
+  const issuesBySlide=useMemo(()=>{const m={};for(const i of issues)if(i.slide!==null)m[i.slide]=(m[i.slide]||0)+1;return m;},[issues]);
+  function gotoIssue(issue){
+    setPane("source");
+    editorApi.current?.reveal(issue.from,issue.to);
+    document.querySelector("[data-source-editor]")?.scrollIntoView({block:"nearest",behavior:"smooth"});
+    if(issue.slide!==null&&issue.slide<carousel.slides.length)openSlide(issue.slide);
+  }
+  function gotoSlide(index){
+    editorApi.current?.revealSlide(index);
+    if(index<carousel.slides.length)openSlide(index);
+  }
+  function cursorSlide(index){
+    if(!allVisible&&index<carousel.slides.length&&index!==selected){setSelected(index);setSelectedImage(null);setLiveImages(null);}
   }
 
   function saveDraft(){
@@ -217,7 +310,21 @@ export default function StudioClient(){
     setChecking(true);
     try{setCheck(await runCheck());}finally{setChecking(false);}
   }
-  function openSlide(index){setSelected(index);setAllVisible(false);setSelectedImage(null);setLiveImages(null);}
+  // After a link import, measure the layout once the new carousel is rendered so
+  // any cut-off or empty slide shows up without pressing "Periksa sekarang".
+  useEffect(()=>{
+    if(!autoCheck)return;
+    let cancelled=false;
+    (async()=>{
+      const result=await runCheck();
+      if(cancelled)return;
+      setAutoCheck(false);
+      setCheck(result);
+    })();
+    return()=>{cancelled=true;};
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- runCheck reads the current render through refs
+  },[autoCheck,carousel,platform]);
+  function openSlide(index){setSelected(index);setAllVisible(false);setSelectedImage(null);setLiveImages(null);setPane("preview");}
 
   async function exportImages(all=false,force=false,only=null){
     if(working)return;
@@ -232,7 +339,7 @@ export default function StudioClient(){
         const result=await runCheck();
         setCheck(result);
         const blocking=result.issues.filter(i=>i.severity==="overflow"&&indexes.includes(i.index));
-        if(blocking.length){setPreflight({all,only,issues:blocking});setStatus("");return;}
+        if(blocking.length){setPreflight({all,only,issues:blocking});setStatus("");setPane("export");return;}
       }
       setPreflight(null);
       const files=[];
@@ -242,12 +349,13 @@ export default function StudioClient(){
         const name=String(i+1).padStart(2,"0")+".jpg";
         files.push({name:platform+"/"+name,blob});
       }
-      const output=all?await makeZip([...files,{name:"captions.txt",blob:new Blob([captionsFile(carousel.meta)],{type:"text/plain;charset=utf-8"})}]):files[0].blob;
+      const output=all?await makeZip([...files,{name:"captions.txt",blob:new Blob([captionsFile(carousel.meta,carousel.slides,brand)],{type:"text/plain;charset=utf-8"})}]):files[0].blob;
       const filename="aksioma-"+account+"-"+slugify(carousel.meta.title)+"-"+platform+(all?".zip":"-"+files[0].name.split("/").pop());
       const url=URL.createObjectURL(output);
       downloadUrl.current=url;
       setDownload({url,filename,kind:all?"zip":"jpeg",size:output.size});
       setExported({files,platform});
+      setPane("export");
       setStatus(all?"ZIP "+files.length+" JPEG selesai. Ketuk Simpan file di bawah.":"JPEG selesai. Ketuk Simpan file di bawah.");
     }catch(e){setError((e?.message || String(e))+" Jika export browser gagal, coba Chrome/Edge desktop atau gunakan Playwright lokal.");setStatus("");}
     finally{setWorking(false);}
@@ -268,6 +376,23 @@ export default function StudioClient(){
     try{setEdited(updateMetaInSource(source,patch));}
     catch(e){setError("Perubahan tampil di preview, tetapi source tidak bisa diperbarui otomatis: "+(e?.message||e));}
   }
+
+  // Tombol Trader / Journey di navigasi juga mengganti akun carousel yang sedang
+  // dibuka: meta.account ditulis ulang supaya source, preview, dan ekspor sepakat.
+  function followNavAccount(id){
+    if(!isAccountId(carousel.meta.account)||carousel.meta.account===id)return;
+    applyMeta({account:id});
+    setStatus("Akun carousel diganti ke "+ACCOUNTS[id].name+". Cover dan penutup mengikuti identitas akun ini.");
+  }
+  const navAccount=useRef(null);
+  useEffect(()=>{navAccount.current=followNavAccount;});
+  useEffect(()=>{
+    const onChange=()=>{if(!quietAccount.current)navAccount.current?.(readAccount());};
+    window.addEventListener(ACCOUNT_EVENT,onChange);
+    // Draft tersimpan menentukan akun aktif saat Studio dibuka.
+    try{const saved=JSON.parse(readDraft()||"null");if(isAccountId(saved?.meta?.account))syncAccount(saved.meta.account);}catch{/* draft bukan JSON murni */}
+    return()=>window.removeEventListener(ACCOUNT_EVENT,onChange);
+  },[]);
 
   // Commit a change to one slide (image overlay edit, slot assignment): update
   // the preview AND the source text.
@@ -302,182 +427,207 @@ export default function StudioClient(){
   const slots=listImageSlots(baseSlide);
   const missing=library.loaded?collectImageIds(baseSlide).filter(id=>!library.rows.some(r=>r.id===id)):[];
 
+  const issueCount=issues.length;
+  const primary="inline-flex min-h-11 items-center justify-center gap-2 rounded-full px-5 text-sm font-semibold disabled:cursor-not-allowed disabled:opacity-50 bg-zinc-950 text-white hover:bg-zinc-800";
+  const accent="inline-flex min-h-11 items-center justify-center gap-2 rounded-full px-5 text-sm font-semibold disabled:cursor-not-allowed disabled:opacity-50 bg-red-600 text-white hover:bg-red-700";
+  const ghost="inline-flex min-h-11 items-center justify-center gap-2 rounded-full px-5 text-sm font-semibold disabled:cursor-not-allowed disabled:opacity-50 border border-black/15 bg-white text-zinc-900 hover:bg-zinc-50";
+  const metaLine=carousel.slides.length+" slide · "+ACCOUNTS[account].name+" · "+(platform==="tiktok"?"TikTok Photo":"Instagram")+" · 1080×1350";
+
   return (
-    <main className="min-h-screen bg-[#ebe8e1] px-4 py-6 text-zinc-900 sm:px-7 lg:py-12">
+    <main className="studio-main min-h-screen bg-[#ebe8e1] px-3 py-4 text-zinc-900 sm:px-6 lg:py-6">
       <div className="mx-auto max-w-[1500px]">
-        <header className="mb-7 flex flex-wrap items-center justify-between gap-4">
-          <div>
-            <p className="font-display text-sm font-semibold uppercase tracking-[.2em] text-red-600">Aksioma Content Studio</p>
-            <h1 className="font-display mt-2 text-3xl font-bold tracking-tight sm:text-4xl">Paste. Render. Export.</h1>
-            <p className="mt-2 max-w-2xl text-sm leading-6 text-zinc-600">Buat konten tanpa commit GitHub. Editor ini menerima JSON deklaratif atau page.jsx dengan blok JSON Studio, bukan JSX bebas.</p>
+        <header className="mb-4 flex flex-wrap items-end justify-between gap-x-6 gap-y-2">
+          <div className="min-w-0">
+            <h1 className="font-display truncate text-xl font-bold tracking-tight sm:text-2xl">{carousel.meta.title}</h1>
+            <p className="mt-1 text-sm text-zinc-600">{metaLine}</p>
+            {platform==="instagram"&&carousel.slides.length>20?<p role="alert" className="mt-1 text-sm font-semibold text-amber-800">Instagram membatasi carousel maksimal 20 slide. Kurangi slide atau pilih TikTok (maks 35).</p>:null}
           </div>
-          <a className="rounded-full border border-black/15 px-5 py-3 text-sm font-semibold hover:bg-white" href="/carousel/demo">Lihat demo JSX ↗</a>
+          <div className="hidden gap-2 lg:flex">
+            <button type="button" disabled={working} aria-busy={working} onClick={()=>exportImages(false)} className={ghost}><Icon name="download" size={16}/>Slide ini (JPEG)</button>
+            <button type="button" disabled={working} aria-busy={working} onClick={()=>exportImages(true)} className={primary}><Icon name="download" size={16}/>{working?"Menyiapkan…":"Semua slide (ZIP)"}</button>
+          </div>
         </header>
 
-        <section className="mb-6 rounded-[24px] border border-black/10 bg-white p-4 sm:p-5">
-          <div className="flex flex-wrap items-center justify-between gap-4">
-            <div><p className="font-display text-sm font-bold">Pilih akun konten</p><p className="mt-1 text-xs text-zinc-500">Satu editor, dua identitas visual. Slide pembuka dan penutup mengikuti akun yang dipilih.</p></div>
-            <div className="flex flex-wrap gap-2">
-              {["journey","trader"].map(value=><button key={value} type="button" aria-pressed={account===value}
-                onClick={()=>{setAccountChoice(value);clearDownload();}}
-                className={["rounded-full px-5 py-3 text-sm font-bold",account===value?(value==="trader"?"bg-blue-800 text-white":"bg-red-500 text-white"):"bg-zinc-100 text-zinc-700"].join(" ")}>
-                Aksioma {value==="trader"?"Trader":"Journey"}
-              </button>)}
-            </div>
-          </div>
-        </section>
-        <section className="mb-6 rounded-[24px] border border-black/10 bg-white p-4 sm:p-5" data-panel="font">
-          <div className="flex flex-wrap items-center justify-between gap-4">
-            <div className="min-w-0 max-w-xl">
-              <p className="font-display text-sm font-bold">Pilih font konten</p>
-              <p className="mt-1 text-xs text-zinc-500">{FONT_PRESETS[font].hint} Disimpan di <code>meta.font</code>. Logo cover/CTA tetap memakai font Aksioma. Font lebar bisa memotong slide padat: jalankan Cek kualitas.</p>
-            </div>
-            <div className="flex flex-wrap gap-2" role="group" aria-label="Font konten">
-              {FONT_IDS.map(id=><button key={id} type="button" aria-pressed={font===id}
-                onClick={()=>{if(id!==font)applyMeta({font:id===DEFAULT_FONT?undefined:id});}}
-                title={FONT_PRESETS[id].display+(FONT_PRESETS[id].body!==FONT_PRESETS[id].display?" + "+FONT_PRESETS[id].body:"")}
-                className={["min-h-11 rounded-full px-5 py-3 text-sm font-bold",font===id?"bg-zinc-950 text-white":"bg-zinc-100 text-zinc-700"].join(" ")}>
-                {FONT_PRESETS[id].label}
-              </button>)}
-            </div>
-          </div>
-        </section>
-        <div className="grid items-start gap-6 lg:grid-cols-[minmax(320px,500px)_minmax(0,1fr)]">
-          <section className="min-w-0 rounded-[28px] border border-black/10 bg-white p-4 shadow-sm sm:p-6" data-panel="source">
+        <div className="studio-tabs mb-4" role="tablist" aria-label="Panel Studio">
+          {[["preview","Preview","eye"],["source","Source","code"],["export","Ekspor","share"]].map(([id,label,icon])=>
+            <button key={id} type="button" role="tab" id={"studio-tab-"+id} aria-selected={pane===id} aria-controls={"studio-pane-"+id} onClick={()=>setPane(id)} className="studio-tab">
+              <Icon name={icon} size={16}/>{label}{id==="source"&&issueCount?<span className="studio-tab-badge" aria-label={issueCount+" masalah"}>{issueCount}</span>:null}
+            </button>)}
+        </div>
+
+        <div className="grid items-start gap-5 lg:grid-cols-[minmax(360px,460px)_minmax(0,1fr)]">
+          <section id="studio-pane-source" role="tabpanel" aria-labelledby="studio-tab-source" data-active={pane==="source"} className="studio-pane min-w-0 rounded-2xl border border-black/10 bg-white p-4 sm:p-5" data-panel="source">
             <div className="flex items-center justify-between gap-3">
-              <h2 className="font-display text-lg font-bold">Carousel source</h2>
-              <span className="rounded-full bg-zinc-100 px-3 py-1 text-xs font-medium">JSON v1</span>
+              <h2 className="font-display text-base font-bold">Carousel source</h2>
+              <span className="text-xs font-medium text-zinc-500">JSON v1 · tidak dikirim ke server</span>
             </div>
-            <p className="mt-2 text-sm leading-6 text-zinc-500">AI dapat mengembalikan satu JSON dengan <code>meta</code> dan <code>slides</code>. Source tidak dikirim ke server.</p>
-            <label className="mt-5 block text-xs font-semibold uppercase tracking-wider text-zinc-500" htmlFor="studio-source">Paste definisi carousel</label>
-            <SourceEditor id="studio-source" value={source} onChange={editSource} highlight={highlight}
-              className="h-[46vh] min-h-[260px] sm:h-[480px]"
-              placeholder={'{"version":1,"meta":{"title":"..."},"slides":[...]}'}/>
-            <div className="mt-4 flex flex-wrap gap-2">
-              <button type="button" onClick={render} disabled={working} className="rounded-full bg-red-500 px-5 py-3 text-sm font-bold text-white hover:bg-red-600 disabled:opacity-50">Render carousel</button>
-              <button type="button" onClick={saveDraft} className="rounded-full border border-black/15 px-4 py-3 text-sm font-semibold hover:bg-zinc-50">Save draft</button>
-              <button type="button" onClick={()=>{editSource(INITIAL);setStatus("Contoh dimuat. Tekan Render carousel.");setError("");}} className="rounded-full border border-black/15 px-4 py-3 text-sm font-semibold hover:bg-zinc-50">Load contoh</button>
-              <button type="button" onClick={clearContent} disabled={working||!source.trim()} className="rounded-full border border-red-200 px-4 py-3 text-sm font-semibold text-red-700 hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-40">Hapus konten</button>
-            </div>
-            {error&&<div role="alert" className="mt-4 rounded-xl border border-red-200 bg-red-50 p-3 text-sm leading-6 text-red-800">{error}</div>}
-            {status&&<div role="status" className="mt-4 rounded-xl border border-emerald-200 bg-emerald-50 p-3 text-sm leading-6 text-emerald-900">{status}</div>}
-            <div className="mt-6 rounded-2xl bg-[#f5f1e8] p-4 text-sm text-zinc-700">
-              <p className="font-display font-bold">Buat konten baru dengan AI</p>
-              <p className="mt-2 leading-6">Tak perlu copy source dari GitHub. Isi topik di halaman Template AI, lalu salin prompt lengkap dengan satu tombol.</p>
-              <div className="mt-3 flex flex-wrap gap-2">
-                <Link href="/studio/template" className="inline-flex rounded-full bg-zinc-950 px-5 py-3 font-semibold text-white hover:bg-zinc-800">Buka Template AI →</Link>
-                <Link href="/studio/remix" className="inline-flex rounded-full border border-black/15 bg-white px-5 py-3 font-semibold text-zinc-900 hover:bg-zinc-50">Adaptasi konten orang lain ↗</Link>
-                <Link href="/studio/assets" className="inline-flex rounded-full border border-black/15 bg-white px-5 py-3 font-semibold text-zinc-900 hover:bg-zinc-50">Lihat Asset Library ↗</Link>
+            {outline.length?<div className="mt-3" data-slide-nav="true">
+              <div className="flex items-center justify-between gap-2">
+                <label className="text-xs font-semibold text-zinc-600" htmlFor="studio-source">Lompat ke slide</label>
+                <div className="flex gap-1">
+                  <button type="button" onClick={()=>editorApi.current?.foldSlides()} className="min-h-9 rounded-lg px-3 text-xs font-semibold text-zinc-700 hover:bg-zinc-100">Lipat semua</button>
+                  <button type="button" onClick={()=>editorApi.current?.unfoldSlides()} className="min-h-9 rounded-lg px-3 text-xs font-semibold text-zinc-700 hover:bg-zinc-100">Buka semua</button>
+                </div>
               </div>
+              <div className="mt-1 flex gap-1.5 overflow-x-auto pb-1">
+                {outline.map(s=>{const n=issuesBySlide[s.index]||0;return <button key={s.index} type="button" onClick={()=>gotoSlide(s.index)}
+                  title={(s.type||"?")+(s.title?" · "+s.title:"")+(n?" · "+n+" masalah":"")} data-slide-chip={s.index}
+                  className={["inline-flex min-h-10 flex-none items-center gap-1 rounded-lg border px-2.5 text-left text-xs",n?"border-red-300 bg-red-50 text-red-800":selected===s.index?"border-zinc-900 bg-zinc-900 text-white":"border-black/10 bg-zinc-50 text-zinc-700 hover:bg-white"].join(" ")}>
+                  <span className="font-bold tabular-nums">{String(s.index+1).padStart(2,"0")}</span> <span className="opacity-75">{s.type||"?"}</span>{n?<><Icon name="alert" size={12}/><span className="font-bold">{n}</span></>:null}
+                </button>;})}
+              </div>
+            </div>:null}
+            <SourceEditor id="studio-source" value={source} onChange={editSource} highlight={highlight}
+              diagnostics={diagnostics} onCursorSlide={cursorSlide} apiRef={editorApi}
+              className="h-[52dvh] min-h-[260px] resize-y lg:h-[calc(100dvh-330px)]"
+              placeholder={'{"version":1,"meta":{"title":"..."},"slides":[...]}'}/>
+            <div className="mt-3 flex flex-wrap gap-2">
+              <button type="button" onClick={render} disabled={working} className={accent+" hidden lg:inline-flex"}>Render carousel</button>
+              <button type="button" onClick={saveDraft} className={ghost}>Simpan draft</button>
+              <button type="button" onClick={()=>{editSource(INITIAL);setStatus("Contoh dimuat. Tekan Render carousel.");setError("");}} className={ghost}>Muat contoh</button>
+              <button type="button" onClick={clearContent} disabled={working||!source.trim()} className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full px-5 text-sm font-semibold disabled:cursor-not-allowed disabled:opacity-50 border border-red-200 bg-white text-red-700 hover:bg-red-50">Kosongkan</button>
             </div>
+            {error&&<div role="alert" className="mt-3 whitespace-pre-line rounded-xl border border-red-200 bg-red-50 p-3 text-sm leading-6 text-red-800">{error}</div>}
+            {issues.length?<div className="mt-3 rounded-xl border border-red-200 bg-white" data-issue-list="true">
+              <p className="border-b border-red-100 px-3 py-2 text-xs font-bold text-red-800">{issues.length} masalah di Carousel source{lint?.forDoc!==source?" (memeriksa…)":""} · ketuk untuk melompat</p>
+              <ul className="max-h-72 divide-y divide-red-100 overflow-y-auto">
+                {issues.map((issue,i)=><li key={i}>
+                  <button type="button" onClick={()=>gotoIssue(issue)} data-issue={i} className="block min-h-11 w-full px-3 py-2 text-left hover:bg-red-50 focus:bg-red-50">
+                    <span className="flex flex-wrap items-baseline justify-between gap-x-2">
+                      <span className="text-xs font-bold text-zinc-900">{issue.label}</span>
+                      <span className="text-xs text-zinc-600">baris {issue.line}</span>
+                    </span>
+                    <span className="mt-0.5 block text-xs leading-5 text-red-800">{issue.message.replace(/^(Slide \d+|meta)[^:]*: /,"")}</span>
+                  </button>
+                </li>)}
+              </ul>
+            </div>:null}
+            <p className="mt-4 text-sm leading-6 text-zinc-600">Belum punya JSON? Buat lewat <Link href="/studio/template" className="font-semibold text-zinc-900 underline underline-offset-4">Template AI</Link> atau <Link href="/studio/remix" className="font-semibold text-zinc-900 underline underline-offset-4">Adaptasi Konten</Link>, lalu tempel hasilnya di sini.</p>
           </section>
 
-          <section className="min-w-0" data-panel="result">
-            <div className="mb-4 rounded-[24px] border border-black/10 bg-white p-4 shadow-sm sm:p-5">
-              <div className="flex flex-wrap items-center justify-between gap-3">
-                <div>
-                  <p className="font-display text-sm font-bold">{carousel.meta.title}</p>
-                  <p className="mt-1 text-xs text-zinc-500">{carousel.slides.length} slide · Aksioma {account==="trader"?"Trader":"Journey"} · 1080×1350 · {platform==="tiktok"?"TikTok Photo":"Instagram"}</p>
-                  {platform==="instagram"&&carousel.slides.length>20?<p role="alert" className="mt-1 text-xs font-semibold text-amber-800">Instagram membatasi carousel maksimal 20 slide. Kurangi slide atau pilih TikTok (maks 35).</p>:null}
+          <div className="min-w-0" data-panel="result">
+            {status?<div role="status" className="mb-3 rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm leading-6 text-emerald-900">{status}</div>:null}
+            <section id="studio-pane-preview" role="tabpanel" aria-labelledby="studio-tab-preview" data-active={pane==="preview"} className="studio-pane" data-panel="preview">
+              <div className={"studio-preview-grid"+(allVisible?" studio-preview-grid--all":"")}>
+              <div className="min-w-0">
+              <div className="mb-3 flex items-center gap-2">
+                <button type="button" aria-label="Slide sebelumnya" disabled={allVisible||selected<=0} onClick={()=>openSlide(Math.max(0,selected-1))} className="inline-flex min-h-11 min-w-11 flex-none items-center justify-center rounded-xl bg-white text-zinc-800 disabled:opacity-30"><Icon name="chevron-left"/></button>
+                <div className="min-w-0 flex-1 overflow-x-auto pb-1">
+                  <div className="flex snap-x gap-1.5">
+                    {carousel.slides.map((slide,i)=><button key={i} type="button" aria-label={"Slide "+(i+1)} aria-current={!allVisible&&selected===i} onClick={()=>{openSlide(i);clearDownload();}} className={["min-h-11 min-w-11 snap-start rounded-xl px-3 text-sm font-bold tabular-nums",!allVisible&&selected===i?"bg-zinc-950 text-white":"bg-white text-zinc-700 hover:bg-zinc-50"].join(" ")}>{String(i+1).padStart(2,"0")}</button>)}
+                  </div>
                 </div>
-                <div className="flex flex-wrap gap-2">
-                  <button type="button" aria-pressed={platform==="instagram"} onClick={()=>{setPlatform("instagram");setSafe(false);clearDownload();}} className={["min-h-11 rounded-full px-4 py-2 text-xs font-bold",platform==="instagram"?"bg-zinc-950 text-white":"bg-zinc-100 text-zinc-700"].join(" ")}>Instagram</button>
-                  <button type="button" aria-pressed={platform==="tiktok"} onClick={()=>{setPlatform("tiktok");clearDownload();}} className={["min-h-11 rounded-full px-4 py-2 text-xs font-bold",platform==="tiktok"?"bg-zinc-950 text-white":"bg-zinc-100 text-zinc-700"].join(" ")}>TikTok photo</button>
-                  <button type="button" disabled={platform!=="tiktok"} aria-pressed={safe} onClick={()=>setSafe(v=>!v)} className="rounded-full border border-black/10 px-4 py-2 text-xs font-bold disabled:opacity-40">Safe area {safe?"ON":"OFF"}</button>
+                <button type="button" aria-label="Slide berikutnya" disabled={allVisible||selected>=carousel.slides.length-1} onClick={()=>openSlide(Math.min(carousel.slides.length-1,selected+1))} className="inline-flex min-h-11 min-w-11 flex-none items-center justify-center rounded-xl bg-white text-zinc-800 disabled:opacity-30"><Icon name="chevron-right"/></button>
+                <button type="button" onClick={()=>setAllVisible(v=>!v)} aria-pressed={allVisible} aria-label="Tampilkan semua slide" title="Tampilkan semua slide" className={["inline-flex min-h-11 min-w-11 flex-none items-center justify-center rounded-xl",allVisible?"bg-zinc-950 text-white":"bg-white text-zinc-800"].join(" ")}><Icon name="grid"/></button>
+              </div>
+              <PreviewBoundary resetKey={carousel}>
+              <div ref={previewBox} className={"mx-auto rounded-2xl bg-zinc-300/70 p-2 sm:p-3"+(allVisible?"":" studio-preview-fit")}>
+                <div className="w-full" data-platform={platform} data-safe-area={safe&&platform==="tiktok"?"true":"false"}>
+                  <div className="carousel-stage !min-h-0 !gap-0 !p-0" data-platform={platform} data-safe-area={safe&&platform==="tiktok"?"true":"false"} style={{display:"block",overflow:"visible"}}>
+                    {allVisible?<div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">{carousel.slides.map((s,i)=><div key={i} className="min-w-0"><div className="mb-2 flex items-center justify-between gap-2"><span className="text-sm font-bold tabular-nums text-zinc-700">Slide {String(i+1).padStart(2,"0")}</span><button type="button" disabled={working} onClick={()=>exportImages(false,false,i)} aria-label={"Unduh slide "+(i+1)+" sebagai JPEG"} className="inline-flex min-h-11 items-center gap-2 rounded-full bg-white px-4 text-sm font-semibold text-zinc-900 disabled:opacity-50"><Icon name="download" size={16}/>JPEG</button></div><SlidePreview data={s} number={i+1} account={account} total={carousel.slides.length} font={font} look={look} textMode={textMode} index={i} onTextHover={hoverText} onTextCommit={commitText}/></div>)}</div>:<SlidePreview data={current} number={selected+1} account={account} total={carousel.slides.length} font={font} look={look} textMode={textMode} index={selected} onTextHover={hoverText} onTextCommit={commitText}
+                      editor={{selectedId:selectedImage,onSelect:setSelectedImage,onLive:setLiveImages,onCommit:applyImages}}/>}
+                  </div>
                 </div>
               </div>
-              <div className="mt-4 flex flex-wrap items-center gap-2 border-t border-black/10 pt-4">
-                <button type="button" disabled={working} aria-busy={working} onClick={()=>exportImages(false)} className="min-h-11 rounded-full border border-zinc-300 px-4 py-2.5 text-xs font-semibold hover:bg-zinc-50 disabled:opacity-50">Generate JPEG</button>
-                <button type="button" disabled={working} aria-busy={working} onClick={()=>exportImages(true)} className="min-h-11 rounded-full bg-zinc-950 px-4 py-2.5 text-xs font-semibold text-white hover:bg-zinc-800 disabled:opacity-50">{working?"Generating…":"Generate all ZIP"}</button>
-                <button type="button" onClick={()=>setAllVisible(v=>!v)} className="min-h-11 rounded-full border border-zinc-300 px-4 py-2.5 text-xs font-semibold hover:bg-zinc-50">{allVisible?"Single slide":"Show all slides"}</button>
+              </PreviewBoundary>
+              {!allVisible?<FillHint containerRef={previewBox} slide={baseSlide} watch={JSON.stringify(baseSlide)+platform+safe+selected}/>:null}
               </div>
-            </div>
-            <div className="mb-4" data-panel="export">
-            {preflight?<div role="alert" className="mt-4 rounded-[24px] border border-amber-300 bg-amber-50 p-4" data-preflight="true">
-              <p className="font-display text-sm font-bold text-amber-900">Export ditahan: {preflight.issues.length} slide terpotong</p>
-              <ul className="mt-2 list-disc space-y-1 pl-5 text-xs leading-5 text-amber-900">{preflight.issues.map((issue,i)=><li key={i}>{issue.message}</li>)}</ul>
+              <aside className="studio-controls" aria-label="Pengaturan tampilan" data-panel="look">
+                <div className="flex flex-wrap items-center gap-2">
+                  <div className="studio-seg" role="group" aria-label="Platform">
+                    <button type="button" aria-pressed={platform==="instagram"} onClick={()=>{setPlatform("instagram");setSafe(false);clearDownload();}}>Instagram</button>
+                    <button type="button" aria-pressed={platform==="tiktok"} onClick={()=>{setPlatform("tiktok");clearDownload();}}>TikTok</button>
+                  </div>
+                  {platform==="tiktok"?<label className="inline-flex min-h-11 items-center gap-2 text-sm font-semibold text-zinc-800"><input type="checkbox" checked={safe} onChange={e=>setSafe(e.target.checked)} className="h-5 w-5 accent-zinc-900"/>Safe area</label>:null}
+                </div>
+                <div className="mt-2 grid grid-cols-2 gap-2 xl:grid-cols-1 2xl:grid-cols-2">
+                  <label><span className="sr-only">Font konten</span>
+                    <select data-panel="font" className="studio-select w-full" value={font} title={FONT_PRESETS[font].hint} onChange={e=>applyMeta({font:e.target.value===brand.font?undefined:e.target.value})}>
+                      {FONT_IDS.map(id=><option key={id} value={id}>Font: {FONT_PRESETS[id].label}</option>)}
+                    </select></label>
+                  <label><span className="sr-only">Tampilan konten</span>
+                    <select className="studio-select w-full" value={look} title={LOOK_PRESETS[look].hint} onChange={e=>applyMeta({look:e.target.value===brand.look?undefined:e.target.value})}>
+                      {LOOK_IDS.map(id=><option key={id} value={id}>Tampilan: {LOOK_PRESETS[id].label}</option>)}
+                    </select></label>
+                </div>
+                <p className="mt-2 text-sm leading-6 text-zinc-600">{LOOK_PRESETS[look].hint}</p>
+                <div className="mt-3">
+                  <button type="button" aria-pressed={textMode} onClick={()=>{setTextMode(v=>!v);setHl(null);}} className={textMode?accent:ghost}><Icon name="pencil" size={16}/>{textMode?"Edit teks aktif":"Edit teks di slide"}</button>
+                  {textMode?<p className="mt-2 text-sm leading-6 text-zinc-700">Ketuk teks di slide untuk mengubahnya. Enter menyimpan, Esc membatalkan. Carousel source ikut diperbarui.</p>:null}
+                </div>
+              {warnings.length?<div role="status" className="mt-3 rounded-xl border border-amber-300 bg-amber-50 p-3 text-sm leading-6 text-amber-900">
+                <p className="font-bold">Perkiraan konten terlalu padat (berdasarkan pengukuran layout)</p>
+                <ul className="mt-1 list-disc pl-5">{warnings.map((w,i)=><li key={i}>{w}</li>)}</ul>
+              </div>:null}
+              {missing.length?<div role="status" className="mt-3 rounded-xl border border-amber-300 bg-amber-50 p-3 text-sm leading-6 text-amber-900">
+                <p className="font-bold">Gambar tidak ditemukan di browser ini</p>
+                <p>Id: {missing.join(", ")}. Unggah ulang di Perpustakaan Gambar dan pilih pada slot, atau hapus dari JSON.</p>
+              </div>:null}
+              {!allVisible&&slots.length?<section aria-label="Slot gambar" className="mt-4 rounded-2xl border border-black/10 bg-white p-4" data-slot-panel="true">
+                <p className="font-display text-sm font-bold">Slot gambar di slide ini</p>
+                <ul className="mt-3 space-y-3">
+                  {slots.map((slot,i)=><li key={slot.path.join(".")+i} className="grid gap-1 sm:grid-cols-[140px_1fr] sm:items-center">
+                    <span className="text-xs font-semibold text-zinc-600">{slot.label}</span>
+                    <ImagePicker label={"Gambar untuk "+slot.label} value={slot.id} onChange={id=>assignSlot(slot.path,id)}/>
+                  </li>)}
+                </ul>
+              </section>:null}
+              {!allVisible?<div className="mt-4"><ImageToolbar images={currentImages} selectedId={selectedImage} onSelect={setSelectedImage} onChange={applyImages}/></div>:null}
+              {!allVisible?<div className="mt-4"><ImageLibrary/></div>:null}
+              {platform==="tiktok"?<p className="mt-3 text-sm leading-6 text-zinc-600">Safe area adalah panduan konservatif. Sebelum posting, periksa hasilnya di TikTok.</p>:null}
+              </aside>
+              </div>
+            </section>
+
+          </div>
+            <section id="studio-pane-export" role="tabpanel" aria-labelledby="studio-tab-export" data-active={pane==="export"} className="studio-pane min-w-0 lg:col-span-2 lg:border-t lg:border-black/10 lg:pt-5" data-panel="export">
+            <h2 className="font-display mb-3 hidden text-base font-bold lg:block">Ekspor dan posting</h2>
+            <div className="studio-export-grid">
+            {preflight?<div role="alert" className="mb-4 rounded-2xl border border-amber-300 bg-amber-50 p-4" data-preflight="true">
+              <p className="font-display text-sm font-bold text-amber-900">Ekspor ditahan: {preflight.issues.length} slide terpotong</p>
+              <ul className="mt-2 list-disc space-y-1 pl-5 text-sm leading-6 text-amber-900">{preflight.issues.map((issue,i)=><li key={i}>{issue.message}</li>)}</ul>
               <div className="mt-3 flex flex-wrap gap-2">
-                <button type="button" onClick={()=>openSlide(preflight.issues[0].index)} className="min-h-11 rounded-full bg-amber-700 px-5 py-2.5 text-xs font-bold text-white">Perbaiki dulu</button>
-                <button type="button" onClick={()=>exportImages(preflight.all,true,preflight.only)} className="min-h-11 rounded-full border border-amber-700 px-5 py-2.5 text-xs font-semibold text-amber-900">Tetap export</button>
+                <button type="button" onClick={()=>openSlide(preflight.issues[0].index)} className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full px-5 text-sm font-semibold disabled:cursor-not-allowed disabled:opacity-50 bg-amber-700 text-white">Perbaiki dulu</button>
+                <button type="button" onClick={()=>exportImages(preflight.all,true,preflight.only)} className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full px-5 text-sm font-semibold disabled:cursor-not-allowed disabled:opacity-50 border border-amber-700 text-amber-900">Tetap ekspor</button>
               </div>
             </div>:null}
             {download ? (
-              <div role="status" className="mt-4 rounded-[24px] border border-emerald-300 bg-emerald-50 p-4">
+              <div role="status" className="mb-4 rounded-2xl border border-emerald-300 bg-emerald-50 p-4">
                 <p className="font-display text-sm font-bold text-emerald-900">File sudah selesai dibuat</p>
-                <p className="mt-1 break-all text-xs text-emerald-800">{download.filename} · {(download.size/1024/1024).toFixed(1)} MB</p>
+                <p className="mt-1 break-all text-sm text-emerald-800">{download.filename} · {(download.size/1024/1024).toFixed(1)} MB</p>
                 <div className="mt-3 flex flex-wrap gap-2">
-                  <a href={download.url} download={download.filename}
-                    className="inline-flex rounded-full bg-emerald-700 px-5 py-3 text-sm font-bold text-white hover:bg-emerald-800">Simpan file ↓</a>
+                  <a href={download.url} download={download.filename} className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full px-5 text-sm font-semibold disabled:cursor-not-allowed disabled:opacity-50 bg-emerald-700 text-white hover:bg-emerald-800"><Icon name="download" size={16}/>Simpan file</a>
                   {download.kind==="jpeg" ? (
-                    <a href={download.url} target="_blank" rel="noreferrer"
-                      className="inline-flex rounded-full border border-emerald-700 px-5 py-3 text-sm font-semibold text-emerald-900">Buka gambar ↗</a>
+                    <a href={download.url} target="_blank" rel="noreferrer" className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full px-5 text-sm font-semibold disabled:cursor-not-allowed disabled:opacity-50 border border-emerald-700 text-emerald-900">Buka gambar<Icon name="arrow-up-right" size={16}/></a>
                   ) : null}
                 </div>
-                <p className="mt-3 text-xs leading-5 text-emerald-900">Di iPhone, bila gambar terbuka alih-alih terunduh, tahan gambar lalu pilih Simpan ke Foto. Untuk ZIP, gunakan menu Bagikan → Simpan ke File. ZIP juga berisi captions.txt.</p>
+                <p className="mt-3 text-sm leading-6 text-emerald-900">Di iPhone, bila gambar terbuka alih-alih terunduh, tahan gambar lalu pilih Simpan ke Foto. Untuk ZIP, gunakan menu Bagikan lalu Simpan ke File. ZIP juga berisi captions.txt.</p>
               </div>
-            ) : null}
-            <SharePanel files={exported?.files||null} meta={carousel.meta} platform={exported?.platform||platform} working={working} onPrepare={()=>exportImages(true)}/>
-            <QualityPanel result={check} checking={checking} onCheck={checkNow} onSelect={openSlide} title={carousel.meta.title}/>
-            </div>
-            <div data-panel="preview">
-            <div className="mb-4 flex items-center gap-2">
-              <button type="button" aria-label="Slide sebelumnya" disabled={selected<=0} onClick={()=>openSlide(Math.max(0,selected-1))} className="min-h-11 min-w-11 flex-none rounded-full bg-white text-lg font-bold text-zinc-700 disabled:opacity-30">‹</button>
-              <div className="min-w-0 flex-1 overflow-x-auto pb-1">
-                <div className="flex snap-x gap-2">
-                  {carousel.slides.map((slide,i)=><button key={i} type="button" aria-label={"Slide "+(i+1)} aria-current={selected===i} onClick={()=>{openSlide(i);clearDownload();}} className={["min-h-11 min-w-11 snap-start rounded-xl px-3 py-3 text-xs font-bold",selected===i?"bg-red-500 text-white":"bg-white text-zinc-600"].join(" ")}>{String(i+1).padStart(2,"0")}</button>)}
-                </div>
+            ) : (
+              <div className="mb-4 flex flex-wrap items-center gap-2 lg:hidden">
+                <button type="button" disabled={working} aria-busy={working} onClick={()=>exportImages(false)} className={ghost}><Icon name="download" size={16}/>Slide {selected+1} saja (JPEG)</button>
               </div>
-              <button type="button" aria-label="Slide berikutnya" disabled={selected>=carousel.slides.length-1} onClick={()=>openSlide(Math.min(carousel.slides.length-1,selected+1))} className="min-h-11 min-w-11 flex-none rounded-full bg-white text-lg font-bold text-zinc-700 disabled:opacity-30">›</button>
+            )}
+            <SharePanel files={exported?.files||null} meta={carousel.meta} slides={carousel.slides} platform={exported?.platform||platform} working={working} onPrepare={()=>exportImages(true)}/>
+            <QualityPanel result={check} checking={checking} onCheck={checkNow} onSelect={openSlide} title={carousel.meta.title} numberIssues={numberIssues}/>
+            <div><PostMetaPanel {...carousel.meta}/></div>
             </div>
-            <div className="mb-3 flex flex-wrap items-center gap-3">
-              <button type="button" aria-pressed={textMode} onClick={()=>{setTextMode(v=>!v);setHl(null);}}
-                className={["min-h-11 rounded-full px-4 py-2 text-xs font-bold",textMode?"bg-red-500 text-white":"bg-white text-zinc-700"].join(" ")}>✎ Edit teks di preview: {textMode?"aktif":"mati"}</button>
-              {textMode?<p className="min-w-0 flex-1 text-xs leading-5 text-zinc-600">Arahkan atau ketuk teks untuk menyorotnya di Carousel source. Klik untuk mengedit, Enter menyimpan, Esc membatalkan.</p>:null}
-            </div>
-            <PreviewBoundary resetKey={carousel}>
-            <div ref={previewBox} className="rounded-[26px] bg-zinc-200 p-2 sm:p-5">
-              <div className="w-full" data-platform={platform} data-safe-area={safe&&platform==="tiktok"?"true":"false"}>
-                <div className="carousel-stage !min-h-0 !gap-0 !p-0" data-platform={platform} data-safe-area={safe&&platform==="tiktok"?"true":"false"} style={{display:"block",overflow:"visible"}}>
-                  {allVisible?carousel.slides.map((s,i)=><div className="mb-5" key={i}><div className="mb-2 flex items-center justify-between gap-2"><span className="text-xs font-bold text-zinc-600">Slide {String(i+1).padStart(2,"0")}</span><button type="button" disabled={working} onClick={()=>exportImages(false,false,i)} className="min-h-11 rounded-full bg-white px-4 py-2 text-xs font-semibold text-zinc-800 disabled:opacity-50">Simpan gambar slide ini</button></div><SlidePreview data={s} number={i+1} account={account} total={carousel.slides.length} font={font} textMode={textMode} index={i} onTextHover={hoverText} onTextCommit={commitText}/></div>):<SlidePreview data={current} number={selected+1} account={account} total={carousel.slides.length} font={font} textMode={textMode} index={selected} onTextHover={hoverText} onTextCommit={commitText}
-                    editor={{selectedId:selectedImage,onSelect:setSelectedImage,onLive:setLiveImages,onCommit:applyImages}}/>}
-                </div>
-              </div>
-            </div>
-            </PreviewBoundary>
-            {!allVisible?<FillHint containerRef={previewBox} slide={baseSlide} watch={JSON.stringify(baseSlide)+platform+safe+selected}/>:null}
-            {warnings.length?<div role="status" className="mt-3 rounded-xl border border-amber-300 bg-amber-50 p-3 text-xs leading-5 text-amber-900">
-              <p className="font-bold">Perkiraan konten terlalu padat (berdasarkan pengukuran layout)</p>
-              <ul className="mt-1 list-disc pl-5">{warnings.map((w,i)=><li key={i}>{w}</li>)}</ul>
-            </div>:null}
-            {missing.length?<div role="status" className="mt-3 rounded-xl border border-amber-300 bg-amber-50 p-3 text-xs leading-5 text-amber-900">
-              <p className="font-bold">Gambar tidak ditemukan di browser ini</p>
-              <p>Id: {missing.join(", ")}. Unggah ulang di Perpustakaan Gambar dan pilih pada slot, atau hapus dari JSON.</p>
-            </div>:null}
-            {!allVisible&&slots.length?<section aria-label="Slot gambar" className="mt-4 rounded-[20px] border border-black/10 bg-white p-4" data-slot-panel="true">
-              <p className="font-display text-sm font-bold">Slot gambar di slide ini</p>
-              <ul className="mt-3 space-y-3">
-                {slots.map((slot,i)=><li key={slot.path.join(".")+i} className="grid gap-1 sm:grid-cols-[140px_1fr] sm:items-center">
-                  <span className="text-xs font-semibold text-zinc-600">{slot.label}</span>
-                  <ImagePicker label={"Gambar untuk "+slot.label} value={slot.id} onChange={id=>assignSlot(slot.path,id)}/>
-                </li>)}
-              </ul>
-            </section>:null}
-            {!allVisible?<div className="mt-4"><ImageToolbar images={currentImages} selectedId={selectedImage} onSelect={setSelectedImage} onChange={applyImages}/></div>:null}
-            {!allVisible?<div className="mt-4"><ImageLibrary/></div>:null}
-            </div>
-            <p className="mt-3 text-xs leading-5 text-zinc-500">Safe area adalah panduan konservatif. Sebelum posting, periksa hasil di TikTok. Export browser mungkin berbeda sedikit dari Playwright untuk font/efek tertentu.</p>
-          </section>
+            </section>
         </div>
-        <div className="mx-auto mt-8 w-full max-w-[1080px]">
-          <PostMetaPanel {...carousel.meta}/>
-        </div>
+      </div>
+
+      {/* Ponsel: satu aksi utama per panel, selalu dalam jangkauan ibu jari. */}
+      <div className="studio-actionbar">
+        {pane==="source"
+          ?<button type="button" onClick={render} disabled={working} className={accent}>Render carousel</button>
+          :<button type="button" disabled={working} aria-busy={working} onClick={()=>exportImages(true)} className={primary}><Icon name="download" size={16}/>{working?"Menyiapkan…":"Unduh semua slide (ZIP)"}</button>}
       </div>
 
       {/* Export source uses unscaled, offscreen DOM. Never hide with display:none. */}
       <PreviewBoundary resetKey={carousel} fallback={null}>
       <div ref={exportStage} className="carousel-stage" data-platform={platform} data-safe-area="false" aria-hidden="true"
         style={{position:"fixed",left:"-100000px",top:0,width:1080,display:"flex",gap:0,padding:0,pointerEvents:"none"}}>
-        {carousel.slides.map((s,i)=><StudioSlide key={i} data={s} number={i+1} account={account} total={carousel.slides.length} font={font}/>)}
+        {carousel.slides.map((s,i)=><StudioSlide key={i} data={s} number={i+1} account={account} total={carousel.slides.length} font={font} look={look}/>)}
       </div>
       </PreviewBoundary>
     </main>

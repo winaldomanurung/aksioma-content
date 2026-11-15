@@ -44,16 +44,15 @@ export default function AssetLibraryClient(){
       <div className="mx-auto max-w-[1280px]">
         <header className="flex flex-wrap items-start justify-between gap-5">
           <div>
-            <p className="font-display text-xs font-bold uppercase tracking-[.2em] text-red-700">Aksioma / Asset Library</p>
-            <h1 className="font-display mt-3 text-4xl font-bold tracking-tight sm:text-5xl">Visual yang membantu bercerita.</h1>
+            <h1 className="font-display text-4xl font-bold tracking-tight sm:text-5xl">Visual yang membantu bercerita.</h1>
             <p className="mt-4 max-w-3xl text-base leading-7 text-zinc-700">
               {assetCatalog.length} SVG lokal dan {backgrounds.length} background. Setiap aset memiliki saran pemakaian:
               visual memperjelas gagasan, bukan sekadar memenuhi ruang kosong.
             </p>
           </div>
           <div className="flex flex-wrap gap-2">
-            <Link href="/studio/template" className="rounded-full bg-red-600 px-5 py-3 text-sm font-bold text-white hover:bg-red-700">Buat dengan AI ↗</Link>
-            <Link href="/studio" className="rounded-full border border-black/15 bg-white px-5 py-3 text-sm font-bold hover:bg-zinc-50">Buka Studio ↗</Link>
+            <Link href="/studio/template" className="rounded-full bg-red-600 px-5 py-3 text-sm font-bold text-white hover:bg-red-700">Buat dengan AI</Link>
+            <Link href="/studio" className="rounded-full border border-black/15 bg-white px-5 py-3 text-sm font-bold hover:bg-zinc-50">Buka Studio</Link>
           </div>
         </header>
         <div className="mt-7 flex flex-wrap items-center gap-2">
@@ -92,7 +91,7 @@ export default function AssetLibraryClient(){
                 <div className="mt-4">
                   <p className="font-display break-all text-lg font-bold text-zinc-950">{asset.name}</p>
                   <p className="mt-1 text-xs uppercase tracking-wider text-zinc-600">
-                    {asset.set|| (asset.category==="background"?"Palet kontras":"Bentuk Aksioma")}
+                    {asset.set|| (asset.category==="background"?"Palet kontras":"Bentuk dekoratif")}
                   </p>
                   <p className="mt-3 min-h-[44px] text-sm leading-6 text-zinc-700">
                     <strong>Gunakan untuk:</strong> {usage||"gagasan yang relevan"}
@@ -117,7 +116,7 @@ export default function AssetLibraryClient(){
             kuat di belakang kalimat panjang. Semua file SVG tersedia lokal, bukan dari CDN.
           </p>
           <p className="mt-3 text-xs leading-6 text-zinc-600">
-            Lucide ISC · Phosphor MIT · dekorasi SVG orisinal Aksioma. Hasil JPEG tetap perlu diperiksa
+            Lucide ISC · Phosphor MIT · dekorasi SVG orisinal. Hasil JPEG tetap perlu diperiksa
             pada browser yang digunakan sebelum dipublikasikan.
           </p>
         </section>

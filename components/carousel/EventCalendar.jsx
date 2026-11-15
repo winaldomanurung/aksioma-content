@@ -1,7 +1,9 @@
+import {FULL_BUDGET, rowFit} from "@/lib/studio/market";
+
 // Agenda list: a short date block, title, optional note and tag.
-export default function EventCalendar({items = [], dark = false, className = ""}) {
+export default function EventCalendar({items = [], budget = FULL_BUDGET, dark = false, className = ""}) {
   return (
-    <div className={["mkt mkt-cal", className].join(" ")} data-dark={dark ? "true" : "false"}>
+    <div className={["mkt mkt-cal", className].join(" ")} data-dark={dark ? "true" : "false"} style={rowFit(items.length, budget, {base: 92})}>
       {items.map((item, i) => (
         <div key={i} className="mkt-cal-row" data-note={item.note ? "yes" : "no"}>
           <span className="mkt-cal-date">{item.date}</span>
