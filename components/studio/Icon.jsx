@@ -9,6 +9,7 @@ const PATHS={
   "chevron-right":"m9 18 6-6-6-6",
   "chevron-down":"m6 9 6 6 6-6",
   close:"M18 6 6 18M6 6l12 12",
+  menu:"M4 6h16M4 12h16M4 18h16",
   download:"M12 3v12m-5-5 5 5 5-5M5 21h14",
   pencil:"M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z",
   alert:"M12 9v4m0 4h.01M10.3 3.9 2.4 17.5A2 2 0 0 0 4.1 20.5h15.8a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z",

@@ -5,6 +5,7 @@ import {usePathname} from "next/navigation";
 import {ACCOUNTS,ACCOUNT_IDS} from "@/lib/studio/accounts";
 import {useAccount,setAccount} from "@/lib/studio/account-store";
 import Icon from "./Icon";
+import Logo from "./Logo";
 
 // Menu dikelompokkan supaya bar tidak melebar: dua tautan langsung dan dua grup
 // dengan submenu. Di layar kecil semua grup tampil terbuka di dalam satu panel.
@@ -75,12 +76,13 @@ export default function SiteNav(){
   return (
     <nav aria-label="Navigasi Aksioma" className="studio-site-nav studio-only" data-account={account} ref={root}>
       <div className="studio-site-nav-inner">
-        <Link href="/" className="studio-nav-brand" onClick={close}>AKSIOMA<span>.</span> <small>CONTENT</small></Link>
+        <Link href="/" className="studio-nav-brand" onClick={close} aria-label="Aksioma Content, ke Beranda"><Logo size={30} className="studio-nav-logo"/><span className="studio-nav-wordmark">AKSIOMA<span>.</span> <small>CONTENT</small></span></Link>
         <div className="studio-nav-right">
           <AccountSwitch account={account} onPick={setAccount}/>
-          <button type="button" className="studio-nav-toggle" aria-expanded={open} aria-controls="studio-nav-menu" onClick={()=>{setOpen(value=>!value);setGroup(null);}}>
-            <span className="studio-nav-toggle-label">{current?.label||"Menu"}</span>
-            <Icon name="chevron-down" size={16} className={open?"studio-nav-chevron studio-nav-chevron--open":"studio-nav-chevron"}/>
+          {/* Ponsel: tombol hamburger membuka seluruh menu sebagai panel ke bawah. */}
+          <button type="button" className="studio-nav-toggle" aria-expanded={open} aria-controls="studio-nav-menu"
+            aria-label={open?"Tutup menu":"Buka menu"+(current?.label?", halaman ini: "+current.label:"")} onClick={()=>{setOpen(value=>!value);setGroup(null);}}>
+            <Icon name={open?"close":"menu"} size={22}/>
           </button>
           <div id="studio-nav-menu" className="studio-nav-links" data-open={open?"true":"false"}>
             {menu.map(item=>{
