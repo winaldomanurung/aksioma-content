@@ -15,7 +15,7 @@ import {collectImageIds,listImageSlots,setAtPath} from "@/lib/studio/images";
 import {useImageLibrary} from "@/lib/studio/image-store";
 import {updateSlideInSource,updateMetaInSource,locateInSource,slideOutline} from "@/lib/studio/source-edit";
 import {lintSource} from "@/lib/studio/source-lint";
-import {decodePayload,payloadFrom} from "@/lib/studio/link-codec";
+import {decodePayload,encodePayload,payloadFrom} from "@/lib/studio/link-codec";
 import {FONT_PRESETS,FONT_IDS,DEFAULT_FONT,fontOf} from "@/lib/studio/fonts";
 import {LOOK_PRESETS,LOOK_IDS,DEFAULT_LOOK,lookOf} from "@/lib/studio/looks";
 import {buildTextMap} from "@/lib/studio/text-map";
@@ -33,6 +33,7 @@ import {checkNumbers} from "@/lib/studio/number-check";
 import PostMetaPanel from "@/components/carousel/PostMetaPanel";
 import Link from "next/link";
 import Icon from "./Icon";
+import {readEngineUrl,rememberEngineLink,readEngineOutput,forgetEngineOutput,engineRecordUrl} from "@/lib/studio/engine-link";
 
 const INITIAL=JSON.stringify(exampleCarousel,null,2);
 const DRAFT_KEY="aksioma-studio-draft-v1";
@@ -149,7 +150,10 @@ export default function StudioClient(){
   const [status,setStatus]=useState("");
   const [working,setWorking]=useState(false);
   const [selected,setSelected]=useState(0);
-  const [pane,setPane]=useState("preview"); // ponsel: satu panel per tab; laptop: semua panel tampil
+  const [pane,setPane]=useState("preview");
+  // Aksioma Engine: address and the draft this carousel came from (if any).
+  const [engine,setEngine]=useState({url:null,output:null});
+  const [engineBusy,setEngineBusy]=useState(false); // ponsel: satu panel per tab; laptop: semua panel tampil
   const [allVisible,setAllVisible]=useState(false);
   const [selectedImage,setSelectedImage]=useState(null);
   const [textMode,setTextMode]=useState(false);
@@ -237,6 +241,8 @@ export default function StudioClient(){
     async function openLink(){
       const payload=payloadFrom(window.location.hash);
       if(!payload)return;
+      rememberEngineLink(new URLSearchParams(window.location.hash.replace(/^#/,"")));
+      setEngine({url:readEngineUrl(),output:readEngineOutput()});
       try{
         const text=await decodePayload(payload);
         if(cancelled)return;
@@ -297,6 +303,7 @@ export default function StudioClient(){
     editSource("");
     setError("");
     clearDownload();
+    forgetEngineOutput();setEngine(e=>({...e,output:null}));
     setStatus("Editor dikosongkan. Preview terakhir tetap terlihat sampai carousel baru dirender.");
   }
 
@@ -383,6 +390,24 @@ export default function StudioClient(){
     if(!isAccountId(carousel.meta.account)||carousel.meta.account===id)return;
     applyMeta({account:id});
     setStatus("Akun carousel diganti ke "+ACCOUNTS[id].name+". Cover dan penutup mengikuti identitas akun ini.");
+  }
+  useEffect(()=>{
+    const sync=()=>setEngine({url:readEngineUrl(),output:readEngineOutput()});
+    sync();
+    window.addEventListener("storage",sync);
+    return()=>window.removeEventListener("storage",sync);
+  },[]);
+  // Opens the engine's /catat page with this carousel. The engine asks for
+  // the status there (review, disetujui, sudah diposting) and saves it.
+  async function recordToEngine(){
+    if(!engine.url)return;
+    setEngineBusy(true);
+    try{
+      const payload=await encodePayload(JSON.stringify(carousel));
+      window.open(engineRecordUrl(engine.url,payload,engine.output),"_blank","noopener");
+    }catch(e){
+      setError(e?.message||"Carousel tidak bisa dikirim ke engine.");
+    }finally{setEngineBusy(false);}
   }
   const navAccount=useRef(null);
   useEffect(()=>{navAccount.current=followNavAccount;});
@@ -484,7 +509,7 @@ export default function StudioClient(){
             <div className="mt-3 flex flex-wrap gap-2">
               <button type="button" onClick={render} disabled={working} className={accent+" hidden lg:inline-flex"}>Render carousel</button>
               <button type="button" onClick={saveDraft} className={ghost}>Simpan draft</button>
-              <button type="button" onClick={()=>{editSource(INITIAL);setStatus("Contoh dimuat. Tekan Render carousel.");setError("");}} className={ghost}>Muat contoh</button>
+              <button type="button" onClick={()=>{editSource(INITIAL);setStatus("Contoh dimuat. Tekan Render carousel.");setError("");forgetEngineOutput();setEngine(e=>({...e,output:null}));}} className={ghost}>Muat contoh</button>
               <button type="button" onClick={clearContent} disabled={working||!source.trim()} className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full px-5 text-sm font-semibold disabled:cursor-not-allowed disabled:opacity-50 border border-red-200 bg-white text-red-700 hover:bg-red-50">Kosongkan</button>
             </div>
             {error&&<div role="alert" className="mt-3 whitespace-pre-line rounded-xl border border-red-200 bg-red-50 p-3 text-sm leading-6 text-red-800">{error}</div>}
@@ -610,6 +635,15 @@ export default function StudioClient(){
             )}
             <SharePanel files={exported?.files||null} meta={carousel.meta} slides={carousel.slides} platform={exported?.platform||platform} working={working} onPrepare={()=>exportImages(true)}/>
             <QualityPanel result={check} checking={checking} onCheck={checkNow} onSelect={openSlide} title={carousel.meta.title} numberIssues={numberIssues}/>
+            <section aria-labelledby="engine-heading" className="rounded-2xl border border-black/10 bg-white p-4 sm:p-5" data-engine-panel="true">
+              <h3 id="engine-heading" className="font-display text-sm font-bold">Aksioma Engine</h3>
+              {engine.url?<>
+                <p className="mt-1 text-sm leading-6 text-zinc-600">{engine.output?"Carousel ini berasal dari draft #"+engine.output+". Kirim versi yang sudah kamu rapikan supaya draft itu ikut diperbarui.":"Catat carousel ini di engine supaya tercatat sebagai konten yang sudah dibuat atau diposting."}</p>
+                <button type="button" onClick={recordToEngine} disabled={engineBusy} className={ghost+" mt-3"}>
+                  <Icon name="arrow-up-right" size={16}/>{engine.output?"Perbarui draft #"+engine.output+" di engine":"Catat ke engine"}
+                </button>
+              </>:<p className="mt-1 text-sm leading-6 text-zinc-600">Buka satu draft dari Antrian Review engine (tombol Buka di Studio) sekali saja. Setelah itu Studio mengenal alamat engine dan tombol Catat ke engine muncul di sini.</p>}
+            </section>
             <div><PostMetaPanel {...carousel.meta}/></div>
             </div>
             </section>
